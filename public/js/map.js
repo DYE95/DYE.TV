@@ -3,11 +3,13 @@ const MapKit = { draggingId: null, lastSig: "", tool: "move", zoneStart: null };
 function initials(label) {
   return String(label || "?").split(/\s+/).map((p) => p[0]).join("").slice(0, 2).toUpperCase();
 }
+
 function activeEnc(ses) {
   if (!ses) return null;
   const list = ses.encounters || [];
   return list.find((e) => e.id === ses.activeEncounterId) || list[0] || null;
 }
+
 function tokenStatus(token, state) {
   const ses = (state.sessions || []).find((s) => s.id === state.active?.sessionId);
   const queued = (ses?.spotlightQueue || []).some((q) => q.characterId === token.characterId);
@@ -19,6 +21,7 @@ function tokenStatus(token, state) {
   if (ses?.narrating && token.kind === "pc") return "narrating";
   return seat ? "online" : "";
 }
+
 function renderMap(stage, state, opts = {}) {
   if (!stage) return;
   stage._emberRender = () => renderMap(stage, state, opts);
@@ -28,8 +31,11 @@ function renderMap(stage, state, opts = {}) {
   const tokens = map.tokens || [];
   const fog = map.fow || {};
 
+  if (map.image) stage.style.backgroundImage = `url("${map.image}")`;
+
   const live = new Set(tokens.map((t) => t.id));
   [...stage.querySelectorAll(".token")].forEach((el) => { if (!live.has(el.dataset.id)) el.remove(); });
+
   tokens.forEach((token) => {
     let el = stage.querySelector(`.token[data-id="${token.id}"]`);
     if (!el) {
@@ -51,56 +57,23 @@ function renderMap(stage, state, opts = {}) {
     el.innerHTML = `<span class="ring"></span>${face ? `<img src="${face}" alt="" draggable="false" />` : `<span>${initials(token.label)}</span>`}<span class="token-label">${token.label}</span>`;
   });
 
-  drawFog(fog, stage, map, opts);
+  drawFog(stage.querySelector("canvas.fow") || ensureFog(stage), stage, map, opts);
   drawOverlays(stage, ses, opts);
   bindFieldTools(stage, opts);
 }
-  if (!stage) return;
-  const ses = (state.sessions || []).find((s) => s.id === state.active?.sessionId);
-  const map = ses?.map || { image: "", tokens: [] };
-  if (map.image) stage.style.backgroundImage = `url("${map.image}")`;
-  let fog = stage.querySelector("canvas.fow");
-  if (!fog) {
-    fog = document.createElement("canvas");
-    fog.className = "fow";
-    stage.prepend(fog);
-  }
-  const tokens = map.tokens || [];
-  const live = new Set(tokens.map((t) => t.id));
-  [...stage.querySelectorAll(".token")].forEach((el) => { if (!live.has(el.dataset.id)) el.remove(); });
-  tokens.forEach((token) => {
-    let el = stage.querySelector(`.token[data-id="${token.id}"]`);
-    if (!el) {
-      el = document.createElement("button");
-      el.type = "button";
-      el.dataset.id = token.id;
-      el.addEventListener("pointerdown", (ev) => startDrag(ev, el, token, opts));
-      stage.appendChild(el);
-    }
-    el.className = `token ${token.kind || "pc"} ${tokenStatus(token, state)}`;
-    if (MapKit.draggingId !== token.id) {
-      el.style.left = token.x + "%";
-      el.style.top = token.y + "%";
-    }
-    el.style.background = token.color || "#e85d04";
-    const pc = token.characterId && (state.characters || []).find((c) => c.id === token.characterId);
-    const face = token.portrait || pc?.portrait || "";
-    if (pc?.color) el.style.background = pc.color;
-    el.innerHTML = `<span class="ring"></span>${face ? `<img src="${face}" alt="" draggable="false" />` : `<span>${initials(token.label)}</span>`}<span class="token-label">${token.label}</span>`;
-  });
-  drawFog(fog, stage, map, opts);
-  drawOverlays(stage, ses, opts);
-  bindFieldTools(stage, opts);
-}
-function drawFog(canvas, stage, map, opts) {
+
+function ensureFog(stage) {
+  let canvas = stage.querySelector("canvas.fow");
   if (!canvas) {
-    canvas = stage.querySelector("canvas.fow");
-    if (!canvas) {
-      canvas = document.createElement("canvas");
-      canvas.className = "fow";
-      stage.appendChild(canvas);
-    }
+    canvas = document.createElement("canvas");
+    canvas.className = "fow";
+    stage.prepend(canvas);
   }
+  return canvas;
+}
+
+function drawFog(canvas, stage, map, opts) {
+  if (!canvas) return;
   const fow = map.fow || {};
   const w = Math.max(1, stage.clientWidth);
   const h = Math.max(1, stage.clientHeight);
@@ -141,20 +114,8 @@ function drawFog(canvas, stage, map, opts) {
     ctx.fill();
   }
   ctx.globalCompositeOperation = "source-over";
-}  stamps.forEach((s) => {
-    const x = (s.x / 100) * w;
-    const y = (s.y / 100) * h;
-    const r = ((s.r || radiusPct) / 100) * Math.min(w, h) * 1.6;
-    const g = ctx.createRadialGradient(x, y, r * 0.35, x, y, r);
-    g.addColorStop(0, "rgba(0,0,0,1)");
-    g.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
-  });
-  ctx.globalCompositeOperation = "source-over";
 }
+
 function drawOverlays(stage, ses, opts) {
   const enc = activeEnc(ses);
   [...stage.querySelectorAll(".zone,.trap-mark")].forEach((n) => n.remove());
@@ -178,6 +139,7 @@ function drawOverlays(stage, ses, opts) {
     stage.appendChild(el);
   });
 }
+
 function bindFieldTools(stage, opts) {
   if (stage.dataset.tools === "1") return;
   stage.dataset.tools = "1";
@@ -205,6 +167,7 @@ function bindFieldTools(stage, opts) {
     }
   });
 }
+
 function startDrag(ev, el, token, opts) {
   if (MapKit.tool && MapKit.tool !== "move") return;
   if (opts && opts.canMove && !opts.canMove(token)) return;
@@ -233,9 +196,11 @@ function startDrag(ev, el, token, opts) {
   el.addEventListener("pointermove", move);
   el.addEventListener("pointerup", up);
 }
+
 function statusLabel(code) {
   return ({ online: "am Tisch", queued: "Want Spotlight", spotlight: "im Spotlight", rolling: "würfelt", narrating: "lauscht" })[code] || "fort";
 }
+
 function startStateFeed(apply) {
   let last = 0;
   const pull = () => fetch("/api/state").then((r) => r.json()).then((s) => { last = Date.now(); apply(s); }).catch(() => {});
@@ -244,3 +209,13 @@ function startStateFeed(apply) {
   es.addEventListener("message", (ev) => { last = Date.now(); try { apply(JSON.parse(ev.data)); } catch {} });
   setInterval(() => { if (Date.now() - last > 4000) pull(); }, 2500);
 }
+
+let _emberResizeTimer = null;
+window.addEventListener("resize", () => {
+  clearTimeout(_emberResizeTimer);
+  _emberResizeTimer = setTimeout(() => {
+    document.querySelectorAll(".stage").forEach((s) => {
+      if (s.offsetParent && s._emberRender) s._emberRender();
+    });
+  }, 80);
+});
