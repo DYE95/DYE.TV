@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Ember · Spieler</title>
+  <link rel="stylesheet" href="/css/ember.css?v=5" />
+</head>
+<body class="house-body">
+  <div class="player-shell">
+    <header class="ember-topbar">
+  <a class="icon-btn" href="/" title="Home" aria-label="Home">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M4 11.5 12 5l8 6.5"/><path d="M7 10.5V19h10v-8.5"/>
+    </svg>
+  </a>
+  <div class="brand">Spieler</div>
+  <div class="grow"></div>
+  <a class="icon-btn
+    <div class="scroll" id="gate">
+      <div class="menu-card" style="width:min(480px,94%);margin:24px auto;text-align:left;">
+        <h1>An den Tisch</h1>
+        <p class="hint">Kein PIN. Namen antippen und mitspielen.</p>
+        <div class="list" id="seatList"></div>
+        <button class="btn" id="btnGuest" style="width:100%;margin-top:12px;">Als Gast (Karte + Video)</button>
+      </div>
+    </div>
+    <div class="stage hidden" id="mapStage"></div>
+    <div class="scroll hidden" id="sheet"></div>
+    <div class="home-media hidden" id="playVideoBox" style="padding:8px 12px;">
+      <video id="playVideo" controls playsinline style="width:100%;max-height:240px;background:#0b1016;"></video>
+      <div class="list" id="playClips"></div>
+    </div>
+    <div class="actions hidden" id="playActions">
+      <label>Was willst du tun? <select id="actionPick"></select></label>
+      <label>Frage <input id="question" placeholder="Darf ich …" /></label>
+      <button class="btn primary" id="btnSpotlight">Want Spotlight</button>
+      <button class="btn ghost" id="btnLeaveSeat">Anderen Bogen</button>
+    </div>
+  </div>
+  <script src="/js/video-deck.js?v=5"></script>
+  <script src="/js/map.js?v=5"></script>
+  <script src="/js/player.js?v=5"></script>
+</body>
+</html>

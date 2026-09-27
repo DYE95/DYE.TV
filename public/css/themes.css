@@ -1,0 +1,26 @@
+/* Ember — Theme-Varianten (Fallback / statisch). Wird von settings-panel.js dynamisch überschrieben. */
+
+html[data-theme="ember"] {
+  --bg: #0c0908; --panel: #161010; --line: #3a2a24; --ember: #e85d04;
+}
+html[data-theme="umbra"] {
+  --bg: #08060a; --panel: #100c14; --line: #2c2438; --ember: #9b5de5;
+}
+html[data-theme="frost"] {
+  --bg: #070a0d; --panel: #0e141a; --line: #243440; --ember: #4cc9f0;
+}
+html[data-theme="moss"] {
+  --bg: #080b08; --panel: #101410; --line: #233024; --ember: #86a85a;
+}
+html[data-theme="wine"] {
+  --bg: #0d0708; --panel: #180d0f; --line: #3a1f22; --ember: #c4506a;
+}
+html[data-theme="sand"] {
+  --bg: #0d0a06; --panel: #1a140c; --line: #3a2e1e; --ember: #d4a373;
+}
+html[data-theme="ocean"] {
+  --bg: #050a0c; --panel: #0c161a; --line: #1f3540; --ember: #2ec4b6;
+}
+html[data-theme="ash"] {
+  --bg: #0a0a0a; --panel: #141414; --line: #2e2e2e; --ember: #b8b8b8;
+}

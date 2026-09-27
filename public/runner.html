@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Leitungsparcours</title>
+  <link rel="stylesheet" href="/css/ember.css?v=6" />
+  <link rel="stylesheet" href="/css/runner.css?v=6" />
+</head>
+<body class="run-body">
+  <header class="run-bar">
+    <a class="btn tiny ghost" href="/">Home</a>
+    <div>
+      <strong>Leitungsparcours</strong>
+      <span class="hint">DYE macht Dinge · Anlage K-12</span>
+    </div>
+    <div class="grow"></div>
+    <button class="btn tiny" id="tabRun">Parcours</button>
+    <button class="btn tiny ghost" id="tabEdit">Apparate</button>
+  </header>
+  <div id="deskRun" class="run-desk">
+    <div class="run-stage" id="stage">
+      <canvas id="runCanvas" aria-label="Leitungsparcours"></canvas>
+      <div class="run-hud" id="hudPlay">
+        <div><span class="hint">Punkte</span><b id="hudScore">0</b></div>
+        <div class="center"><b id="hudCombo">×0</b><span class="hint">Combo</span></div>
+        <div class="end"><span class="hint">Strecke</span><b id="hudMeters">0 m</b></div>
+      </div>
+      <div class="run-hint" id="hudHint">Bahn frei</div>
+      <div class="run-card" id="cardReady">
+        <p class="hint">DYE macht Dinge · Anlage K-12</p>
+        <h1>Leitungsparcours</h1>
+        <p class="hint">Spring über Apparate, rutsch unter Leitungen.</p>
+        <label class="row"><input type="radio" name="mode" value="eintipp" checked /> Eintipp</label>
+        <label class="row"><input type="radio" name="mode" value="manuell" /> Manuell</label>
+        <label class="row"><input type="checkbox" id="idle" /> Leerlauf (zählt nicht für Rekord)</label>
+        <p class="hint" id="recordLine">Rekord 0</p>
+        <button class="btn primary" id="btnStart">Lauf starten</button>
+      </div>
+      <div class="run-card hidden" id="cardPause">
+        <h2>Pause</h2>
+        <button class="btn primary" id="btnResume">Weiter</button>
+      </div>
+      <div class="run-card hidden" id="cardOver">
+        <p class="hint">Lauf beendet</p>
+        <h2>Stillstand</h2>
+        <p id="overStats"></p>
+        <button class="btn primary" id="btnRestart">Neustart</button>
+      </div>
+    </div>
+    <div class="run-actions" id="playBar">
+      <button class="btn primary" id="btnPrimary">Springen</button>
+      <button class="btn hidden" id="btnSlide">Rutschen</button>
+      <button class="btn tiny" id="btnPause">Pause</button>
+    </div>
+  </div>
+  <div id="deskEdit" class="run-edit hidden">
+    <p class="hint">Bestand. Haken = auf der Bahn.</p>
+    <div id="tokenList"></div>
+    <button class="btn" id="btnResetTokens">Standard-Apparate</button>
+  </div>
+  <script src="/js/dye-game.js?v=6"></script>
+  <script src="/js/dye-ui.js?v=6"></script>
+</body>
+</html>

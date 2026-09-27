@@ -1,0 +1,27 @@
+.atelier-body { height: 100%; display: flex; flex-direction: column; }
+.atelier-bar {
+  display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.atelier-bar h1 { font-size: 20px; margin: 0; }
+.atelier-bar input { width: 140px; }
+.atelier {
+  flex: 1; min-height: 0;
+  display: grid; grid-template-columns: 88px 1fr 260px;
+}
+.atelier-tools { display: flex; flex-direction: column; gap: 6px; padding: 10px; border-right: 1px solid var(--line); }
+.atelier-stage { display: grid; place-items: center; overflow: auto; background: #0a0706; }
+.atelier-stage canvas { image-rendering: pixelated; cursor: crosshair; background:
+  linear-gradient(45deg, #1a1210 25%, transparent 25%) 0 0 / 16px 16px,
+  linear-gradient(45deg, transparent 75%, #1a1210 75%) 0 0 / 16px 16px,
+  #120c0b;
+}
+.atelier-side { overflow: auto; padding: 12px; border-left: 1px solid var(--line); }
+.preview-round { width: 160px; height: 160px; border-radius: 50%; display: block; margin: 8px auto; image-rendering: pixelated; background: #0a0706; }
+.swatches { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+.swatches button { height: 28px; border: 1px solid #000; padding: 0; cursor: pointer; }
+.row4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 8px; }
+@media (max-width: 900px) {
+  .atelier { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; }
+  .atelier-tools { flex-direction: row; flex-wrap: wrap; }
+}

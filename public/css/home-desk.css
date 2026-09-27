@@ -1,0 +1,82 @@
+.desk-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  place-items: stretch;
+}
+.desk-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 16px 8px;
+}
+.brand-lock {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.desk-top .sigil {
+  margin: 0;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+}
+.desk-top h1 { margin: 0; line-height: 1; }
+.desk-body.locked .desk { border-style: solid; }
+.desk {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: 8px 24px 24px;
+  border: 1px dashed rgba(126, 160, 196, 0.25);
+  background-image:
+    linear-gradient(to right, rgba(126,160,196,0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(126,160,196,0.06) 1px, transparent 1px);
+  background-size: var(--grid, 24px) var(--grid, 24px);
+  overflow: hidden;
+}
+.desk-tile {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid #2c3a48;
+  background: #16202a;
+  color: inherit;
+  text-align: left;
+  cursor: grab;
+  user-select: none;
+}
+.desk-tile:active { cursor: grabbing; }
+.desk-tile b { font-size: 1.05em; }
+.desk-tile span { color: #8aa0b5; font-size: 0.85em; }
+.desk-tile, .desk-panel-card, .desk-top { font-size: inherit; }
+.desk-panel {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 12, 16, 0.72);
+  display: grid;
+  place-items: center;
+  z-index: 20;
+  padding: 20px;
+}
+.desk-panel.hidden { display: none; }
+.desk-panel-card {
+  width: min(420px, 94vw);
+  max-height: 90vh;
+  overflow: auto;
+  background: #141c24;
+  border: 1px solid #2c3a48;
+  padding: 18px;
+  display: grid;
+  gap: 10px;
+}
+.desk-panel-card.wide { width: min(720px, 94vw); }
+.desk-panel-card video {
+  width: 100%;
+  max-height: 320px;
+  background: #0b1016;
+}
+.desk-panel-card .house-tile { display: block; }

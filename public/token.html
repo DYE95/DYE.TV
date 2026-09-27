@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tokenatelier</title>
+  <link rel="stylesheet" href="/css/ember.css?v=5" />
+  <link rel="stylesheet" href="/css/token.css?v=5" />
+</head>
+<link rel="stylesheet" href="/css/topbar.css?v=1" />
+<body class="atelier-body">
+  <header class="ember-topbar">
+  <a class="icon-btn" href="/" id="backHouse" title="Home" aria-label="Home">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M4 11.5 12 5l8 6.5"/><path d="M7 10.5V19h10v-8.5"/>
+    </svg>
+  </a>
+  <div class="brand">Tokenatelier</div>
+  <div class="grow"></div>
+  <input id="tokName" maxlength="40" value="Token" style="width:180px;" />
+  <button class="btn tiny" id="btnPng">PNG</button>
+  <button class="btn tiny primary hidden" id="btnToSheet">Auf den Bogen</button>
+  <button class="icon-btn" id="btnEmberSettings" title="Einstellungen" aria-label="Einstellungen">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M12 3.5v2.2M12 18.3V21M4.9 6.5l1.6 1.6M17.5 16.9l1.6 1.6M3.5 12h2.2M18.3 12H21M4.9 17.5l1.6-1.6M17.5 7.1l1.6-1.6"/>
+    </svg>
+  </button>
+</header>
+  <div class="atelier">
+    <nav class="atelier-tools">
+      <button class="btn tiny on" data-tool="pencil" title="Stift B">Stift</button>
+      <button class="btn tiny" data-tool="eraser" title="Radierer E">Radierer</button>
+      <button class="btn tiny" data-tool="fill" title="Füllen F">Füllen</button>
+      <button class="btn tiny" data-tool="picker" title="Pipette I">Pipette</button>
+      <button class="btn tiny" id="btnUndo">Undo</button>
+      <button class="btn tiny" id="btnRedo">Redo</button>
+      <button class="btn tiny on" id="btnGrid">Raster</button>
+      <button class="btn tiny on" id="btnGuide">Kreis</button>
+    </nav>
+    <main class="atelier-stage">
+      <canvas id="paintCanvas"></canvas>
+    </main>
+    <aside class="atelier-side">
+      <h2>Vorschau</h2>
+      <canvas id="previewCanvas" class="preview-round"></canvas>
+      <p class="hint" id="tokStatus">32×32</p>
+      <h2>Palette</h2>
+      <div class="swatches" id="swatches"></div>
+      <h2>Pinsel</h2>
+      <div class="row4" id="brushes"></div>
+      <h2>Fläche</h2>
+      <div class="row4" id="sizes"></div>
+      <div class="row">
+        <button class="btn tiny" id="btnSample">Beispiel</button>
+        <button class="btn tiny ghost" id="btnClear">Leeren</button>
+      </div>
+      <h2>Export</h2>
+      <div class="row">
+        <button class="btn tiny on" data-shape="round">Rund</button>
+        <button class="btn tiny" data-shape="square">Quadrat</button>
+      </div>
+      <div class="row4" id="scales"></div>
+    </aside>
+  </div>
+  <script src="/js/pixel-studio.js?v=5"></script>
+<script src="/js/settings-panel.js?v=1"></script>
+<script>
+  document.getElementById("btnEmberSettings").addEventListener("click", () => {
+    const dock = document.getElementById("emberDockBtn");
+    if (dock) dock.click();
+  });
+</script></body>
+</html>
