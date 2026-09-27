@@ -44,17 +44,16 @@ var Dye = (() => {
     ctx = null;
     master = null;
     muted = false;
-     unlock() {
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) return;
-    if (!this.ctx) {
-      this.ctx = new Ctx();
-      this.master = this.ctx.createGain();
-      this.master.gain.value = 0.22;
-      this.master.connect(this.ctx.destination);
+    unlock() {
+      const Ctx = window.AudioContext;
+      if (!this.ctx) {
+        this.ctx = new Ctx();
+        this.master = this.ctx.createGain();
+        this.master.gain.value = 0.22;
+        this.master.connect(this.ctx.destination);
+      }
+      if (this.ctx.state === "suspended") void this.ctx.resume();
     }
-    if (this.ctx.state === "suspended") void this.ctx.resume();
-  }
     jump() {
       this.tone(220, 0.09, "sine", 0.18, 180);
     }

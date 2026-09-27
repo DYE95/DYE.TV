@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <link rel="stylesheet" href="/css/topbar.css?v=1" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Ember</title>
@@ -23,13 +22,6 @@
     });
   </script>
 </head>
-<script src="/js/settings-panel.js?v=1"></script>
-<script>
-  document.getElementById("btnEmberSettings").addEventListener("click", () => {
-    const dock = document.getElementById("emberDockBtn");
-    if (dock) dock.click();
-  });
-</script>
 <body>
   <div id="emberError" hidden></div>
   <aside class="hud" id="spotlightHud">
@@ -37,29 +29,20 @@
     <div id="hudQueue" class="hud-list"><p class="hint">Noch niemand hebt die Hand.</p></div>
   </aside>
   <div class="app">
-   <header class="ember-topbar">
-  <div class="brand">Ember · Age of Umbra</div>
-  <div class="grow"></div>
-  <div class="chip" id="lanChip">LAN …</div>
-  <button class="icon-btn" data-go="menu" title="Menü" aria-label="Menü">
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8">
-      <path d="M9 10.5A3.5 3.5 0 1 1 12 7"/>
-      <path d="M7 12a5 5 0 1 0 1.5-3.5L7 10"/>
-      <path d="M7 7v3h3"/>
-    </svg>
-  </button>
-  <a class="icon-btn" href="/" title="Home" aria-label="Home">
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8">
-      <path d="M4 11.5 12 5l8 6.5"/><path d="M7 10.5V19h10v-8.5"/>
-    </svg>
-  </a>
-  <button class="icon-btn" id="btnEmberSettings" title="Einstellungen" aria-label="Einstellungen">
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8">
-      <circle cx="12" cy="12" r="3"/>
-      <path d="M12 3.5v2.2M12 18.3V21M4.9 6.5l1.6 1.6M17.5 16.9l1.6 1.6M3.5 12h2.2M18.3 12H21M4.9 17.5l1.6-1.6M17.5 7.1l1.6-1.6"/>
-    </svg>
-  </button>
-</header>
+    <header class="topbar umbra-bar">
+      <div class="brand">Ember · Age of Umbra</div>
+      <div class="grow"></div>
+      <div class="chip" id="lanChip">LAN …</div>
+      <button class="icon-btn" data-go="menu" title="Menü" aria-label="Menü">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 10.5A3.5 3.5 0 1 1 12 7"/><path d="M7 12a5 5 0 1 0 1.5-3.5L7 10"/><path d="M7 7v3h3"/></svg>
+      </button>
+      <a class="icon-btn" href="/" title="Home" aria-label="Home">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 11.5 12 5l8 6.5"/><path d="M7 10.5V19h10v-8.5"/></svg>
+      </a>
+      <a class="icon-btn" href="/#panelSettings" title="Einstellungen" aria-label="Einstellungen">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3V21M4.9 6.5l1.6 1.6M17.5 16.9l1.6 1.6M3.5 12h2.2M18.3 12H21M4.9 17.5l1.6-1.6M17.5 7.1l1.6-1.6"/></svg>
+      </a>
+    </header>
 
     <section class="view on" id="view-menu">
       <div class="menu hero">

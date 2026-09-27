@@ -139,9 +139,7 @@ function renderCharacters() {
     list.appendChild(b);
   });
   const current = charsOf(activeCampaignId()).find((c) => c.id === selectedCharacterId) || charsOf(activeCampaignId())[0];
-  // NEW: don't clobber the form while the GM is typing
-  const busy = document.activeElement && $("#characterForm")?.contains(document.activeElement);
-  if (current && !busy) { selectedCharacterId = current.id; fillCharacterForm(current); }
+  if (current) { selectedCharacterId = current.id; fillCharacterForm(current); }
   renderCharacterSheet();
 }
 function fillCharacterForm(c) {

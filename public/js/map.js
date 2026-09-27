@@ -21,9 +21,16 @@ function tokenStatus(token, state) {
 }
 function renderMap(stage, state, opts = {}) {
   if (!stage) return;
-  stage._emberRender = () => renderMap(stage, state, opts);
-  // ... rest unchanged
-}  const tokens = map.tokens || [];
+  const ses = (state.sessions || []).find((s) => s.id === state.active?.sessionId);
+  const map = ses?.map || { image: "", tokens: [] };
+  if (map.image) stage.style.backgroundImage = `url("${map.image}")`;
+  let fog = stage.querySelector("canvas.fow");
+  if (!fog) {
+    fog = document.createElement("canvas");
+    fog.className = "fow";
+    stage.prepend(fog);
+  }
+  const tokens = map.tokens || [];
   const live = new Set(tokens.map((t) => t.id));
   [...stage.querySelectorAll(".token")].forEach((el) => { if (!live.has(el.dataset.id)) el.remove(); });
   tokens.forEach((token) => {
@@ -54,12 +61,33 @@ function drawFog(canvas, stage, map, opts) {
   const fow = map.fow || {};
   const w = Math.max(1, stage.clientWidth);
   const h = Math.max(1, stage.clientHeight);
-  // NEW: skip entirely if stage isn't laid out yet (hidden view)
-  if (w <= 1 || h <= 1) { canvas.style.opacity = "0"; return; }
   if (canvas.width !== w) canvas.width = w;
   if (canvas.height !== h) canvas.height = h;
-  // ... rest unchanged
-}function drawOverlays(stage, ses, opts) {
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, w, h);
+  if (!fow.on) { canvas.style.opacity = "0"; return; }
+  canvas.style.opacity = opts.viewer === "gm" ? "0.72" : "1";
+  ctx.fillStyle = "rgba(4,2,2,0.88)";
+  ctx.fillRect(0, 0, w, h);
+  ctx.globalCompositeOperation = "destination-out";
+  const radiusPct = Number(fow.radius || 16);
+  const stamps = [...(fow.explored || [])];
+  (map.tokens || []).filter((t) => t.kind === "pc").forEach((t) => stamps.push({ x: t.x, y: t.y, r: radiusPct }));
+  stamps.forEach((s) => {
+    const x = (s.x / 100) * w;
+    const y = (s.y / 100) * h;
+    const r = ((s.r || radiusPct) / 100) * Math.min(w, h) * 1.6;
+    const g = ctx.createRadialGradient(x, y, r * 0.35, x, y, r);
+    g.addColorStop(0, "rgba(0,0,0,1)");
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.globalCompositeOperation = "source-over";
+}
+function drawOverlays(stage, ses, opts) {
   const enc = activeEnc(ses);
   [...stage.querySelectorAll(".zone,.trap-mark")].forEach((n) => n.remove());
   if (!enc) return;
@@ -148,13 +176,3 @@ function startStateFeed(apply) {
   es.addEventListener("message", (ev) => { last = Date.now(); try { apply(JSON.parse(ev.data)); } catch {} });
   setInterval(() => { if (Date.now() - last > 4000) pull(); }, 2500);
 }
-// NEW: re-render maps when the stage becomes visible / resizes
-let _emberResizeTimer = null;
-window.addEventListener("resize", () => {
-  clearTimeout(_emberResizeTimer);
-  _emberResizeTimer = setTimeout(() => {
-    document.querySelectorAll(".stage").forEach((s) => {
-      if (s.offsetParent && s._emberRender) s._emberRender();
-    });
-  }, 80);
-});

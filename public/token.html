@@ -7,26 +7,15 @@
   <link rel="stylesheet" href="/css/ember.css?v=5" />
   <link rel="stylesheet" href="/css/token.css?v=5" />
 </head>
-<link rel="stylesheet" href="/css/topbar.css?v=1" />
 <body class="atelier-body">
-  <header class="ember-topbar">
-  <a class="icon-btn" href="/" id="backHouse" title="Home" aria-label="Home">
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8">
-      <path d="M4 11.5 12 5l8 6.5"/><path d="M7 10.5V19h10v-8.5"/>
-    </svg>
-  </a>
-  <div class="brand">Tokenatelier</div>
-  <div class="grow"></div>
-  <input id="tokName" maxlength="40" value="Token" style="width:180px;" />
-  <button class="btn tiny" id="btnPng">PNG</button>
-  <button class="btn tiny primary hidden" id="btnToSheet">Auf den Bogen</button>
-  <button class="icon-btn" id="btnEmberSettings" title="Einstellungen" aria-label="Einstellungen">
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8">
-      <circle cx="12" cy="12" r="3"/>
-      <path d="M12 3.5v2.2M12 18.3V21M4.9 6.5l1.6 1.6M17.5 16.9l1.6 1.6M3.5 12h2.2M18.3 12H21M4.9 17.5l1.6-1.6M17.5 7.1l1.6-1.6"/>
-    </svg>
-  </button>
-</header>
+  <header class="atelier-bar">
+    <a class="btn tiny ghost" href="/" id="backHouse">Home</a>
+    <h1>Tokenatelier</h1>
+    <p class="hint">Daggerheart · Pixel</p>
+    <input id="tokName" maxlength="40" value="Token" />
+    <button class="btn" id="btnPng">PNG</button>
+    <button class="btn primary hidden" id="btnToSheet">Auf den Bogen</button>
+  </header>
   <div class="atelier">
     <nav class="atelier-tools">
       <button class="btn tiny on" data-tool="pencil" title="Stift B">Stift</button>
@@ -64,11 +53,5 @@
     </aside>
   </div>
   <script src="/js/pixel-studio.js?v=5"></script>
-<script src="/js/settings-panel.js?v=1"></script>
-<script>
-  document.getElementById("btnEmberSettings").addEventListener("click", () => {
-    const dock = document.getElementById("emberDockBtn");
-    if (dock) dock.click();
-  });
-</script></body>
+</body>
 </html>

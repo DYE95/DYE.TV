@@ -60,9 +60,8 @@ function addLog(session, entry) {
     text: entry.text || "",
     meta: entry.meta || {},
   });
-  // NEW: cap log size so ember.json doesn't grow forever
-  if (session.log.length > 500) session.log = session.log.slice(-500);
 }
+
 function send(res, status, body) {
   res.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
   res.end(JSON.stringify(body));
