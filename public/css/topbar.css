@@ -1,30 +1,40 @@
-/* Shared icon topbar — Ember, Spieler, Token, Runner */
 .ember-topbar {
-  position: sticky; top: 0; z-index: 50;
-  display: flex; align-items: center; gap: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 10px 16px;
-  background: linear-gradient(180deg, #0d0908 0%, #0a0605 100%);
+  background: #0d0908;
   border-bottom: 2px solid var(--ember, #e85d04);
-  backdrop-filter: blur(6px);
 }
 .ember-topbar .brand {
-  font-family: var(--serif, "Palatino Linotype", Georgia, serif);
+  font-family: var(--serif, Georgia, serif);
   letter-spacing: .04em;
   color: #f3e6d8;
 }
 .ember-topbar .grow { flex: 1; }
 .ember-topbar .chip {
-  font-size: 12px; color: var(--mute, #9a8476);
-  max-width: 42vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 12px;
+  color: var(--mute, #9a8476);
+  max-width: 42vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .ember-topbar .icon-btn {
-  width: 34px; height: 34px; border-radius: 50%;
-  display: grid; place-items: center;
-  border: 1px solid #3a2a24; background: #1a1210; color: #f3e6d8;
-  text-decoration: none; cursor: pointer; padding: 0;
-  transition: border-color .15s ease, color .15s ease, transform .1s ease;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 1px solid #3a2a24;
+  background: #1a1210;
+  color: #f3e6d8;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 0;
 }
-.ember-topbar .icon-btn:hover { border-color: #e85d04; color: #ffb703; transform: translateY(-1px); }
-.ember-topbar .icon-btn:active { transform: translateY(0); }
-.ember-topbar .icon-btn svg { display: block; }
-.ember-topbar .icon-btn.on { border-color: var(--ember, #e85d04); color: var(--hope, #e9c46a); }
+.ember-topbar .icon-btn:hover { border-color: #e85d04; color: #ffb703; }
+.ember-topbar .icon-btn img { display: block; width: 18px; height: 18px; pointer-events: none; }
