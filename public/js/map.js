@@ -21,6 +21,41 @@ function tokenStatus(token, state) {
 }
 function renderMap(stage, state, opts = {}) {
   if (!stage) return;
+  stage._emberRender = () => renderMap(stage, state, opts);
+
+  const ses = (state.sessions || []).find((s) => s.id === state.active?.sessionId) || null;
+  const map = ses ? (ses.map || {}) : {};
+  const tokens = map.tokens || [];
+  const fog = map.fow || {};
+
+  const live = new Set(tokens.map((t) => t.id));
+  [...stage.querySelectorAll(".token")].forEach((el) => { if (!live.has(el.dataset.id)) el.remove(); });
+  tokens.forEach((token) => {
+    let el = stage.querySelector(`.token[data-id="${token.id}"]`);
+    if (!el) {
+      el = document.createElement("button");
+      el.type = "button";
+      el.dataset.id = token.id;
+      el.addEventListener("pointerdown", (ev) => startDrag(ev, el, token, opts));
+      stage.appendChild(el);
+    }
+    el.className = `token ${token.kind || "pc"} ${tokenStatus(token, state)}`;
+    if (MapKit.draggingId !== token.id) {
+      el.style.left = token.x + "%";
+      el.style.top = token.y + "%";
+    }
+    el.style.background = token.color || "#e85d04";
+    const pc = token.characterId && (state.characters || []).find((c) => c.id === token.characterId);
+    const face = token.portrait || pc?.portrait || "";
+    if (pc?.color) el.style.background = pc.color;
+    el.innerHTML = `<span class="ring"></span>${face ? `<img src="${face}" alt="" draggable="false" />` : `<span>${initials(token.label)}</span>`}<span class="token-label">${token.label}</span>`;
+  });
+
+  drawFog(fog, stage, map, opts);
+  drawOverlays(stage, ses, opts);
+  bindFieldTools(stage, opts);
+}
+  if (!stage) return;
   const ses = (state.sessions || []).find((s) => s.id === state.active?.sessionId);
   const map = ses?.map || { image: "", tokens: [] };
   if (map.image) stage.style.backgroundImage = `url("${map.image}")`;
@@ -58,22 +93,55 @@ function renderMap(stage, state, opts = {}) {
   bindFieldTools(stage, opts);
 }
 function drawFog(canvas, stage, map, opts) {
+  if (!canvas) {
+    canvas = stage.querySelector("canvas.fow");
+    if (!canvas) {
+      canvas = document.createElement("canvas");
+      canvas.className = "fow";
+      stage.appendChild(canvas);
+    }
+  }
   const fow = map.fow || {};
   const w = Math.max(1, stage.clientWidth);
   const h = Math.max(1, stage.clientHeight);
+
+  if (w <= 1 || h <= 1) { canvas.style.opacity = "0"; return; }
+
   if (canvas.width !== w) canvas.width = w;
   if (canvas.height !== h) canvas.height = h;
+
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, w, h);
+
   if (!fow.on) { canvas.style.opacity = "0"; return; }
-  canvas.style.opacity = opts.viewer === "gm" ? "0.72" : "1";
-  ctx.fillStyle = "rgba(4,2,2,0.88)";
+  canvas.style.opacity = "1";
+
+  ctx.fillStyle = "#0a0706";
   ctx.fillRect(0, 0, w, h);
+
+  const gm = opts.viewer === "gm";
+  if (gm && fow.gmSeesAll !== false) {
+    ctx.clearRect(0, 0, w, h);
+    canvas.style.opacity = "0";
+    return;
+  }
+
   ctx.globalCompositeOperation = "destination-out";
-  const radiusPct = Number(fow.radius || 16);
-  const stamps = [...(fow.explored || [])];
-  (map.tokens || []).filter((t) => t.kind === "pc").forEach((t) => stamps.push({ x: t.x, y: t.y, r: radiusPct }));
-  stamps.forEach((s) => {
+  for (const spot of fow.explored || []) {
+    const cx = (spot.x / 100) * w;
+    const cy = (spot.y / 100) * h;
+    const r = ((spot.r || 10) / 100) * Math.max(w, h);
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    grad.addColorStop(0, "rgba(0,0,0,1)");
+    grad.addColorStop(0.7, "rgba(0,0,0,0.85)");
+    grad.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalCompositeOperation = "source-over";
+}  stamps.forEach((s) => {
     const x = (s.x / 100) * w;
     const y = (s.y / 100) * h;
     const r = ((s.r || radiusPct) / 100) * Math.min(w, h) * 1.6;
