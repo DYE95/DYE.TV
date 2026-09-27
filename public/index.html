@@ -4,7 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Ember</title>
-  <link rel="stylesheet" href="/css/ember.css?v=8" />
+  <link rel="stylesheet" href="/css/ember.css?v=9" />
+  <link rel="stylesheet" href="/css/topbar.css?v=9" />
+  <link rel="stylesheet" href="/css/start.css?v=9" />
   <script>
     function emberGo(name) {
       document.querySelectorAll(".view").forEach(function (v) {
@@ -29,254 +31,40 @@
     <div id="hudQueue" class="hud-list"><p class="hint">Noch niemand hebt die Hand.</p></div>
   </aside>
   <div class="app">
-    <header class="topbar umbra-bar">
+    <header class="ember-topbar">
       <div class="brand">Ember · Age of Umbra</div>
       <div class="grow"></div>
       <div class="chip" id="lanChip">LAN …</div>
-      <button class="icon-btn" data-go="menu" title="Menü" aria-label="Menü">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 10.5A3.5 3.5 0 1 1 12 7"/><path d="M7 12a5 5 0 1 0 1.5-3.5L7 10"/><path d="M7 7v3h3"/></svg>
+      <button class="icon-btn" data-go="menu" title="Zurück" aria-label="Zurück">
+        <img src="/img/icon-back.svg" alt="" width="18" height="18" />
       </button>
       <a class="icon-btn" href="/" title="Home" aria-label="Home">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 11.5 12 5l8 6.5"/><path d="M7 10.5V19h10v-8.5"/></svg>
+        <img src="/img/icon-home.svg" alt="" width="18" height="18" />
       </a>
       <a class="icon-btn" href="/#panelSettings" title="Einstellungen" aria-label="Einstellungen">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3V21M4.9 6.5l1.6 1.6M17.5 16.9l1.6 1.6M3.5 12h2.2M18.3 12H21M4.9 17.5l1.6-1.6M17.5 7.1l1.6-1.6"/></svg>
+        <img src="/img/icon-gear.svg" alt="" width="18" height="18" />
       </a>
     </header>
 
     <section class="view on" id="view-menu">
-      <div class="menu hero">
-        <div class="menu-card">
-          <div class="sigil"></div>
-          <h1>Ember</h1>
-          <p class="tagline">Die Glut am Rand der Umbra</p>
-          <div class="menu-list">
-            <button data-go="session"><b>Entfache die Glut</b><span>Session öffnen, Speak the Dark</span></button>
-            <button data-go="encounter"><b>Events</b><span>Karten bereitlegen, dann Play Event</span></button>
-            <button data-go="campaign"><b>Kampagne</b><span>was jetzt brennt</span></button>
-            <button data-go="campaign-manager"><b>Kampagnen-Manager</b><span>Editor</span></button>
-            <button data-go="character"><b>Charakter</b><span>aktiver Bogen</span></button>
-            <button data-go="character-manager"><b>Charakter-Manager</b><span>Editor + Fotos</span></button>
-            <button id="btnLeave"><b>Verlöschen</b><span>Ember schließen</span></button>
+      <div class="start">
+        <div class="start-side">
+          <div class="start-card">
+            <div class="sigil"></div>
+            <h1 class="start-title">Ember</h1>
+            <p class="tagline">Die Glut am Rand der Umbra</p>
+            <div class="start-menu">
+              <button class="start-item" data-go="session"><b>Entfache die Glut</b><span>Session öffnen, Speak the Dark</span></button>
+              <button class="start-item" data-go="encounter"><b>Events</b><span>Karten bereitlegen, dann Play Event</span></button>
+              <button class="start-item" data-go="campaign"><b>Kampagne</b><span>was jetzt brennt</span></button>
+              <button class="start-item" data-go="campaign-manager"><b>Kampagnen-Manager</b><span>Editor</span></button>
+              <button class="start-item" data-go="character"><b>Charakter</b><span>aktiver Bogen</span></button>
+              <button class="start-item" data-go="character-manager"><b>Charakter-Manager</b><span>Editor + Fotos</span></button>
+              <button class="start-item start-item-danger" id="btnLeave"><b>Verlöschen</b><span>Ember schließen</span></button>
+            </div>
           </div>
         </div>
-        <div class="menu-art" role="img" aria-label="Lagerfeuer am Rand der Umbra"></div>
+        <div class="start-art" role="img" aria-label="Lagerfeuer am Rand der Umbra"></div>
       </div>
     </section>
-
-    <section class="view" id="view-session">
-      <div class="workspace">
-        <aside class="panel">
-          <h2>Die Glut</h2>
-          <p class="hint" id="sessionMeta"></p>
-          <div class="card"><div class="name">Fear</div><div class="pips" id="fearPips"></div></div>
-          <button class="btn primary" id="btnNarrate" style="width:100%;margin:10px 0;">Speak the Dark</button>
-          <button class="btn" id="btnStartSession" style="width:100%;margin-bottom:8px;">Session öffnen</button>
-          <button class="btn ghost" id="btnEndSession" style="width:100%;">Session schließen</button>
-          <h2 style="margin-top:18px;">Am Tisch</h2>
-          <div class="list" id="sessionPlayers"></div>
-        </aside>
-        <main class="panel" style="display:flex;flex-direction:column;padding:0;">
-          <div class="encounter-banner">
-            <div>
-              <div class="name" id="sessionEncName">Kein Event bereit</div>
-              <div class="hint" id="sessionEncStatus">Bereite unter Events eine Karte vor. Dann, mitten in der Geschichte: Play Event.</div>
-            </div>
-            <button class="btn primary" id="btnPlayEvent">Play Event</button>
-          </div>
-          <div class="log" id="sessionLog"></div>
-          <div class="composer">
-            <textarea id="logText" placeholder="…und plötzlich brach der Boden ein."></textarea>
-            <button class="btn primary" id="btnLog">Ins Log</button>
-          </div>
-        </main>
-        <aside class="panel">
-          <h2>Action Roll</h2>
-          <div class="form">
-            <label>Charakter <select id="rollCharacter"></select></label>
-            <label>Trait
-              <select id="rollTrait">
-                <option value="">—</option>
-                <option value="agility">Agility</option>
-                <option value="strength">Strength</option>
-                <option value="finesse">Finesse</option>
-                <option value="instinct">Instinct</option>
-                <option value="presence">Presence</option>
-                <option value="knowledge">Knowledge</option>
-              </select>
-            </label>
-            <label>Experience <select id="rollExperience"><option value="">—</option></select></label>
-            <label>Difficulty <input id="rollDifficulty" type="number" value="15" /></label>
-            <label>Modus
-              <select id="rollMode">
-                <option value="none">normal</option>
-                <option value="advantage">Advantage</option>
-                <option value="disadvantage">Disadvantage</option>
-              </select>
-            </label>
-            <button class="btn primary" id="btnDigitalRoll">Digital würfeln</button>
-            <p class="hint">Echte Würfel:</p>
-            <div class="row">
-              <label>Hope W12 <input id="tableHope" type="number" min="1" max="12" /></label>
-              <label>Fear W12 <input id="tableFear" type="number" min="1" max="12" /></label>
-            </div>
-            <button class="btn" id="btnTableRoll">Tischwürfel</button>
-            <div id="lastRoll" class="hint"></div>
-          </div>
-        </aside>
-      </div>
-    </section>
-
-    <section class="view" id="view-encounter">
-      <div class="workspace encounter-work">
-        <aside class="panel">
-          <h2>Prepared Events</h2>
-          <p class="hint" id="encMeta"></p>
-          <div class="list" id="encList"></div>
-          <button class="btn primary" id="btnNewEnc" style="width:100%;margin-top:8px;">Event bereitlegen</button>
-          <button class="btn" id="btnPlayEvent2" style="width:100%;margin-top:8px;">Play Event</button>
-          <button class="btn ghost" id="btnEncEnd" style="width:100%;margin-top:8px;">Event verlöschen</button>
-          <h2 style="margin-top:18px;">Werkzeug</h2>
-          <div class="toolset" id="toolset">
-            <button class="btn tiny on" data-tool="move">Ziehen</button>
-            <button class="btn tiny" data-tool="brush">Reveal</button>
-            <button class="btn tiny" data-tool="trap">Snare</button>
-            <button class="btn tiny" data-tool="zone">Threshold</button>
-          </div>
-          <p class="hint" id="toolHint">Ziehen: Tokens. Reveal bleibt. Snare und Threshold sieht der Tisch erst, wenn sie zuschlagen.</p>
-          <h2 style="margin-top:18px;">Alarme</h2>
-          <div class="list" id="encAlerts"></div>
-        </aside>
-        <main class="panel" style="display:flex;flex-direction:column;padding:0;">
-          <div class="map-wrap grow">
-            <div class="stage field" id="mapStage"></div>
-            <div class="map-tools">
-              <button class="btn tiny" id="btnAddFoe">+ Foe</button>
-              <button class="btn tiny" id="btnAddPin">+ Pin</button>
-              <label class="btn tiny">Karte <input id="mapImage" type="file" accept="image/*" hidden /></label>
-              <button class="btn tiny" id="btnFow">Umbra: AUS</button>
-              <button class="btn tiny ghost" id="btnFowClear">Umbra wischen</button>
-            </div>
-          </div>
-        </main>
-      </div>
-    </section>
-
-    <section class="view" id="view-campaign">
-      <div class="scroll">
-        <div class="menu-card" style="width:min(720px,96%);margin:20px auto;text-align:left;">
-          <h2>Was jetzt brennt</h2>
-          <div id="campaignView"></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="view" id="view-campaign-manager">
-      <div class="workspace wide">
-        <aside class="panel">
-          <h2>Kampagnen</h2>
-          <div class="list" id="campaignList"></div>
-          <button class="btn primary" id="btnNewCampaign" style="width:100%;margin-top:12px;">Neue Kampagne</button>
-          <button class="btn" id="btnQuickstart" style="width:100%;margin-top:8px;">Sablewood Quickstart</button>
-        </aside>
-        <div class="scroll">
-          <form class="form" id="campaignForm">
-            <h2>Editor</h2>
-            <label>Name <input name="name" required /></label>
-            <label>Campaign Frame <input name="frame" placeholder="Age of Umbra" /></label>
-            <label>Notizen <textarea name="notes"></textarea></label>
-            <div class="row">
-              <button class="btn primary" type="submit">Speichern</button>
-              <button class="btn" type="button" id="btnUseCampaign">Als aktiv setzen</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </section>
-
-    <section class="view" id="view-character">
-      <div class="scroll" id="characterView"></div>
-    </section>
-
-    <section class="view" id="view-character-manager">
-      <div class="workspace wide">
-        <aside class="panel">
-          <h2>Bögen</h2>
-          <div class="list" id="characterList"></div>
-          <button class="btn primary" id="btnNewCharacter" style="width:100%;margin-top:12px;">Neuer Charakter</button>
-        </aside>
-        <div class="scroll">
-          <form class="form" id="characterForm">
-            <h2>Bogen</h2>
-            <div class="row">
-              <label>Name <input name="name" required /></label>
-              <label>Pronomen
-                <select name="pronouns">
-                  <option value="">—</option>
-                  <option>sie/ihr</option>
-                  <option>er/ihm</option>
-                  <option>they/them</option>
-                  <option>she/her</option>
-                  <option>he/him</option>
-                </select>
-              </label>
-            </div>
-            <div class="row3">
-              <label>Ancestry <input name="ancestry" /></label>
-              <label>Community <input name="community" /></label>
-              <label>Level <input name="level" type="number" min="1" max="10" /></label>
-            </div>
-            <div class="row">
-              <label>Class
-                <select name="class">
-                  <option value="">—</option>
-                  <option>Bard</option><option>Druid</option><option>Guardian</option>
-                  <option>Ranger</option><option>Rogue</option><option>Seraph</option>
-                  <option>Sorcerer</option><option>Warrior</option><option>Wizard</option>
-                </select>
-              </label>
-              <label>Subclass <input name="subclass" /></label>
-            </div>
-            <h2>Traits</h2>
-            <div class="row3">
-              <label>Agility <input name="agility" type="number" /></label>
-              <label>Strength <input name="strength" type="number" /></label>
-              <label>Finesse <input name="finesse" type="number" /></label>
-              <label>Instinct <input name="instinct" type="number" /></label>
-              <label>Presence <input name="presence" type="number" /></label>
-              <label>Knowledge <input name="knowledge" type="number" /></label>
-            </div>
-            <h2>Ressourcen</h2>
-            <div class="row3">
-              <label>Hope <input name="hope" type="number" /></label>
-              <label>Stress <input name="stressMarked" type="number" /></label>
-              <label>HP <input name="hpMarked" type="number" /></label>
-              <label>Stress max <input name="stressMax" type="number" /></label>
-              <label>HP max <input name="hpMax" type="number" /></label>
-              <label>Evasion <input name="evasion" type="number" /></label>
-              <label>Major <input name="major" type="number" /></label>
-              <label>Severe <input name="severe" type="number" /></label>
-              <label>Proficiency <input name="proficiency" type="number" /></label>
-            </div>
-            <label>Experiences (Name | 2)<textarea name="experiencesText"></textarea></label>
-            <label>Features (Name — Text)<textarea name="featuresText"></textarea></label>
-            <label>Notizen <textarea name="notes"></textarea></label>
-            <div class="row">
-              <button class="btn primary" type="submit">Speichern</button>
-              <label class="btn">Zettel-Foto <input id="photoInput" type="file" accept="image/*" multiple hidden /></label>
-            </div>
-            <p class="hint">PIN: <b id="playerPin">—</b></p>
-            <div class="photos" id="photoBox"></div>
-            <h2>Tokenatelier</h2>
-            <p class="hint">Dein Pixel-Maker. „Auf den Bogen“ schreibt das Token auf diesen Charakter.</p>
-            <iframe id="tokenFrame" title="Tokenatelier" src="/token?embed=1" style="width:100%;min-height:560px;border:1px solid var(--line);background:#0a0706;"></iframe>
-          </form>
-        </div>
-      </div>
-    </section>
-  </div>
-  <script src="/js/map.js?v=4"></script>
-  <script src="/js/token.js?v=4"></script>
-  <script src="/js/gm.js?v=4"></script>
-</body>
-</html>
+MARKER
