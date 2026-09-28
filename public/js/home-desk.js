@@ -361,6 +361,35 @@ applyChrome();
 buildTiles();
 renderProfiles();
 
+document.getElementById("btnUpdate").addEventListener("click", async () => {
+  const log = document.getElementById("updateLog");
+  log.textContent = "Prüfe …";
+  try {
+    const res = await fetch("/api/update", { method: "POST" });
+    const data = await res.json();
+    if (!res.ok) {
+      log.textContent = "Fehler:\n" + (data.error || "unbekannt") + "\n" + (data.stdout || "") + (data.stderr || "");
+      return;
+    }
+    if (!data.changed) {
+      log.textContent = "Schon aktuell (" + data.after + ").";
+      return;
+    }
+    log.textContent =
+      "Neue Commits: " + data.before + " → " + data.after + "\n" +
+      data.pullLog + "\n" +
+      (data.installLog ? "npm install ausgeführt.\n" : "") +
+      "\n➜ Klick auf „Server neu starten“, damit der neue Code lädt.";
+  } catch (err) {
+    log.textContent = "Konnte den Server nicht erreichen: " + err.message;
+  }
+});
+document.getElementById("btnRestart").addEventListener("click", async () => {
+  if (!confirm("Ember neu starten? Das Browserfenster verliert für ~2 Sekunden die Verbindung.")) return;
+  const log = document.getElementById("updateLog");
+  log.textContent = "Neustart läuft … nach ~2 Sekunden diese Seite neu laden (F5).";
+  try { await fetch("/api/restart", { method: "POST" }); } catch {}
+});
 fetch("/api/state").then((r) => r.json()).then((s) => {
   const title = (s.settings && s.settings.houseName) || "Ember";
   document.getElementById("houseTitle").textContent = title;

@@ -1,3 +1,5 @@
+const { execSync } = require("child_process");
+
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
@@ -586,7 +588,51 @@ async function handleApi(req, res, url) {
     store.write(state); emitState();
     return send(res, 200, enc);
   }
+  if (method === "POST" && p === "/api/restart") {
+  const remote = req.socket.remoteAddress || "";
+  const local = ["127.0.0.1", "::1", "::ffff:127.0.0.1", "localhost"].includes(remote);
+  if (!local) return send(res, 403, { error: "Neustart nur am SL-Rechner." });
+  send(res, 200, { restarting: true });
+  setTimeout(() => process.exit(42), 250);
+  return;
+}
+if (method === "POST" && p === "/api/update") {
+  const remote = req.socket.remoteAddress || "";
+  const local = ["127.0.0.1", "::1", "::ffff:127.0.0.1", "localhost"].includes(remote);
+  if (!local) return send(res, 403, { error: "Update nur am SL-Rechner." });
 
+  try {
+    const cwd = __dirname;
+    const before = execSync("git rev-parse HEAD", { cwd }).toString().trim();
+    execSync("git fetch --all --prune", { cwd, stdio: "pipe" });
+    const pullLog = execSync("git pull --ff-only", { cwd }).toString().trim();
+    const after = execSync("git rev-parse HEAD", { cwd }).toString().trim();
+    const changed = before !== after;
+
+    let installLog = "";
+    if (changed) {
+      const diff = execSync(`git diff --name-only ${before} ${after}`, { cwd }).toString();
+      if (diff.split("\n").some((f) => f.trim() === "package.json")) {
+        installLog = execSync("npm install --omit=dev", { cwd }).toString();
+      }
+    }
+
+    return send(res, 200, {
+      changed,
+      before: before.slice(0, 8),
+      after: after.slice(0, 8),
+      pullLog,
+      installLog,
+      needsRestart: changed,
+    });
+  } catch (err) {
+    return send(res, 500, {
+      error: err.message,
+      stdout: err.stdout ? err.stdout.toString() : "",
+      stderr: err.stderr ? err.stderr.toString() : "",
+    });
+  }
+}
   return send(res, 404, { error: "Unbekannte Route." });
 }
 

@@ -6,7 +6,14 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
+:emberloop
 echo Ember startet. Fenster offen lassen.
 echo Im Browser: http://127.0.0.1:3478/
 node server.js
+if errorlevel 42 (
+  echo Neustart nach Update ...
+  timeout /t 1 /nobreak >nul
+  goto emberloop
+)
+echo Server beendet.
 pause
