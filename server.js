@@ -472,6 +472,7 @@ async function handleApi(req, res, url) {
       thresholds: body.thresholds || "",
     };
     session.map.tokens.push(token);
+    if (token.kind === "foe") initiative.addFoe(session, token);
     store.write(state); emitState();
     return send(res, 200, token);
   }
@@ -578,7 +579,7 @@ async function handleApi(req, res, url) {
     store.activeEncounter(session);
     const enc = store.makeEncounter(body.name || "Prepared Event", {
       image: body.image || session.map?.image || "",
-      tokens: (session.map?.tokens || []).filter((t) => t.kind === "pc").map((t, i) => ({ ...t, x: 18 + i * 10, y: 70 })),
+      tokens: (session.map?.tokens || []).filter((t) => t.kind === "pc" || t.kind === "foe").map((t, i) => ({ ...t, x: 18 + i * 10, y: t.kind === "foe" ? 40 : 70 })),
       fow: store.defaultFow(),
     });
     session.encounters.push(enc);
