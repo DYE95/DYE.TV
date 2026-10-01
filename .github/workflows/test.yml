@@ -1,0 +1,19 @@
+name: Ember
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Syntax
+        run: node --check server.js && node --check lib/initiative.js && node --check lib/dice.js
+      - name: Rundenlogik und Duality
+        run: node --test test/initiative.test.js test/dice.test.js
