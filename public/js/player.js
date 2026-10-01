@@ -145,7 +145,9 @@ function render() {
   }
   const playLog = $("#playLog");
   if (playLog) {
-    const rows = (sesTurn?.log || []).filter((e) => e.kind === "roll" || e.kind === "note").slice(-8);
+    const q = ($("#playLogQ")?.value || "").toLowerCase();
+    const kind = $("#playLogKind")?.value || "";
+    const rows = (sesTurn?.log || []).filter((e) => (e.kind === "roll" || e.kind === "note") && (!kind || e.kind === kind) && (!q || (e.text + e.author).toLowerCase().includes(q))).slice(-8);
     playLog.classList.toggle("hidden", !rows.length);
     playLog.innerHTML = rows.map((e) => `<div class="log-item ${e.kind}"><div class="who">${e.author}</div><div class="txt">${e.text}</div></div>`).join("");
   }
@@ -198,13 +200,19 @@ $("#btnPing")?.addEventListener("click", () => {
     body: JSON.stringify({ x: token?.x ?? 50, y: token?.y ?? 50, name: pc?.name || "Gast" }),
   });
 });
-$("#compQ")?.addEventListener("input", async (ev) => {
-  const res = await fetch("/api/compendium?q=" + encodeURIComponent(ev.target.value));
+async function loadCompendium() {
+  const q = $("#compQ")?.value || "";
+  const kind = $("#compKind")?.value || "";
+  const res = await fetch("/api/compendium?q=" + encodeURIComponent(q) + "&kind=" + encodeURIComponent(kind));
   const data = await res.json();
   const box = $("#compList");
   if (!box) return;
-  box.innerHTML = (data.entries || []).map((e) => `<div class="card"><div class="name">${e.name}</div><div class="meta">${e.text}</div></div>`).join("");
-});
+  box.innerHTML = (data.entries || []).map((e) => `<div class="card"><div class="name">${e.name}</div><div class="meta">${e.kind} · ${e.text}</div></div>`).join("") || "<p class='hint'>Nichts dazu.</p>";
+}
+$("#compQ")?.addEventListener("input", loadCompendium);
+$("#compKind")?.addEventListener("change", loadCompendium);
+$("#playLogQ")?.addEventListener("input", render);
+$("#playLogKind")?.addEventListener("change", render);
 
 setInterval(() => {
   const pc = me();

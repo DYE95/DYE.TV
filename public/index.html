@@ -90,6 +90,15 @@
             <button class="btn primary" id="btnPlayEvent">Play Event</button>
           </div>
           <div class="log" id="sessionLog"></div>
+          <div class="row">
+            <input id="logQ" placeholder="Log filtern" />
+            <select id="logKind">
+              <option value="">Alles</option>
+              <option value="roll">Würfe</option>
+              <option value="system">System</option>
+              <option value="note">Notizen</option>
+            </select>
+          </div>
           <div class="composer">
             <textarea id="logText" placeholder="…und plötzlich brach der Boden ein."></textarea>
             <button class="btn primary" id="btnLog">Ins Log</button>
@@ -165,7 +174,15 @@
           </div>
           <p class="hint" id="toolHint">Ziehen: Tokens. Reveal bleibt. Snare und Threshold sieht der Tisch erst, wenn sie zuschlagen.</p>
           <h2 style="margin-top:18px;">Kompendium</h2>
-          <input id="compQ" placeholder="Hope, Assassin, Stress" />
+          <input id="compQ" placeholder="Suche" />
+          <select id="compKind">
+            <option value="">Alles</option>
+            <option value="regel">Regeln</option>
+            <option value="klasse">Klassen</option>
+            <option value="herkunft">Herkünfte</option>
+            <option value="community">Communities</option>
+            <option value="gegner">Gegner</option>
+          </select>
           <div class="list" id="compList"></div>
           <p class="hint">SRD 2.0, Darrington Press Community Gaming License.</p>
           <h2 style="margin-top:18px;">Alarme</h2>

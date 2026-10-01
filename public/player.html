@@ -27,6 +27,13 @@
     <div class="stage hidden" id="mapStage"></div>
     <div class="scroll hidden" id="sheet"></div>
     <div class="scroll hidden" id="playLog"></div>
+    <div class="row" id="logFilter" style="padding:0 12px;">
+      <input id="playLogQ" placeholder="Log filtern" />
+      <select id="playLogKind">
+        <option value="">Alles</option>
+        <option value="roll">Würfe</option>
+      </select>
+    </div>
     <div class="scroll hidden" id="handouts"></div>
     <div class="home-media hidden" id="playVideoBox" style="padding:8px 12px;">
       <video id="playVideo" controls playsinline style="width:100%;max-height:240px;background:#0b1016;"></video>
@@ -44,7 +51,15 @@
       <p class="hint" id="rollOut"></p>
       <button class="btn primary" id="btnSpotlight">Want Spotlight</button>
       <button class="btn" id="btnPing">Ping</button>
-      <label>Kompendium <input id="compQ" placeholder="Hope, Assassin, Stress" /></label>
+      <label>Kompendium <input id="compQ" placeholder="Suche" /></label>
+      <select id="compKind">
+        <option value="">Alles</option>
+        <option value="regel">Regeln</option>
+        <option value="klasse">Klassen</option>
+        <option value="herkunft">Herkünfte</option>
+        <option value="community">Communities</option>
+        <option value="gegner">Gegner</option>
+      </select>
       <div class="list" id="compList"></div>
       <button class="btn ghost" id="btnLeaveSeat">Anderen Bogen</button>
     </div>

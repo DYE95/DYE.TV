@@ -637,7 +637,7 @@ async function handleApi(req, res, url) {
     store.write(state); emitState();
     return send(res, 200, session.initiative);
   }
-  if (method === "GET" && p === "/api/compendium") return send(res, 200, compendium.search(url.searchParams.get("q")));
+  if (method === "GET" && p === "/api/compendium") return send(res, 200, compendium.search(url.searchParams.get("q"), url.searchParams.get("kind")));
   if (method === "POST" && p === "/api/session/voice") {
     const body = await readJson(req);
     if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });

@@ -275,7 +275,9 @@ function renderSession() {
   const log = $("#sessionLog");
   if (log) {
     log.innerHTML = "";
-    (ses?.log || []).forEach((entry) => {
+    const q = ($("#logQ")?.value || "").toLowerCase();
+    const kind = $("#logKind")?.value || "";
+    (ses?.log || []).filter((entry) => (!kind || entry.kind === kind) && (!q || (entry.text + entry.author).toLowerCase().includes(q))).forEach((entry) => {
       const el = document.createElement("div");
       el.className = `log-item ${entry.kind}`;
       el.innerHTML = `<div class="who">${entry.author}</div><div class="txt">${entry.text}</div>`;
@@ -388,13 +390,19 @@ $("#btnHandout")?.addEventListener("click", () => {
   const text = prompt("Text?", "") || "";
   api("/api/session/handout", { as: "gm", title, text });
 });
-$("#compQ")?.addEventListener("input", async (ev) => {
-  const res = await fetch("/api/compendium?q=" + encodeURIComponent(ev.target.value));
+async function loadCompendium() {
+  const q = $("#compQ")?.value || "";
+  const kind = $("#compKind")?.value || "";
+  const res = await fetch("/api/compendium?q=" + encodeURIComponent(q) + "&kind=" + encodeURIComponent(kind));
   const data = await res.json();
   const box = $("#compList");
   if (!box) return;
-  box.innerHTML = (data.entries || []).map((e) => `<div class="card"><div class="name">${e.name}</div><div class="meta">${e.text}</div></div>`).join("") || `<p class="hint">${data.attribution || ""}</p>`;
-});
+  box.innerHTML = (data.entries || []).map((e) => `<div class="card"><div class="name">${e.name}</div><div class="meta">${e.kind} · ${e.text}</div></div>`).join("") || "<p class='hint'>Nichts dazu.</p>";
+}
+$("#compQ")?.addEventListener("input", loadCompendium);
+$("#compKind")?.addEventListener("change", loadCompendium);
+$("#logQ")?.addEventListener("input", render);
+$("#logKind")?.addEventListener("change", render);
 $("#btnDictate")?.addEventListener("click", () => {
   const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!Rec) { alert("Dieser Browser diktiert nicht lokal."); return; }
