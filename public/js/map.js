@@ -45,6 +45,7 @@ function renderMap(stage, state, opts = {}) {
     const turn = (ses?.initiative?.on && (ses.initiative.order || [])[ses.initiative.index]) || null;
     const onTurn = turn && (turn.tokenId === token.id || (turn.characterId && turn.characterId === token.characterId));
     el.className = `token ${token.kind || "pc"} ${tokenStatus(token, state)}${onTurn ? " turn" : ""}`;
+    el.style.touchAction = "none";
     el.dataset.rev = String(token.rev || 0);
     if (MapKit.draggingId !== token.id) {
       el.style.left = token.x + "%";
@@ -78,6 +79,7 @@ function drawFog(canvas, stage, map, opts) {
   const fow = map.fow || {};
   const w = Math.max(1, stage.clientWidth);
   const h = Math.max(1, stage.clientHeight);
+  if (w < 2 || h < 2) return;
   if (canvas.width !== w) canvas.width = w;
   if (canvas.height !== h) canvas.height = h;
   const ctx = canvas.getContext("2d");
@@ -178,6 +180,7 @@ function startDrag(ev, el, token, opts) {
   const up = async () => {
     el.removeEventListener("pointermove", move);
     el.removeEventListener("pointerup", up);
+    el.removeEventListener("pointercancel", up);
     MapKit.draggingId = null;
     const x = Number(el.dataset.x), y = Number(el.dataset.y);
     if (!Number.isFinite(x)) return;
@@ -189,6 +192,7 @@ function startDrag(ev, el, token, opts) {
   };
   el.addEventListener("pointermove", move);
   el.addEventListener("pointerup", up);
+  el.addEventListener("pointercancel", up);
 }
 function statusLabel(code) {
   return ({ online: "am Tisch", queued: "Want Spotlight", spotlight: "im Spotlight", rolling: "würfelt", narrating: "lauscht" })[code] || "fort";

@@ -272,6 +272,13 @@ function renderSession() {
       players.appendChild(el);
     });
   }
+  const harmFoe = $("#harmFoe");
+  if (harmFoe) {
+    const current = harmFoe.value;
+    const foes = (ses?.map?.tokens || []).filter((t) => t.kind === "foe");
+    harmFoe.innerHTML = `<option value="">Foe wählen</option>` + foes.map((t) => `<option value="${t.id}">${t.label}${t.stressMax ? " " + (t.stress || 0) + "/" + t.stressMax : ""}</option>`).join("");
+    if (current) harmFoe.value = current;
+  }
   const log = $("#sessionLog");
   if (log) {
     log.innerHTML = "";
@@ -370,10 +377,9 @@ $("#btnLog")?.addEventListener("click", () => {
 $("#btnDigitalRoll")?.addEventListener("click", () => sendRoll("digital"));
 $("#btnTableRoll")?.addEventListener("click", () => sendRoll("table"));
 $("#btnHarm")?.addEventListener("click", () => {
-  const ses = activeSession();
-  const foe = (ses?.map?.tokens || []).find((t) => t.kind === "foe");
-  if (!foe) return alert("Kein Foe auf der Karte.");
-  api("/api/session/harm", { as: "gm", tokenId: foe.id, amount: Number($("#harmAmount").value || 1) });
+  const tokenId = $("#harmFoe")?.value;
+  if (!tokenId) return alert("Erst den Foe wählen.");
+  api("/api/session/harm", { as: "gm", tokenId, amount: Number($("#harmAmount").value || 1) });
 });
 $("#btnPlayEvent")?.addEventListener("click", playEvent);
 $("#btnPlayEvent2")?.addEventListener("click", playEvent);
@@ -429,14 +435,18 @@ $("#logQ")?.addEventListener("input", render);
 $("#logKind")?.addEventListener("change", render);
 $("#btnDictate")?.addEventListener("click", () => {
   const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!Rec) { alert("Dieser Browser diktiert nicht lokal."); return; }
+  const box = $("#logText");
+  if (!Rec) {
+    if (box) { box.focus(); box.placeholder = "Browser diktiert nicht. Satz hier, dann Ins Log."; }
+    return;
+  }
   const rec = new Rec();
   rec.lang = "de-DE";
   rec.onresult = (ev) => {
     const text = ev.results[0][0].transcript;
-    const box = $("#logText");
     if (box) box.value = (box.value ? box.value + " " : "") + text;
   };
+  rec.onerror = () => { if (box) box.placeholder = "Diktat abgebrochen. Satz hier, dann Ins Log."; };
   rec.start();
 });
 $$("[data-tool]").forEach((btn) => {
