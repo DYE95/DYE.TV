@@ -17,18 +17,14 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Node 20 schon im Image
-        id: node
-        run: |
-          if node -v | grep -q '^v20\.'; then
-            echo "setup=false" >> "$GITHUB_OUTPUT"
-            node -v
-          else
-            echo "setup=true" >> "$GITHUB_OUTPUT"
-          fi
+      - name: Node-Toolcache
+        id: node-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.tool_cache }}/node
+          key: node-20-${{ runner.os }}-${{ runner.arch }}
 
       - uses: actions/setup-node@v4
-        if: steps.node.outputs.setup == 'true'
         with:
           node-version: 20
 
