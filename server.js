@@ -9,6 +9,7 @@ const { resolveActionRoll } = require("./lib/dice");
 const { addresses } = require("./lib/lan");
 const { id } = require("./lib/ids");
 const catalog = require("./lib/catalog");
+const spark = require("./lib/spark");
 
 const PORT = Number(process.env.EMBER_PORT || 3478);
 const HOST = process.env.EMBER_HOST || "0.0.0.0";
@@ -669,7 +670,8 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, HOST, () => {
+server.listen(PORT, HOST, async () => {
+  await spark.ignite({ label: "Ember zündet" });
   const urls = addresses();
   console.log("");
   console.log("  Ember brennt.");
