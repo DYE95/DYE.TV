@@ -203,14 +203,24 @@ $("#btnPing")?.addEventListener("click", () => {
 async function loadCompendium() {
   const q = $("#compQ")?.value || "";
   const kind = $("#compKind")?.value || "";
-  const res = await fetch("/api/compendium?q=" + encodeURIComponent(q) + "&kind=" + encodeURIComponent(kind));
+  const scope = $("#compScope")?.value || "";
+  const res = await fetch("/api/compendium?q=" + encodeURIComponent(q) + "&kind=" + encodeURIComponent(kind) + "&scope=" + encodeURIComponent(scope));
   const data = await res.json();
+  const sel = $("#compKind");
+  if (sel && sel.options.length < 2 && data.kinds) {
+    data.kinds.forEach((k) => {
+      const o = document.createElement("option");
+      o.value = k.id; o.textContent = k.label;
+      sel.appendChild(o);
+    });
+  }
   const box = $("#compList");
   if (!box) return;
   box.innerHTML = (data.entries || []).map((e) => `<div class="card"><div class="name">${e.name}</div><div class="meta">${e.kind} · ${e.text}</div></div>`).join("") || "<p class='hint'>Nichts dazu.</p>";
 }
 $("#compQ")?.addEventListener("input", loadCompendium);
 $("#compKind")?.addEventListener("change", loadCompendium);
+$("#compScope")?.addEventListener("change", loadCompendium);
 $("#playLogQ")?.addEventListener("input", render);
 $("#playLogKind")?.addEventListener("change", render);
 

@@ -277,7 +277,14 @@ function renderSession() {
     log.innerHTML = "";
     const q = ($("#logQ")?.value || "").toLowerCase();
     const kind = $("#logKind")?.value || "";
-    (ses?.log || []).filter((entry) => (!kind || entry.kind === kind) && (!q || (entry.text + entry.author).toLowerCase().includes(q))).forEach((entry) => {
+    (ses?.log || []).filter((entry) => {
+      const blob = (entry.author + " " + entry.text).toLowerCase();
+      if (q && !blob.includes(q)) return false;
+      if (kind === "spotlight") return /spotlight/.test(blob);
+      if (kind === "initiative") return /initiative|runde /.test(blob);
+      if (kind === "handout") return /handout/.test(blob);
+      return !kind || entry.kind === kind;
+    }).forEach((entry) => {
       const el = document.createElement("div");
       el.className = `log-item ${entry.kind}`;
       el.innerHTML = `<div class="who">${entry.author}</div><div class="txt">${entry.text}</div>`;
@@ -393,14 +400,25 @@ $("#btnHandout")?.addEventListener("click", () => {
 async function loadCompendium() {
   const q = $("#compQ")?.value || "";
   const kind = $("#compKind")?.value || "";
-  const res = await fetch("/api/compendium?q=" + encodeURIComponent(q) + "&kind=" + encodeURIComponent(kind));
+  const scope = $("#compScope")?.value || "";
+  const res = await fetch("/api/compendium?q=" + encodeURIComponent(q) + "&kind=" + encodeURIComponent(kind) + "&scope=" + encodeURIComponent(scope));
   const data = await res.json();
   const box = $("#compList");
+  const sel = $("#compKind");
+  if (sel && sel.options.length < 2 && data.kinds) {
+    data.kinds.forEach((k) => {
+      const o = document.createElement("option");
+      o.value = k.id; o.textContent = k.label;
+      sel.appendChild(o);
+    });
+  }
   if (!box) return;
   box.innerHTML = (data.entries || []).map((e) => `<div class="card"><div class="name">${e.name}</div><div class="meta">${e.kind} · ${e.text}</div></div>`).join("") || "<p class='hint'>Nichts dazu.</p>";
 }
 $("#compQ")?.addEventListener("input", loadCompendium);
 $("#compKind")?.addEventListener("change", loadCompendium);
+$("#compScope")?.addEventListener("change", loadCompendium);
+loadCompendium();
 $("#logQ")?.addEventListener("input", render);
 $("#logKind")?.addEventListener("change", render);
 $("#btnDictate")?.addEventListener("click", () => {

@@ -97,6 +97,9 @@
               <option value="roll">Würfe</option>
               <option value="system">System</option>
               <option value="note">Notizen</option>
+              <option value="spotlight">Spotlight</option>
+              <option value="initiative">Initiative</option>
+              <option value="handout">Handout</option>
             </select>
           </div>
           <div class="composer">
@@ -175,13 +178,10 @@
           <p class="hint" id="toolHint">Ziehen: Tokens. Reveal bleibt. Snare und Threshold sieht der Tisch erst, wenn sie zuschlagen.</p>
           <h2 style="margin-top:18px;">Kompendium</h2>
           <input id="compQ" placeholder="Suche" />
-          <select id="compKind">
-            <option value="">Alles</option>
-            <option value="regel">Regeln</option>
-            <option value="klasse">Klassen</option>
-            <option value="herkunft">Herkünfte</option>
-            <option value="community">Communities</option>
-            <option value="gegner">Gegner</option>
+          <select id="compKind"><option value="">Alles</option></select>
+          <select id="compScope">
+            <option value="">Name und Text</option>
+            <option value="name">Nur Name</option>
           </select>
           <div class="list" id="compList"></div>
           <p class="hint">SRD 2.0, Darrington Press Community Gaming License.</p>

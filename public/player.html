@@ -32,6 +32,7 @@
       <select id="playLogKind">
         <option value="">Alles</option>
         <option value="roll">Würfe</option>
+        <option value="note">Notizen</option>
       </select>
     </div>
     <div class="scroll hidden" id="handouts"></div>
@@ -52,13 +53,10 @@
       <button class="btn primary" id="btnSpotlight">Want Spotlight</button>
       <button class="btn" id="btnPing">Ping</button>
       <label>Kompendium <input id="compQ" placeholder="Suche" /></label>
-      <select id="compKind">
-        <option value="">Alles</option>
-        <option value="regel">Regeln</option>
-        <option value="klasse">Klassen</option>
-        <option value="herkunft">Herkünfte</option>
-        <option value="community">Communities</option>
-        <option value="gegner">Gegner</option>
+      <select id="compKind"><option value="">Alles</option></select>
+      <select id="compScope">
+        <option value="">Name und Text</option>
+        <option value="name">Nur Name</option>
       </select>
       <div class="list" id="compList"></div>
       <button class="btn ghost" id="btnLeaveSeat">Anderen Bogen</button>
