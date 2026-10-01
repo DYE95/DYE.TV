@@ -56,10 +56,24 @@ function renderMap(stage, state, opts = {}) {
     el.innerHTML = `<span class="ring"></span>${face ? `<img src="${face}" alt="" draggable="false" />` : `<span>${initials(token.label)}</span>`}<span class="token-label">${token.label}</span>`;
   });
   drawFog(fog, stage, map, opts);
+  drawPing(stage, ses);
   drawOverlays(stage, ses, opts);
   bindFieldTools(stage, opts);
 }
+function drawPing(stage, ses) {
+  const old = stage.querySelector(".ping");
+  if (old) old.remove();
+  const ping = ses?.ping;
+  if (!ping || Date.now() - ping.at > 4000) return;
+  const el = document.createElement("div");
+  el.className = "ping";
+  el.style.left = ping.x + "%";
+  el.style.top = ping.y + "%";
+  el.textContent = ping.name;
+  stage.appendChild(el);
+}
 function drawFog(canvas, stage, map, opts) {
+  try {
   const fow = map.fow || {};
   const w = Math.max(1, stage.clientWidth);
   const h = Math.max(1, stage.clientHeight);
@@ -88,6 +102,7 @@ function drawFog(canvas, stage, map, opts) {
     ctx.fill();
   });
   ctx.globalCompositeOperation = "source-over";
+  } catch {}
 }
 function drawOverlays(stage, ses, opts) {
   const enc = activeEnc(ses);
@@ -127,6 +142,12 @@ function bindFieldTools(stage, opts) {
       const label = prompt("Snare?", "Fallgrube") || "Snare";
       const note = prompt("Was geschieht?", "") || "";
       await fetch("/api/session/map/trap", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ as: "gm", x, y, r: 7, label, note }) });
+    } else if (MapKit.tool === "measure") {
+      if (!MapKit.measureStart) { MapKit.measureStart = { x, y }; return; }
+      const a = MapKit.measureStart; MapKit.measureStart = null;
+      const dx = x - a.x, dy = y - a.y;
+      const dist = Math.round(Math.sqrt(dx * dx + dy * dy));
+      alert("Abstand " + dist + " auf der Karte.");
     } else if (MapKit.tool === "zone") {
       if (!MapKit.zoneStart) { MapKit.zoneStart = { x, y }; return; }
       const a = MapKit.zoneStart; MapKit.zoneStart = null;

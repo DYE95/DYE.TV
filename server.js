@@ -11,6 +11,7 @@ const { id } = require("./lib/ids");
 const catalog = require("./lib/catalog");
 const spark = require("./lib/spark");
 const initiative = require("./lib/initiative");
+const compendium = require("./lib/compendium");
 
 const PORT = Number(process.env.EMBER_PORT || 3478);
 const HOST = process.env.EMBER_HOST || "0.0.0.0";
@@ -64,6 +65,12 @@ function addLog(session, entry) {
     text: entry.text || "",
     meta: entry.meta || {},
   });
+}
+
+function remember(session, entry) {
+  if (!session.undo) session.undo = [];
+  session.undo.push(entry);
+  if (session.undo.length > 15) session.undo.shift();
 }
 
 function send(res, status, body) {
@@ -359,7 +366,12 @@ async function handleApi(req, res, url) {
     if (!session) return send(res, 400, { error: "Keine Session." });
     const item = session.spotlightQueue.find((q) => q.id === resolveSpot[1]);
     session.spotlightQueue = session.spotlightQueue.filter((q) => q.id !== resolveSpot[1]);
-    if (body.accept && item) session.activeSpotlight = item;
+    if (body.accept && item) {
+      session.activeSpotlight = item;
+      if (initiative.giveLight(session, item.characterId)) {
+        addLog(session, { kind: "system", author: "Spotlight", text: initiative.spoken(session) });
+      }
+    }
     store.write(state); emitState();
     return send(res, 200, { ok: true });
   }
@@ -370,6 +382,15 @@ async function handleApi(req, res, url) {
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     const character = state.characters.find((c) => c.id === body.characterId);
     const roll = resolveActionRoll(body);
+    if (session && character) {
+      remember(session, {
+        kind: "roll",
+        characterId: character.id,
+        hope: character.hope,
+        gmFear: state.campaigns.find((c) => c.id === session.campaignId)?.gmFear || 0,
+        campaignId: session.campaignId,
+      });
+    }
     if (character) {
       character.hope = clamp((character.hope || 0) + roll.hopeDelta, 0, character.hopeMax || 6);
     }
@@ -445,6 +466,10 @@ async function handleApi(req, res, url) {
       id: id("tok"), kind: body.kind || "marker", characterId: body.characterId || null,
       label: body.label || "Pin", color: body.color || "#e85d04", portrait: body.portrait || "",
       x: Number(body.x ?? 50), y: Number(body.y ?? 50),
+      difficulty: Number(body.difficulty || 0) || null,
+      stress: Number(body.stress || 0),
+      stressMax: Number(body.stressMax || 0) || null,
+      thresholds: body.thresholds || "",
     };
     session.map.tokens.push(token);
     store.write(state); emitState();
@@ -460,6 +485,7 @@ async function handleApi(req, res, url) {
     if (body.as !== "gm" && (!body.characterId || token.characterId !== body.characterId)) {
       return send(res, 403, { error: "Nur das eigene Token." });
     }
+    remember(session, { kind: "move", tokenId: token.id, x: token.x, y: token.y });
     token.x = clamp(Number(body.x), 2, 98);
     token.y = clamp(Number(body.y), 4, 96);
     const enc = store.activeEncounter(session);
@@ -610,6 +636,90 @@ async function handleApi(req, res, url) {
     }
     store.write(state); emitState();
     return send(res, 200, session.initiative);
+  }
+  if (method === "GET" && p === "/api/compendium") return send(res, 200, { entries: compendium.entries });
+  if (method === "POST" && p === "/api/session/voice") {
+    const body = await readJson(req);
+    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Keine Session." });
+    session.narrating = true;
+    if (session.initiative) session.initiative.on = false;
+    addLog(session, { kind: "system", text: "Zurück zur Stimme. Die Karte bleibt liegen." });
+    store.write(state); emitState();
+    return send(res, 200, { narrating: true });
+  }
+  if (method === "POST" && p === "/api/session/undo") {
+    const body = await readJson(req);
+    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session || !session.undo || !session.undo.length) return send(res, 400, { error: "Nichts zum Zurücknehmen." });
+    const entry = session.undo.pop();
+    if (entry.kind === "move") {
+      const token = (session.map?.tokens || []).find((t) => t.id === entry.tokenId);
+      if (token) { token.x = entry.x; token.y = entry.y; }
+    } else if (entry.kind === "roll") {
+      const character = state.characters.find((c) => c.id === entry.characterId);
+      if (character) character.hope = entry.hope;
+      const camp = state.campaigns.find((c) => c.id === entry.campaignId);
+      if (camp) camp.gmFear = entry.gmFear;
+    }
+    addLog(session, { kind: "system", author: "Undo", text: entry.kind === "move" ? "Token zurück." : "Wurf zurück." });
+    store.write(state); emitState();
+    return send(res, 200, { ok: true });
+  }
+  if (method === "POST" && p === "/api/session/fear-spend") {
+    const body = await readJson(req);
+    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Keine Session." });
+    const camp = state.campaigns.find((c) => c.id === session.campaignId);
+    if (!camp || !(camp.gmFear > 0)) return send(res, 400, { error: "Kein Fear." });
+    camp.gmFear -= 1;
+    initiative.apply(session, { action: "side" });
+    addLog(session, { kind: "system", author: "Fear", text: "Fear ausgegeben. " + (initiative.spoken(session) || "Gegenseite.") });
+    store.write(state); emitState();
+    return send(res, 200, { gmFear: camp.gmFear, initiative: session.initiative });
+  }
+  if (method === "POST" && p === "/api/session/handout") {
+    const body = await readJson(req);
+    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Keine Session." });
+    if (!session.handouts) session.handouts = [];
+    session.handouts.unshift({ id: id("hand"), title: body.title || "Zettel", text: body.text || "", at: new Date().toISOString() });
+    session.handouts = session.handouts.slice(0, 12);
+    addLog(session, { kind: "note", author: "Handout", text: body.title || "Zettel" });
+    store.write(state); emitState();
+    return send(res, 200, session.handouts[0]);
+  }
+  if (method === "POST" && p === "/api/session/ping") {
+    const body = await readJson(req);
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Keine Session." });
+    session.ping = { x: Number(body.x), y: Number(body.y), name: body.name || "Jemand", at: Date.now() };
+    store.write(state); emitState();
+    return send(res, 200, session.ping);
+  }
+  if (method === "POST" && p === "/api/session/map/foe") {
+    const body = await readJson(req);
+    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Keine Session." });
+    const token = (session.map?.tokens || []).find((t) => t.id === body.id);
+    if (!token) return send(res, 404, { error: "Token fehlt." });
+    if (body.difficulty != null) token.difficulty = Number(body.difficulty) || null;
+    if (body.stress != null) token.stress = Number(body.stress) || 0;
+    if (body.stressMax != null) token.stressMax = Number(body.stressMax) || null;
+    if (body.thresholds != null) token.thresholds = body.thresholds;
+    store.write(state); emitState();
+    return send(res, 200, token);
   }
   if (method === "POST" && p === "/api/restart") {
   const remote = req.socket.remoteAddress || "";

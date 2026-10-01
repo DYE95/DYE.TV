@@ -93,6 +93,7 @@
           <div class="composer">
             <textarea id="logText" placeholder="…und plötzlich brach der Boden ein."></textarea>
             <button class="btn primary" id="btnLog">Ins Log</button>
+            <button class="btn" id="btnDictate" type="button">Diktat</button>
           </div>
         </main>
         <aside class="panel">
@@ -141,6 +142,10 @@
           <button class="btn primary" id="btnNewEnc" style="width:100%;margin-top:8px;">Event bereitlegen</button>
           <button class="btn" id="btnPlayEvent2" style="width:100%;margin-top:8px;">Play Event</button>
           <button class="btn ghost" id="btnEncEnd" style="width:100%;margin-top:8px;">Event verlöschen</button>
+          <button class="btn" id="btnVoice" style="width:100%;margin-top:8px;">Zurück zur Stimme</button>
+          <button class="btn" id="btnFear" style="width:100%;margin-top:8px;">Fear ausgeben</button>
+          <button class="btn ghost" id="btnUndo" style="width:100%;margin-top:8px;">Undo</button>
+          <button class="btn ghost" id="btnHandout" style="width:100%;margin-top:8px;">Handout</button>
           <h2 style="margin-top:18px;">Initiative</h2>
           <p class="hint" id="initMeta">Noch keine Reihenfolge. Play Event setzt sie aus den Tokens.</p>
           <div class="list" id="initList"></div>
@@ -156,6 +161,7 @@
             <button class="btn tiny" data-tool="brush">Reveal</button>
             <button class="btn tiny" data-tool="trap">Snare</button>
             <button class="btn tiny" data-tool="zone">Threshold</button>
+            <button class="btn tiny" data-tool="measure">Messen</button>
           </div>
           <p class="hint" id="toolHint">Ziehen: Tokens. Reveal bleibt. Snare und Threshold sieht der Tisch erst, wenn sie zuschlagen.</p>
           <h2 style="margin-top:18px;">Alarme</h2>

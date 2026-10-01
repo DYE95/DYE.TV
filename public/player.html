@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Ember · Spieler</title>
-  <link rel="stylesheet" href="/css/ember.css?v=6" />
+  <link rel="stylesheet" href="/css/ember.css?v=7" />
 </head>
 <body class="house-body">
   <div class="player-shell">
@@ -26,6 +26,7 @@
     </div>
     <div class="stage hidden" id="mapStage"></div>
     <div class="scroll hidden" id="sheet"></div>
+    <div class="scroll hidden" id="handouts"></div>
     <div class="home-media hidden" id="playVideoBox" style="padding:8px 12px;">
       <video id="playVideo" controls playsinline style="width:100%;max-height:240px;background:#0b1016;"></video>
       <div class="list" id="playClips"></div>
@@ -33,12 +34,20 @@
     <div class="actions hidden" id="playActions">
       <label>Was willst du tun? <select id="actionPick"></select></label>
       <label>Frage <input id="question" placeholder="Darf ich …" /></label>
+      <button class="btn primary" id="btnRoll">Würfeln</button>
+      <div class="row">
+        <label>Hope <input id="hopeDie" type="number" min="1" max="12" inputmode="numeric" /></label>
+        <label>Fear <input id="fearDie" type="number" min="1" max="12" inputmode="numeric" /></label>
+      </div>
+      <button class="btn" id="btnTableRoll">Echte Würfel</button>
+      <p class="hint" id="rollOut"></p>
       <button class="btn primary" id="btnSpotlight">Want Spotlight</button>
+      <button class="btn" id="btnPing">Ping</button>
       <button class="btn ghost" id="btnLeaveSeat">Anderen Bogen</button>
     </div>
   </div>
   <script src="/js/video-deck.js?v=5"></script>
   <script src="/js/map.js?v=5"></script>
-  <script src="/js/player.js?v=5"></script>
+  <script src="/js/player.js?v=7"></script>
 </body>
 </html>

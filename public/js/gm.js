@@ -379,6 +379,27 @@ $("#btnNewEnc")?.addEventListener("click", async () => {
   await api("/api/session/encounter", { as: "gm", name });
 });
 $("#btnEncEnd")?.addEventListener("click", () => api("/api/session/encounter/status", { as: "gm", status: "ended" }));
+$("#btnVoice")?.addEventListener("click", () => api("/api/session/voice", { as: "gm" }));
+$("#btnFear")?.addEventListener("click", () => api("/api/session/fear-spend", { as: "gm" }).catch((err) => alert(err.message)));
+$("#btnUndo")?.addEventListener("click", () => api("/api/session/undo", { as: "gm" }).catch((err) => alert(err.message)));
+$("#btnHandout")?.addEventListener("click", () => {
+  const title = prompt("Handout?", "Die Kiste");
+  if (!title) return;
+  const text = prompt("Text?", "") || "";
+  api("/api/session/handout", { as: "gm", title, text });
+});
+$("#btnDictate")?.addEventListener("click", () => {
+  const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Rec) { alert("Dieser Browser diktiert nicht lokal."); return; }
+  const rec = new Rec();
+  rec.lang = "de-DE";
+  rec.onresult = (ev) => {
+    const text = ev.results[0][0].transcript;
+    const box = $("#logText");
+    if (box) box.value = (box.value ? box.value + " " : "") + text;
+  };
+  rec.start();
+});
 $$("[data-tool]").forEach((btn) => {
   btn.addEventListener("click", () => {
     MapKit.tool = btn.getAttribute("data-tool");
@@ -388,7 +409,9 @@ $$("[data-tool]").forEach((btn) => {
 });
 $("#btnAddFoe")?.addEventListener("click", () => {
   const label = prompt("Foe?", "Ambusher");
-  if (label) api("/api/session/map/token", { as: "gm", kind: "foe", label, color: "#6a040f", x: 55, y: 40 });
+  if (!label) return;
+  const difficulty = Number(prompt("Difficulty?", "15") || 15);
+  api("/api/session/map/token", { as: "gm", kind: "foe", label, color: "#6a040f", x: 55, y: 40, difficulty, stressMax: 4, thresholds: "5/11" });
 });
 $("#btnAddPin")?.addEventListener("click", () => {
   const label = prompt("Pin?", "Die Kiste");

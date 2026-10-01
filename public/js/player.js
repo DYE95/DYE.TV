@@ -118,11 +118,31 @@ function render() {
     <p class="hint">${pc.class || ""} · Lv ${pc.level}</p>
     <h1 style="font-size:24px;margin:0 0 10px;">${pc.name}</h1>
     <div class="stat-grid">${traits}</div>
-    <div class="stat-grid" style="margin-top:8px;">
-      <div class="stat"><span>Hope</span><b>${pc.hope}/${pc.hopeMax}</b></div>
-      <div class="stat"><span>Stress</span><b>${pc.stressMarked}/${pc.stressMax}</b></div>
-      <div class="stat"><span>HP</span><b>${pc.hpMarked}/${pc.hpMax}</b></div>
-    </div>`;
+    <div class="mark-row" data-mark="hope"></div>
+    <div class="mark-row" data-mark="stress"></div>
+    <div class="mark-row" data-mark="hp"></div>`;
+  const marks = { hope: ["Hope", pc.hope, pc.hopeMax], stress: ["Stress", pc.stressMarked, pc.stressMax], hp: ["HP", pc.hpMarked, pc.hpMax] };
+  document.querySelectorAll(".mark-row").forEach((row) => {
+    const key = row.dataset.mark;
+    const [label, val, max] = marks[key];
+    row.innerHTML = `<span>${label}</span>`;
+    for (let i = 1; i <= (max || 6); i += 1) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "pip" + (i <= val ? " on" : "");
+      b.addEventListener("click", () => fetch("/api/characters/" + pc.id, {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(key === "hope" ? { hope: i === val ? i - 1 : i } : key === "stress" ? { stressMarked: i === val ? i - 1 : i } : { hpMarked: i === val ? i - 1 : i }),
+      }));
+      row.appendChild(b);
+    }
+  });
+  const hands = $("#handouts");
+  if (hands) {
+    const list = sesTurn?.handouts || [];
+    hands.classList.toggle("hidden", !list.length);
+    hands.innerHTML = list.map((h) => `<div class="card"><div class="name">${h.title}</div><div class="meta">${h.text}</div></div>`).join("");
+  }
   const actions = ["— Aktion —",
     ...["Agility","Strength","Finesse","Instinct","Presence","Knowledge"].map((t) => `Action Roll · ${t}`),
     ...(pc.experiences || []).map((e) => `Experience · ${e.name}`),
@@ -146,6 +166,31 @@ $("#btnSpotlight")?.addEventListener("click", async () => {
     }),
   });
   $("#question").value = "";
+});
+async function playerRoll(table) {
+  const pc = me();
+  if (!pc) return;
+  const action = $("#actionPick").value || "";
+  const trait = ["agility","strength","finesse","instinct","presence","knowledge"].find((t) => action.toLowerCase().includes(t));
+  const payload = { characterId: pc.id, trait, traitMod: trait ? Number(pc.traits?.[trait] || 0) : 0, difficulty: 0 };
+  if (table) {
+    payload.hopeDie = Number($("#hopeDie").value);
+    payload.fearDie = Number($("#fearDie").value);
+  }
+  const res = await fetch("/api/roll", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+  const data = await res.json();
+  if ($("#rollOut")) $("#rollOut").textContent = data.roll?.spoken || data.error || "";
+}
+$("#btnRoll")?.addEventListener("click", () => playerRoll(false));
+$("#btnTableRoll")?.addEventListener("click", () => playerRoll(true));
+$("#btnPing")?.addEventListener("click", () => {
+  const pc = me();
+  const ses = (state.sessions || []).find((s) => s.id === state.active?.sessionId);
+  const token = (ses?.map?.tokens || []).find((t) => t.characterId === pc?.id);
+  fetch("/api/session/ping", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ x: token?.x ?? 50, y: token?.y ?? 50, name: pc?.name || "Gast" }),
+  });
 });
 
 setInterval(() => {
