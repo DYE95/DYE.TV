@@ -1,0 +1,13 @@
+{
+  "name": "Ember",
+  "short_name": "Ember",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#10151c",
+  "theme_color": "#1b2733",
+  "lang": "de",
+  "icons": [
+    { "src": "/img/ember-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
