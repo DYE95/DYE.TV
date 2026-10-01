@@ -5,15 +5,46 @@ on:
     branches: [main]
   pull_request:
 
+concurrency:
+  group: ember-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Node 20 schon im Image
+        id: node
+        run: |
+          if node -v | grep -q '^v20\.'; then
+            echo "setup=false" >> "$GITHUB_OUTPUT"
+            node -v
+          else
+            echo "setup=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/setup-node@v4
+        if: steps.node.outputs.setup == 'true'
         with:
           node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: npm-Cache
+        if: hashFiles('package-lock.json') != ''
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-node20-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-node20-
+
       - name: Syntax
         run: node --check server.js && node --check lib/initiative.js && node --check lib/dice.js
+
       - name: Rundenlogik und Duality
         run: node --test test/initiative.test.js test/dice.test.js
