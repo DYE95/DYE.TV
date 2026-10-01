@@ -388,6 +388,13 @@ $("#btnHandout")?.addEventListener("click", () => {
   const text = prompt("Text?", "") || "";
   api("/api/session/handout", { as: "gm", title, text });
 });
+$("#compQ")?.addEventListener("input", async (ev) => {
+  const res = await fetch("/api/compendium?q=" + encodeURIComponent(ev.target.value));
+  const data = await res.json();
+  const box = $("#compList");
+  if (!box) return;
+  box.innerHTML = (data.entries || []).map((e) => `<div class="card"><div class="name">${e.name}</div><div class="meta">${e.text}</div></div>`).join("") || `<p class="hint">${data.attribution || ""}</p>`;
+});
 $("#btnDictate")?.addEventListener("click", () => {
   const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!Rec) { alert("Dieser Browser diktiert nicht lokal."); return; }
