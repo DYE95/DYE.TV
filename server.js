@@ -487,8 +487,14 @@ async function handleApi(req, res, url) {
       return send(res, 403, { error: "Nur das eigene Token." });
     }
     remember(session, { kind: "move", tokenId: token.id, x: token.x, y: token.y });
+    if (body.rev != null && Number(body.rev) !== Number(token.rev || 0)) {
+      addLog(session, { kind: "system", author: "Karte", text: (token.label || "Token") + " wurde gerade woanders gezogen." });
+      store.write(state); emitState();
+      return send(res, 409, { error: "Jemand hat das Token schon gezogen.", token });
+    }
     token.x = clamp(Number(body.x), 2, 98);
     token.y = clamp(Number(body.y), 4, 96);
+    token.rev = Number(token.rev || 0) + 1;
     const enc = store.activeEncounter(session);
     if (token.kind === "pc") checkTriggers(session, enc, token);
     store.write(state); emitState();
@@ -706,6 +712,28 @@ async function handleApi(req, res, url) {
     session.ping = { x: Number(body.x), y: Number(body.y), name: body.name || "Jemand", at: Date.now() };
     store.write(state); emitState();
     return send(res, 200, session.ping);
+  }
+  if (method === "POST" && p === "/api/session/harm") {
+    const body = await readJson(req);
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Keine Session." });
+    const amount = Math.max(0, Number(body.amount || 0));
+    if (body.tokenId) {
+      if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
+      const token = (session.map?.tokens || []).find((t) => t.id === body.tokenId);
+      if (!token) return send(res, 404, { error: "Foe fehlt." });
+      token.stress = Math.min(Number(token.stressMax || 99), Number(token.stress || 0) + amount);
+      addLog(session, { kind: "note", author: "Schaden", text: token.label + " +" + amount + " Stress (" + token.stress + ")" });
+      store.write(state); emitState();
+      return send(res, 200, token);
+    }
+    const character = state.characters.find((c) => c.id === body.characterId);
+    if (!character) return send(res, 404, { error: "Bogen fehlt." });
+    character.hpMarked = clamp(Number(character.hpMarked || 0) + amount, 0, character.hpMax || 6);
+    addLog(session, { kind: "note", author: "Schaden", text: character.name + " +" + amount + " HP (" + character.hpMarked + "/" + character.hpMax + ")" });
+    store.write(state); emitState();
+    return send(res, 200, character);
   }
   if (method === "POST" && p === "/api/session/map/foe") {
     const body = await readJson(req);

@@ -369,6 +369,12 @@ $("#btnLog")?.addEventListener("click", () => {
 });
 $("#btnDigitalRoll")?.addEventListener("click", () => sendRoll("digital"));
 $("#btnTableRoll")?.addEventListener("click", () => sendRoll("table"));
+$("#btnHarm")?.addEventListener("click", () => {
+  const ses = activeSession();
+  const foe = (ses?.map?.tokens || []).find((t) => t.kind === "foe");
+  if (!foe) return alert("Kein Foe auf der Karte.");
+  api("/api/session/harm", { as: "gm", tokenId: foe.id, amount: Number($("#harmAmount").value || 1) });
+});
 $("#btnPlayEvent")?.addEventListener("click", playEvent);
 $("#btnPlayEvent2")?.addEventListener("click", playEvent);
 $("#btnInitNext")?.addEventListener("click", () => api("/api/session/initiative", { as: "gm", action: "next" }));
@@ -451,7 +457,7 @@ $("#btnAddPin")?.addEventListener("click", () => {
   if (label) api("/api/session/map/token", { as: "gm", kind: "marker", label, color: "#e9c46a", x: 48, y: 48 });
 });
 $("#btnFow")?.addEventListener("click", () => api("/api/session/map/fow", { as: "gm", on: !activeSession()?.map?.fow?.on }));
-$("#btnFowClear")?.addEventListener("click", () => api("/api/session/map/fow", { as: "gm", clear: true, on: true }));
+$("#btnFowClear")?.addEventListener("click", () => { MapKit.draggingId = null; api("/api/session/map/fow", { as: "gm", clear: true, on: true }); });
 $("#mapImage")?.addEventListener("change", (ev) => {
   const file = ev.target.files?.[0];
   if (!file) return;

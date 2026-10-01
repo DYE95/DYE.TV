@@ -191,6 +191,13 @@ async function playerRoll(table) {
 }
 $("#btnRoll")?.addEventListener("click", () => playerRoll(false));
 $("#btnTableRoll")?.addEventListener("click", () => playerRoll(true));
+$("#btnHarm")?.addEventListener("click", () => {
+  if (!meId) return;
+  fetch("/api/session/harm", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ characterId: meId, amount: Number($("#harmAmount").value || 1) }),
+  });
+});
 $("#btnPing")?.addEventListener("click", () => {
   const pc = me();
   const ses = (state.sessions || []).find((s) => s.id === state.active?.sessionId);

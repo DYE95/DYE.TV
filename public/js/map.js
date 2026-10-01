@@ -45,6 +45,7 @@ function renderMap(stage, state, opts = {}) {
     const turn = (ses?.initiative?.on && (ses.initiative.order || [])[ses.initiative.index]) || null;
     const onTurn = turn && (turn.tokenId === token.id || (turn.characterId && turn.characterId === token.characterId));
     el.className = `token ${token.kind || "pc"} ${tokenStatus(token, state)}${onTurn ? " turn" : ""}`;
+    el.dataset.rev = String(token.rev || 0);
     if (MapKit.draggingId !== token.id) {
       el.style.left = token.x + "%";
       el.style.top = token.y + "%";
@@ -81,7 +82,7 @@ function drawFog(canvas, stage, map, opts) {
   if (canvas.height !== h) canvas.height = h;
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, w, h);
-  if (!fow.on) { canvas.style.opacity = "0"; return; }
+  if (!fow.on) { canvas.style.opacity = "0"; MapKit.draggingId = null; return; }
   canvas.style.opacity = opts.viewer === "gm" ? "0.72" : "1";
   ctx.fillStyle = "rgba(4,2,2,0.88)";
   ctx.fillRect(0, 0, w, h);
@@ -180,10 +181,11 @@ function startDrag(ev, el, token, opts) {
     MapKit.draggingId = null;
     const x = Number(el.dataset.x), y = Number(el.dataset.y);
     if (!Number.isFinite(x)) return;
-    await fetch("/api/session/map/move", {
+    const res = await fetch("/api/session/map/move", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: token.id, x, y, as: opts.actor || "player", characterId: opts.characterId || token.characterId || null }),
-    }).catch(() => {});
+      body: JSON.stringify({ id: token.id, x, y, rev: Number(el.dataset.rev || 0), as: opts.actor || "player", characterId: opts.characterId || token.characterId || null }),
+    });
+    if (res.status === 409) alert("Das Token hat schon jemand gezogen.");
   };
   el.addEventListener("pointermove", move);
   el.addEventListener("pointerup", up);
