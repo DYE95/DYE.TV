@@ -115,6 +115,10 @@ input, select, textarea { width: 100%; background: #0c0908; border: 1px solid va
 .token .ring { position: absolute; inset: -5px; border-radius: inherit; border: 2px solid transparent; pointer-events: none; }
 .token.queued .ring { border-color: #4cc9f0; }
 .token.spotlight .ring { border-color: var(--hope); }
+.token.turn .ring { border-color: #e9c46a; box-shadow: 0 0 0 3px rgba(233,196,106,.35); }
+.init-row { display: flex; gap: 6px; align-items: center; }
+.init-row.current { border-color: #e9c46a; }
+.init-row .grow { flex: 1; }
 .token-label { position: absolute; top: 110%; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 10px; color: #f8e6d0; text-shadow: 0 1px 4px #000; }
 .map-wrap { position: relative; }
 .map-wrap.grow { flex: 1; display: flex; flex-direction: column; min-height: 0; }

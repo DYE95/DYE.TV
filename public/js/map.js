@@ -3,13 +3,11 @@ const MapKit = { draggingId: null, lastSig: "", tool: "move", zoneStart: null };
 function initials(label) {
   return String(label || "?").split(/\s+/).map((p) => p[0]).join("").slice(0, 2).toUpperCase();
 }
-
 function activeEnc(ses) {
   if (!ses) return null;
   const list = ses.encounters || [];
   return list.find((e) => e.id === ses.activeEncounterId) || list[0] || null;
 }
-
 function tokenStatus(token, state) {
   const ses = (state.sessions || []).find((s) => s.id === state.active?.sessionId);
   const queued = (ses?.spotlightQueue || []).some((q) => q.characterId === token.characterId);
@@ -21,21 +19,20 @@ function tokenStatus(token, state) {
   if (ses?.narrating && token.kind === "pc") return "narrating";
   return seat ? "online" : "";
 }
-
 function renderMap(stage, state, opts = {}) {
   if (!stage) return;
-  stage._emberRender = () => renderMap(stage, state, opts);
-
-  const ses = (state.sessions || []).find((s) => s.id === state.active?.sessionId) || null;
-  const map = ses ? (ses.map || {}) : {};
-  const tokens = map.tokens || [];
-  const fog = map.fow || {};
-
+  const ses = (state.sessions || []).find((s) => s.id === state.active?.sessionId);
+  const map = ses?.map || { image: "", tokens: [] };
   if (map.image) stage.style.backgroundImage = `url("${map.image}")`;
-
+  let fog = stage.querySelector("canvas.fow");
+  if (!fog) {
+    fog = document.createElement("canvas");
+    fog.className = "fow";
+    stage.prepend(fog);
+  }
+  const tokens = map.tokens || [];
   const live = new Set(tokens.map((t) => t.id));
   [...stage.querySelectorAll(".token")].forEach((el) => { if (!live.has(el.dataset.id)) el.remove(); });
-
   tokens.forEach((token) => {
     let el = stage.querySelector(`.token[data-id="${token.id}"]`);
     if (!el) {
@@ -45,7 +42,9 @@ function renderMap(stage, state, opts = {}) {
       el.addEventListener("pointerdown", (ev) => startDrag(ev, el, token, opts));
       stage.appendChild(el);
     }
-    el.className = `token ${token.kind || "pc"} ${tokenStatus(token, state)}`;
+    const turn = (ses?.initiative?.on && (ses.initiative.order || [])[ses.initiative.index]) || null;
+    const onTurn = turn && (turn.tokenId === token.id || (turn.characterId && turn.characterId === token.characterId));
+    el.className = `token ${token.kind || "pc"} ${tokenStatus(token, state)}${onTurn ? " turn" : ""}`;
     if (MapKit.draggingId !== token.id) {
       el.style.left = token.x + "%";
       el.style.top = token.y + "%";
@@ -56,66 +55,40 @@ function renderMap(stage, state, opts = {}) {
     if (pc?.color) el.style.background = pc.color;
     el.innerHTML = `<span class="ring"></span>${face ? `<img src="${face}" alt="" draggable="false" />` : `<span>${initials(token.label)}</span>`}<span class="token-label">${token.label}</span>`;
   });
-
-  drawFog(stage.querySelector("canvas.fow") || ensureFog(stage), stage, map, opts);
+  drawFog(fog, stage, map, opts);
   drawOverlays(stage, ses, opts);
   bindFieldTools(stage, opts);
 }
-
-function ensureFog(stage) {
-  let canvas = stage.querySelector("canvas.fow");
-  if (!canvas) {
-    canvas = document.createElement("canvas");
-    canvas.className = "fow";
-    stage.prepend(canvas);
-  }
-  return canvas;
-}
-
 function drawFog(canvas, stage, map, opts) {
-  if (!canvas) return;
   const fow = map.fow || {};
   const w = Math.max(1, stage.clientWidth);
   const h = Math.max(1, stage.clientHeight);
-
-  if (w <= 1 || h <= 1) { canvas.style.opacity = "0"; return; }
-
   if (canvas.width !== w) canvas.width = w;
   if (canvas.height !== h) canvas.height = h;
-
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, w, h);
-
   if (!fow.on) { canvas.style.opacity = "0"; return; }
-  canvas.style.opacity = "1";
-
-  ctx.fillStyle = "#0a0706";
+  canvas.style.opacity = opts.viewer === "gm" ? "0.72" : "1";
+  ctx.fillStyle = "rgba(4,2,2,0.88)";
   ctx.fillRect(0, 0, w, h);
-
-  const gm = opts.viewer === "gm";
-  if (gm && fow.gmSeesAll !== false) {
-    ctx.clearRect(0, 0, w, h);
-    canvas.style.opacity = "0";
-    return;
-  }
-
   ctx.globalCompositeOperation = "destination-out";
-  for (const spot of fow.explored || []) {
-    const cx = (spot.x / 100) * w;
-    const cy = (spot.y / 100) * h;
-    const r = ((spot.r || 10) / 100) * Math.max(w, h);
-    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-    grad.addColorStop(0, "rgba(0,0,0,1)");
-    grad.addColorStop(0.7, "rgba(0,0,0,0.85)");
-    grad.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = grad;
+  const radiusPct = Number(fow.radius || 16);
+  const stamps = [...(fow.explored || [])];
+  (map.tokens || []).filter((t) => t.kind === "pc").forEach((t) => stamps.push({ x: t.x, y: t.y, r: radiusPct }));
+  stamps.forEach((s) => {
+    const x = (s.x / 100) * w;
+    const y = (s.y / 100) * h;
+    const r = ((s.r || radiusPct) / 100) * Math.min(w, h) * 1.6;
+    const g = ctx.createRadialGradient(x, y, r * 0.35, x, y, r);
+    g.addColorStop(0, "rgba(0,0,0,1)");
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
-  }
+  });
   ctx.globalCompositeOperation = "source-over";
 }
-
 function drawOverlays(stage, ses, opts) {
   const enc = activeEnc(ses);
   [...stage.querySelectorAll(".zone,.trap-mark")].forEach((n) => n.remove());
@@ -139,7 +112,6 @@ function drawOverlays(stage, ses, opts) {
     stage.appendChild(el);
   });
 }
-
 function bindFieldTools(stage, opts) {
   if (stage.dataset.tools === "1") return;
   stage.dataset.tools = "1";
@@ -167,7 +139,6 @@ function bindFieldTools(stage, opts) {
     }
   });
 }
-
 function startDrag(ev, el, token, opts) {
   if (MapKit.tool && MapKit.tool !== "move") return;
   if (opts && opts.canMove && !opts.canMove(token)) return;
@@ -196,11 +167,9 @@ function startDrag(ev, el, token, opts) {
   el.addEventListener("pointermove", move);
   el.addEventListener("pointerup", up);
 }
-
 function statusLabel(code) {
   return ({ online: "am Tisch", queued: "Want Spotlight", spotlight: "im Spotlight", rolling: "würfelt", narrating: "lauscht" })[code] || "fort";
 }
-
 function startStateFeed(apply) {
   let last = 0;
   const pull = () => fetch("/api/state").then((r) => r.json()).then((s) => { last = Date.now(); apply(s); }).catch(() => {});
@@ -209,13 +178,3 @@ function startStateFeed(apply) {
   es.addEventListener("message", (ev) => { last = Date.now(); try { apply(JSON.parse(ev.data)); } catch {} });
   setInterval(() => { if (Date.now() - last > 4000) pull(); }, 2500);
 }
-
-let _emberResizeTimer = null;
-window.addEventListener("resize", () => {
-  clearTimeout(_emberResizeTimer);
-  _emberResizeTimer = setTimeout(() => {
-    document.querySelectorAll(".stage").forEach((s) => {
-      if (s.offsetParent && s._emberRender) s._emberRender();
-    });
-  }, 80);
-});

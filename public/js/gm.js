@@ -211,6 +211,34 @@ function renderEncounter() {
   if ($("#sessionEncStatus")) $("#sessionEncStatus").textContent = enc
     ? tone[enc.status] || enc.status
     : "Unter Events eine Karte bereitlegen. Dann, mitten in der Geschichte: Play Event.";
+  const init = ses?.initiative;
+  const who = init?.on && init.order?.length ? init.order[init.index] : null;
+  if ($("#sessionTurn")) $("#sessionTurn").textContent = who ? "Initiative · Runde " + init.round + " · " + who.label : "";
+  const meta = $("#initMeta");
+  const list = $("#initList");
+  if (meta) meta.textContent = who ? "Runde " + init.round + " · " + who.label + " ist dran." : "Noch keine Reihenfolge. Play Event setzt sie aus den Tokens.";
+  if (list) {
+    list.innerHTML = "";
+    (init?.order || []).forEach((row, i) => {
+      const el = document.createElement("div");
+      el.className = "card init-row" + (i === init.index && init.on ? " current" : "");
+      const label = document.createElement("span");
+      label.className = "grow";
+      label.textContent = (i + 1) + " " + row.label;
+      const up = document.createElement("button");
+      up.type = "button"; up.className = "btn tiny"; up.textContent = "↑";
+      up.addEventListener("click", () => api("/api/session/initiative", { as: "gm", action: "up", id: row.id }));
+      const down = document.createElement("button");
+      down.type = "button"; down.className = "btn tiny"; down.textContent = "↓";
+      down.addEventListener("click", () => api("/api/session/initiative", { as: "gm", action: "down", id: row.id }));
+      const go = document.createElement("button");
+      go.type = "button"; go.className = "btn tiny"; go.textContent = "dran";
+      go.addEventListener("click", () => api("/api/session/initiative", { as: "gm", action: "set", id: row.id }));
+      el.appendChild(label); el.appendChild(up); el.appendChild(down); el.appendChild(go);
+      list.appendChild(el);
+    });
+    if (!init?.order?.length) list.innerHTML = "<p class='hint'>Tokens auf die Karte, dann Aus Tokens.</p>";
+  }
 }
 
 function renderSession() {
@@ -332,6 +360,16 @@ $("#btnDigitalRoll")?.addEventListener("click", () => sendRoll("digital"));
 $("#btnTableRoll")?.addEventListener("click", () => sendRoll("table"));
 $("#btnPlayEvent")?.addEventListener("click", playEvent);
 $("#btnPlayEvent2")?.addEventListener("click", playEvent);
+$("#btnInitNext")?.addEventListener("click", () => api("/api/session/initiative", { as: "gm", action: "next" }));
+$("#btnInitPrev")?.addEventListener("click", () => api("/api/session/initiative", { as: "gm", action: "prev" }));
+$("#btnInitSeed")?.addEventListener("click", () => api("/api/session/initiative", { as: "gm", action: "seed" }));
+document.addEventListener("keydown", (ev) => {
+  if (ev.target && /INPUT|TEXTAREA|SELECT/.test(ev.target.tagName)) return;
+  if (ev.key === "n" || ev.key === "N") {
+    ev.preventDefault();
+    api("/api/session/initiative", { as: "gm", action: ev.shiftKey ? "prev" : "next" });
+  }
+});
 $("#btnNewEnc")?.addEventListener("click", async () => {
   const name = prompt("Name des Events?", "Der Boden gibt nach");
   if (!name) return;

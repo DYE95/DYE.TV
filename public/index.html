@@ -85,6 +85,7 @@
             <div>
               <div class="name" id="sessionEncName">Kein Event bereit</div>
               <div class="hint" id="sessionEncStatus">Bereite unter Events eine Karte vor. Dann, mitten in der Geschichte: Play Event.</div>
+              <div class="hint" id="sessionTurn"></div>
             </div>
             <button class="btn primary" id="btnPlayEvent">Play Event</button>
           </div>
@@ -140,6 +141,14 @@
           <button class="btn primary" id="btnNewEnc" style="width:100%;margin-top:8px;">Event bereitlegen</button>
           <button class="btn" id="btnPlayEvent2" style="width:100%;margin-top:8px;">Play Event</button>
           <button class="btn ghost" id="btnEncEnd" style="width:100%;margin-top:8px;">Event verlöschen</button>
+          <h2 style="margin-top:18px;">Initiative</h2>
+          <p class="hint" id="initMeta">Noch keine Reihenfolge. Play Event setzt sie aus den Tokens.</p>
+          <div class="list" id="initList"></div>
+          <div class="row" style="margin-top:8px;">
+            <button class="btn tiny" id="btnInitPrev" type="button">Zurück</button>
+            <button class="btn tiny primary" id="btnInitNext" type="button">Weiter</button>
+            <button class="btn tiny" id="btnInitSeed" type="button">Aus Tokens</button>
+          </div>
           <h2 style="margin-top:18px;">Werkzeug</h2>
           <div class="toolset" id="toolset">
             <button class="btn tiny on" data-tool="move">Ziehen</button>
@@ -279,8 +288,8 @@
       </div>
     </section>
   </div>
-  <script src="/js/map.js?v=4"></script>
+  <script src="/js/map.js?v=5"></script>
   <script src="/js/token.js?v=4"></script>
-  <script src="/js/gm.js?v=4"></script>
+  <script src="/js/gm.js?v=5"></script>
 </body>
 </html>

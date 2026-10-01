@@ -95,6 +95,11 @@ function render() {
   $("#playActions").classList.toggle("hidden", !pc);
   $("#sheet").classList.toggle("hidden", !pc);
   $("#who").textContent = pc ? pc.name : "Gast";
+  const sesTurn = (state.sessions || []).find((s) => s.id === state.active?.sessionId);
+  const init = sesTurn?.initiative;
+  const whoTurn = init?.on && init.order?.length ? init.order[init.index] : null;
+  const chip = $("#turnChip");
+  if (chip) chip.textContent = whoTurn ? "R" + init.round + " " + whoTurn.label : "keine Reihenfolge";
   renderMap($("#mapStage"), state, {
     viewer: pc ? pc.id : "guest",
     actor: "player",

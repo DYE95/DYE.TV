@@ -10,6 +10,7 @@ const { addresses } = require("./lib/lan");
 const { id } = require("./lib/ids");
 const catalog = require("./lib/catalog");
 const spark = require("./lib/spark");
+const initiative = require("./lib/initiative");
 
 const PORT = Number(process.env.EMBER_PORT || 3478);
 const HOST = process.env.EMBER_HOST || "0.0.0.0";
@@ -582,12 +583,30 @@ async function handleApi(req, res, url) {
     enc.status = body.status || enc.status;
     if (enc.status === "live") {
       session.narrating = false;
-      addLog(session, { kind: "system", text: "Play Event — " + enc.name + ". Der Boden gibt nach." });
+      if (!session.initiative || !session.initiative.order || !session.initiative.order.length) initiative.seed(session);
+      else session.initiative.on = true;
+      addLog(session, { kind: "system", text: "Play Event — " + enc.name + ". " + (initiative.spoken(session) || "Der Boden gibt nach.") });
     } else if (enc.status === "ended") {
+      if (session.initiative) session.initiative.on = false;
       addLog(session, { kind: "system", text: "Das Event verlischt: " + enc.name });
     }
     store.write(state); emitState();
     return send(res, 200, enc);
+  }
+  if (method === "POST" && p === "/api/session/initiative") {
+    const body = await readJson(req);
+    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Keine Session." });
+    const before = initiative.spoken(session);
+    initiative.apply(session, body);
+    const after = initiative.spoken(session);
+    if ((body.action === "next" || body.action === "prev" || body.action === "set" || body.action === "seed") && after && after !== before) {
+      addLog(session, { kind: "system", author: "Initiative", text: after });
+    }
+    store.write(state); emitState();
+    return send(res, 200, session.initiative);
   }
   if (method === "POST" && p === "/api/restart") {
   const remote = req.socket.remoteAddress || "";
