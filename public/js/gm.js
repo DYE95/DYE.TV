@@ -216,7 +216,9 @@ function renderEncounter() {
   if ($("#sessionTurn")) $("#sessionTurn").textContent = who ? "Initiative · Runde " + init.round + " · " + who.label : "";
   const meta = $("#initMeta");
   const list = $("#initList");
-  if (meta) meta.textContent = who ? "Runde " + init.round + " · " + who.label + " ist dran." : "Noch keine Reihenfolge. Play Event setzt sie aus den Tokens.";
+  if (meta) meta.textContent = who
+    ? "Runde " + init.round + " · " + who.label + " ist dran." + (init.auto === false ? " Ablauf von Hand." : " Wurf gibt weiter.")
+    : "Noch keine Reihenfolge. Play Event setzt sie aus den Tokens.";
   if (list) {
     list.innerHTML = "";
     (init?.order || []).forEach((row, i) => {
@@ -362,6 +364,7 @@ $("#btnPlayEvent")?.addEventListener("click", playEvent);
 $("#btnPlayEvent2")?.addEventListener("click", playEvent);
 $("#btnInitNext")?.addEventListener("click", () => api("/api/session/initiative", { as: "gm", action: "next" }));
 $("#btnInitPrev")?.addEventListener("click", () => api("/api/session/initiative", { as: "gm", action: "prev" }));
+$("#btnInitSide")?.addEventListener("click", () => api("/api/session/initiative", { as: "gm", action: "side" }));
 $("#btnInitSeed")?.addEventListener("click", () => api("/api/session/initiative", { as: "gm", action: "seed" }));
 document.addEventListener("keydown", (ev) => {
   if (ev.target && /INPUT|TEXTAREA|SELECT/.test(ev.target.tagName)) return;

@@ -378,6 +378,9 @@ async function handleApi(req, res, url) {
       if (camp) camp.gmFear = clamp((camp.gmFear || 0) + roll.fearDelta, 0, camp.fearMax || 12);
     }
     if (session) addLog(session, { kind: "roll", author: character ? character.name : "Tisch", text: roll.spoken, meta: roll });
+    if (session && character && initiative.completeIfActor(session, character.id)) {
+      addLog(session, { kind: "system", author: "Initiative", text: initiative.spoken(session) });
+    }
     store.write(state); emitState();
     return send(res, 200, { roll, character });
   }
@@ -602,7 +605,7 @@ async function handleApi(req, res, url) {
     const before = initiative.spoken(session);
     initiative.apply(session, body);
     const after = initiative.spoken(session);
-    if ((body.action === "next" || body.action === "prev" || body.action === "set" || body.action === "seed") && after && after !== before) {
+    if ((body.action === "next" || body.action === "prev" || body.action === "set" || body.action === "seed" || body.action === "side") && after && after !== before) {
       addLog(session, { kind: "system", author: "Initiative", text: after });
     }
     store.write(state); emitState();
