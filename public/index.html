@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="/css/ember.css?v=9" />
   <link rel="stylesheet" href="/css/table-indicator.css?v=1" />
   <link rel="stylesheet" href="/css/topbar.css?v=9" />
+  <link rel="stylesheet" href="/css/float.css?v=1" />
   <link rel="stylesheet" href="/css/start.css?v=9" />
   <script>
     function emberGo(name) {
@@ -155,7 +156,27 @@
 
     <section class="view" id="view-encounter">
       <div class="workspace encounter-work">
-        <aside class="panel">
+        <main class="panel map-panel">
+          <div class="map-wrap grow">
+            <div class="stage field" id="mapStage">
+              <div class="map-grid" aria-hidden="true"></div>
+            </div>
+            <div class="map-tools float-dock" id="mapDock">
+              <button class="btn tiny on" id="btnGrid" type="button">Gitter</button>
+              <button class="btn tiny" id="btnAddFoe">+ Foe</button>
+              <button class="btn tiny" id="btnAddPin">+ Pin</button>
+              <label class="btn tiny">Karte <input id="mapImage" type="file" accept="image/*" hidden /></label>
+              <button class="btn tiny" id="btnFow">Umbra: AUS</button>
+              <button class="btn tiny ghost" id="btnFowClear">Umbra wischen</button>
+            </div>
+          </div>
+        </main>
+        <aside class="panel float-panel" id="emberDrawer">
+          <header class="float-head" data-float-drag>
+            <span id="floatDrawerTitle">Tisch</span>
+            <button type="button" class="float-x" data-float-collapse aria-label="Einklappen">–</button>
+          </header>
+          <div class="float-body">
           <h2>Prepared Events</h2>
           <p class="hint" id="encMeta"></p>
           <div class="list" id="encList"></div>
@@ -195,19 +216,21 @@
           <p class="hint">SRD 2.0, Darrington Press Community Gaming License.</p>
           <h2 style="margin-top:18px;">Alarme</h2>
           <div class="list" id="encAlerts"></div>
-        </aside>
-        <main class="panel" style="display:flex;flex-direction:column;padding:0;">
-          <div class="map-wrap grow">
-            <div class="stage field" id="mapStage"></div>
-            <div class="map-tools">
-              <button class="btn tiny" id="btnAddFoe">+ Foe</button>
-              <button class="btn tiny" id="btnAddPin">+ Pin</button>
-              <label class="btn tiny">Karte <input id="mapImage" type="file" accept="image/*" hidden /></label>
-              <button class="btn tiny" id="btnFow">Umbra: AUS</button>
-              <button class="btn tiny ghost" id="btnFowClear">Umbra wischen</button>
-            </div>
           </div>
-        </main>
+        </aside>
+        <aside class="float-panel float-log" id="floatLogPanel">
+          <header class="float-head" data-float-drag>
+            <span>Log</span>
+            <button type="button" class="float-x" data-float-collapse aria-label="Einklappen">–</button>
+          </header>
+          <div class="float-body">
+            <div id="floatLog" class="float-log-list"></div>
+            <form class="float-compose" id="floatCompose">
+              <input id="floatLogInput" placeholder="Nachricht ins Log…" />
+              <button class="btn tiny primary" type="submit">↵</button>
+            </form>
+          </div>
+        </aside>
       </div>
     </section>
 
@@ -327,6 +350,7 @@
   <script src="/js/table-indicator.js?v=1"></script>
   <script src="/js/map.js?v=5"></script>
   <script src="/js/token.js?v=4"></script>
+  <script src="/js/float-panels.js?v=1"></script>
   <script src="/js/gm.js?v=6"></script>
 </body>
 </html>

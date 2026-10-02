@@ -1,0 +1,256 @@
+/* Encounter table: map fills the window, panels float over it. */
+
+body:has(#view-encounter.on) {
+  background: #0b0d10;
+}
+
+body:has(#view-encounter.on) .ember-topbar {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  width: max-content;
+  max-width: calc(100vw - 24px);
+  gap: 8px;
+  padding: 6px 10px 6px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(22, 24, 28, 0.9);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+}
+
+body:has(#view-encounter.on) .ember-topbar .brand {
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+body:has(#view-encounter.on) #view-encounter {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  background: #101214;
+}
+
+body:has(#view-encounter.on) #view-encounter .encounter-work {
+  display: block;
+  position: relative;
+  height: 100%;
+  min-height: 0;
+}
+
+body:has(#view-encounter.on) #view-encounter .map-panel {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+body:has(#view-encounter.on) #view-encounter .map-wrap,
+body:has(#view-encounter.on) #view-encounter .map-wrap.grow,
+body:has(#view-encounter.on) #view-encounter .stage.field {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  min-height: 0;
+  flex: none;
+}
+
+body:has(#view-encounter.on) #view-encounter .stage.field {
+  background-color: #16181c;
+  background-image: radial-gradient(900px 520px at 50% 70%, #242830, #101214);
+}
+
+.map-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+.stage.grid-off .map-grid { display: none; }
+
+body:has(#view-encounter.on) .float-panel,
+body:has(#view-encounter.on) .float-dock {
+  position: absolute;
+  z-index: 30;
+  color: #e8eaee;
+  background: rgba(24, 26, 31, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(12px);
+}
+
+body:has(#view-encounter.on) #emberDrawer {
+  top: 64px;
+  right: 12px;
+  width: min(300px, calc(100vw - 24px));
+  max-height: calc(100% - 78px);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  border-right: 0;
+}
+
+body:has(#view-encounter.on) #floatLogPanel {
+  left: 12px;
+  bottom: 12px;
+  width: min(340px, calc(100vw - 24px));
+  max-height: min(320px, 46vh);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+body:has(#view-encounter.on) #mapDock {
+  top: 64px;
+  left: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: max-content;
+  max-width: min(520px, calc(100vw - 340px));
+  padding: 8px;
+  border-top: 0;
+}
+
+.float-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 6px 8px 6px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: grab;
+  user-select: none;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+.float-head:active { cursor: grabbing; }
+
+.float-head span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.float-x {
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #c5cad3;
+  cursor: pointer;
+}
+
+.float-x:hover { background: rgba(255, 255, 255, 0.06); color: #fff; }
+
+.float-body {
+  overflow: auto;
+  padding: 10px 12px 12px;
+  min-height: 0;
+}
+
+.float-panel.is-collapsed .float-body { display: none; }
+.float-panel.is-collapsed { max-height: none; }
+
+body:has(#view-encounter.on) #emberDrawer h2 {
+  margin: 14px 0 6px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9aa3ae;
+}
+
+body:has(#view-encounter.on) #emberDrawer h2:first-child { margin-top: 0; }
+
+body:has(#view-encounter.on) #emberDrawer .card,
+body:has(#view-encounter.on) #floatLogPanel .card {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+}
+
+body:has(#view-encounter.on) #emberDrawer input,
+body:has(#view-encounter.on) #emberDrawer select,
+body:has(#view-encounter.on) #floatLogPanel input {
+  background: rgba(10, 12, 14, 0.72);
+  border-color: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: #e8eaee;
+}
+
+body:has(#view-encounter.on) #view-encounter .btn {
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #e4e7ee;
+}
+
+body:has(#view-encounter.on) #view-encounter .btn.primary,
+body:has(#view-encounter.on) #view-encounter .btn.on {
+  background: #3b1408;
+  border-color: var(--ember);
+  color: #ffd7a8;
+}
+
+.float-log-list {
+  display: grid;
+  gap: 8px;
+  max-height: 200px;
+  overflow: auto;
+  font-size: 13px;
+}
+
+.float-log-list .who { font-size: 11px; color: #9aa3ae; }
+.float-log-list .txt { color: #e8eaee; }
+
+.float-compose {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.float-compose input { flex: 1; }
+
+body:has(#view-encounter.on) #spotlightHud {
+  top: auto;
+  right: auto;
+  left: 12px;
+  bottom: 348px;
+  width: min(280px, calc(100vw - 24px));
+  border-radius: 12px;
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(24, 26, 31, 0.92);
+}
+
+@media (max-width: 800px) {
+  body:has(#view-encounter.on) .ember-topbar {
+    left: 12px;
+    transform: none;
+    width: auto;
+  }
+  body:has(#view-encounter.on) #emberDrawer {
+    top: auto;
+    bottom: 12px;
+    right: 12px;
+    max-height: 42vh;
+  }
+  body:has(#view-encounter.on) #floatLogPanel { display: none; }
+  body:has(#view-encounter.on) #mapDock { max-width: calc(100vw - 24px); }
+}
