@@ -65,7 +65,7 @@ $("#grid").addEventListener("pointerdown", (ev) => {
 
 function fillSubs(pc) {
   const names = window.emberSubs || [];
-  const options = names.map((n) => `<option value="${n}">${n}</option>`).join("");
+  const options = names.map((n) => `<option value="${n.name || n}">${n.name || n}${n.feature ? " — " + n.feature : ""}</option>`).join("");
   const current = pc?.subclass || "";
   for (const id of ["subPick", "levelSub"]) {
     const sel = $("#" + id);

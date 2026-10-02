@@ -41,5 +41,5 @@ test("Subclass hängt am Bogen", () => {
   const pc = { name: "Sable", class: "Rogue" };
   solo.applySubclass(pc, "Nightwalker");
   assert.equal(pc.subclass, "Nightwalker");
-  assert.ok(solo.subclassesFor("rogue").includes("Nightwalker"));
+  assert.ok(solo.subclassesFor("rogue").some((s) => s.name === "Nightwalker"));
 });

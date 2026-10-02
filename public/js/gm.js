@@ -561,7 +561,7 @@ async function fillSubclass(form, className, current) {
   if (!sel || sel.tagName !== "SELECT") return;
   const res = await fetch("/api/solo/subclasses?class=" + encodeURIComponent(className || ""));
   const data = await res.json();
-  sel.innerHTML = `<option value="">—</option>` + (data.subclasses || []).map((n) => `<option>${n}</option>`).join("");
+  sel.innerHTML = `<option value="">—</option>` + (data.subclasses || []).map((n) => `<option value="${n.name || n}">${n.name || n}${n.feature ? " — " + n.feature : ""}</option>`).join("");
   if (current) sel.value = current;
 }
 document.querySelector("#characterForm [name=class]")?.addEventListener("change", (ev) => fillSubclass(ev.target.form, ev.target.value, ""));

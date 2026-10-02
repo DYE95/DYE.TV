@@ -920,7 +920,7 @@ if (method === "POST" && p === "/api/update") {
 
   if (method === "GET" && p === "/api/solo/subclasses") {
     const klass = url.searchParams.get("class") || "";
-    return send(res, 200, { subclasses: solo.subclassesFor(klass).length ? solo.subclassesFor(klass) : Object.values({ a: solo.subclassesFor("assassin"), b: solo.subclassesFor("bard"), d: solo.subclassesFor("druid"), g: solo.subclassesFor("guardian"), r: solo.subclassesFor("ranger"), ro: solo.subclassesFor("rogue"), s: solo.subclassesFor("seraph"), so: solo.subclassesFor("sorcerer"), w: solo.subclassesFor("warrior"), wi: solo.subclassesFor("wizard") }).flat() });
+    return send(res, 200, { subclasses: solo.subclassesFor(klass) });
   }
   if (method === "POST" && p === "/api/solo/subclass") {
     const body = await readJson(req);
