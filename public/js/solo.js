@@ -33,7 +33,14 @@ async function refresh() {
   sel.innerHTML = pcs.map((c) => `<option value="${c.id}">${c.name} · Lv ${c.level || 1}</option>`).join("") || "<option value=''>Kein Bogen</option>";
   if (current) sel.value = current;
   const pc = pcs.find((c) => c.id === sel.value);
-  $("#who").textContent = pc ? pc.name : "kein Bogen";
+  $("#who").textContent = pc ? pc.name + (pc.subclass ? " · " + pc.subclass : "") : "kein Bogen";
+  fillSubs(pc);
+  if (pc) {
+    api("/api/solo/subclasses?class=" + encodeURIComponent(pc.class || "")).then((data) => {
+      window.emberSubs = data.subclasses || [];
+      fillSubs(pc);
+    });
+  }
   const maps = await api("/api/maps");
   $("#maps").innerHTML = (maps.maps || []).map((m) => `<button class="btn tiny" data-map="${m.id}">${m.name}</button>`).join("");
   $("#maps").querySelectorAll("[data-map]").forEach((b) => b.addEventListener("click", () => api("/api/maps/load", { id: b.dataset.map }).then(note)));
@@ -56,6 +63,23 @@ $("#grid").addEventListener("pointerdown", (ev) => {
   paint();
 });
 
+function fillSubs(pc) {
+  const names = window.emberSubs || [];
+  const options = names.map((n) => `<option value="${n}">${n}</option>`).join("");
+  const current = pc?.subclass || "";
+  for (const id of ["subPick", "levelSub"]) {
+    const sel = $("#" + id);
+    if (!sel) continue;
+    sel.innerHTML = `<option value="">${id === "levelSub" ? "behalten" : "—"}</option>` + options;
+    if (current) sel.value = current;
+  }
+}
+$("#pc")?.addEventListener("change", () => fillSubs((state.characters || []).find((c) => c.id === $("#pc").value)));
+$("#btnSubclass").addEventListener("click", async () => {
+  const res = await api("/api/solo/subclass", { characterId: $("#pc").value, subclass: $("#subPick").value });
+  note(res.text);
+  refresh();
+});
 $("#btnLevel").addEventListener("click", () => {
   const pc = (state.characters || []).find((c) => c.id === $("#pc").value);
   const box = $("#levelBox");
@@ -72,6 +96,7 @@ $("#btnLevelGo").addEventListener("click", async () => {
     experience: $("#levelXp").value,
     upgrade: $("#levelUpgrade").value,
     note: $("#levelNote").value,
+    subclass: $("#levelSub").value,
     party: $("#levelParty").checked,
   });
   note(res.text);
@@ -117,6 +142,7 @@ $("#btnDungeon").addEventListener("click", async () => {
   note(res.text);
 });
 
+api("/api/solo/subclasses").then((data) => { window.emberSubs = data.subclasses || []; fillSubs((state.characters || []).find((c) => c.id === $("#pc").value)); });
 api("/api/solo/bots").then((data) => {
   $("#bot").innerHTML = (data.bots || []).map((b) => `<option value="${b.id}">${b.name} · Diff ${b.difficulty}</option>`).join("");
 });

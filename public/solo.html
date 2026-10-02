@@ -19,12 +19,15 @@
         <h1>Üben</h1>
         <p class="hint">Nicht der Spielabend. Ein Bogen, ein Bot, eine Karte.</p>
         <label>Bogen <select id="pc"></select></label>
+        <label>Subclass <select id="subPick"><option value="">—</option></select></label>
+        <button class="btn" id="btnSubclass">Subclass setzen</button>
         <button class="btn" id="btnStart">Solo öffnen</button>
         <button class="btn primary" id="btnLevel">Level-Up</button>
         <div id="levelBox" class="hidden" style="margin-top:8px;">
           <p class="hint" id="levelPreview"></p>
           <label>Neue Experience <input id="levelXp" placeholder="leer = keine neue" /></label>
           <label>Oder erhöhen <select id="levelUpgrade"><option value="">—</option></select></label>
+          <label>Subclass <select id="levelSub"><option value="">behalten</option></select></label>
           <label>Notiz <input id="levelNote" placeholder="Domain-Karte, Subclass" /></label>
           <label><input id="levelParty" type="checkbox" /> ganze Kampagne</label>
           <button class="btn" id="btnLevelGo" type="button">Bestätigen</button>

@@ -918,6 +918,19 @@ if (method === "POST" && p === "/api/update") {
     return send(res, 200, { text, leveled });
   }
 
+  if (method === "GET" && p === "/api/solo/subclasses") {
+    const klass = url.searchParams.get("class") || "";
+    return send(res, 200, { subclasses: solo.subclassesFor(klass).length ? solo.subclassesFor(klass) : Object.values({ a: solo.subclassesFor("assassin"), b: solo.subclassesFor("bard"), d: solo.subclassesFor("druid"), g: solo.subclassesFor("guardian"), r: solo.subclassesFor("ranger"), ro: solo.subclassesFor("rogue"), s: solo.subclassesFor("seraph"), so: solo.subclassesFor("sorcerer"), w: solo.subclassesFor("warrior"), wi: solo.subclassesFor("wizard") }).flat() });
+  }
+  if (method === "POST" && p === "/api/solo/subclass") {
+    const body = await readJson(req);
+    const state = store.read();
+    const character = state.characters.find((c) => c.id === body.characterId);
+    if (!character) return send(res, 404, { error: "Bogen fehlt." });
+    solo.applySubclass(character, body.subclass);
+    store.write(state); emitState();
+    return send(res, 200, { text: character.name + " · " + (character.subclass || "keine Subclass") });
+  }
   if (method === "POST" && p === "/api/solo/level") {
     const body = await readJson(req);
     const state = store.read();
@@ -928,7 +941,7 @@ if (method === "POST" && p === "/api/update") {
       : [origin];
     const lines = [];
     for (const character of targets) {
-      const result = solo.levelUp(character, { experience: body.experience, upgrade: body.upgrade, note: body.note });
+      const result = solo.levelUp(character, { experience: body.experience, upgrade: body.upgrade, note: body.note, subclass: body.subclass });
       if (!result.ok) { lines.push(result.text); continue; }
       for (const xp of character.experiences || []) if (!xp.id) xp.id = id("xp");
       lines.push(result.text);

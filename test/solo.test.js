@@ -36,3 +36,10 @@ test("Level 10 ist das Ende", () => {
   assert.equal(result.ok, false);
   assert.equal(pc.level, 10);
 });
+
+test("Subclass hängt am Bogen", () => {
+  const pc = { name: "Sable", class: "Rogue" };
+  solo.applySubclass(pc, "Nightwalker");
+  assert.equal(pc.subclass, "Nightwalker");
+  assert.ok(solo.subclassesFor("rogue").includes("Nightwalker"));
+});
