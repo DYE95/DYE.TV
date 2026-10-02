@@ -151,7 +151,7 @@ function fillCharacterForm(c) {
   form.community.value = c.community || "";
   form.level.value = c.level || 1;
   form.class.value = c.class || "";
-  form.subclass.value = c.subclass || "";
+  fillSubclass(form, c.class, c.subclass);
   ["agility","strength","finesse","instinct","presence","knowledge"].forEach((t) => { form[t].value = c.traits?.[t] ?? 0; });
   form.hope.value = c.hope ?? 2;
   form.stressMarked.value = c.stressMarked ?? 0;
@@ -555,3 +555,13 @@ setInterval(() => {
     body: JSON.stringify({ key: gmSeat, role: "gm", name: "SL", status: activeSession()?.narrating ? "narrating" : "online" }),
   }).catch(() => {});
 }, 4000);
+
+async function fillSubclass(form, className, current) {
+  const sel = form?.subclass;
+  if (!sel || sel.tagName !== "SELECT") return;
+  const res = await fetch("/api/solo/subclasses?class=" + encodeURIComponent(className || ""));
+  const data = await res.json();
+  sel.innerHTML = `<option value="">—</option>` + (data.subclasses || []).map((n) => `<option>${n}</option>`).join("");
+  if (current) sel.value = current;
+}
+document.querySelector("#characterForm [name=class]")?.addEventListener("change", (ev) => fillSubclass(ev.target.form, ev.target.value, ""));
