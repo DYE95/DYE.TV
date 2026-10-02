@@ -17,6 +17,7 @@ const solo = require("./lib/solo");
 const PORT = Number(process.env.EMBER_PORT || 3478);
 const HOST = process.env.EMBER_HOST || "0.0.0.0";
 const PUBLIC = path.join(__dirname, "public");
+const LIBRARY = path.join(__dirname, "docs", "bibliothek");
 const UPLOADS = path.join(__dirname, "data", "uploads");
 const clients = new Set();
 const presence = new Map();
@@ -953,7 +954,19 @@ if (method === "POST" && p === "/api/update") {
     return send(res, 200, { text, level: origin.level });
   }
 
-  return send(res, 404, { error: "Unbekannte Route." });
+  if (method === "GET" && p === "/api/bibliothek") {
+    const indexPath = path.join(LIBRARY, "index.json");
+    const books = fs.existsSync(indexPath) ? JSON.parse(fs.readFileSync(indexPath, "utf8")) : [];
+    const mapsDir = path.join(LIBRARY, "maps");
+    const maps = fs.existsSync(mapsDir) ? fs.readdirSync(mapsDir).filter((f) => /\.(jpg|png|webp)$/i.test(f)).map((f) => ({ title: f, href: "/docs/bibliothek/maps/" + f })) : [];
+    return send(res, 200, { books: books.map((b) => ({ ...b, href: "/docs/bibliothek/" + b.file, missing: !fs.existsSync(path.join(LIBRARY, b.file)) })), maps });
+  }
+  if (method === "GET" && p === "/api/errata") {
+    const file = path.join(LIBRARY, "errata.json");
+    return send(res, 200, { notes: fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : [] });
+  }
+
+return send(res, 404, { error: "Unbekannte Route." });
 }
 
 const server = http.createServer(async (req, res) => {
@@ -979,6 +992,15 @@ const server = http.createServer(async (req, res) => {
     }
     if (url.pathname === "/solo" || url.pathname === "/solo/") {
       return serveFile(res, path.join(PUBLIC, "solo.html"), req);
+    }
+    if (url.pathname === "/bibliothek" || url.pathname === "/bibliothek/") {
+      return serveFile(res, path.join(PUBLIC, "bibliothek.html"), req);
+    }
+    if (url.pathname.startsWith("/docs/bibliothek/")) {
+      const rel = decodeURIComponent(url.pathname.slice("/docs/bibliothek/".length));
+      const file = safeJoin(LIBRARY, rel);
+      if (!file) { res.writeHead(403); return res.end(); }
+      return serveFile(res, file, req);
     }
     if (url.pathname === "/runner" || url.pathname === "/runner/") {
       return serveFile(res, path.join(PUBLIC, "runner.html"), req);

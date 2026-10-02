@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ember · Bibliothek</title>
+  <link rel="stylesheet" href="/css/ember.css?v=9" />
+</head>
+<body class="house-body">
+  <div class="player-shell">
+    <header class="topbar">
+      <a class="btn tiny ghost" href="/">Home</a>
+      <div class="brand">Bibliothek</div>
+    </header>
+    <div class="scroll" style="padding:16px;">
+      <p class="hint">Die PDFs liegen lokal unter docs/bibliothek. Nichts davon geht ins Netz.</p>
+      <div class="list" id="books"></div>
+      <h2>Karten</h2>
+      <div class="list" id="maps"></div>
+    </div>
+  </div>
+  <script>
+    fetch("/api/bibliothek").then((r) => r.json()).then((data) => {
+      document.querySelector("#books").innerHTML = (data.books || []).map((b) =>
+        `<a class="card" href="${b.href}" target="_blank"><div class="name">${b.title}</div><div class="meta">${b.kind}${b.missing ? " · Datei fehlt" : ""}</div></a>`
+      ).join("") || "<p class='hint'>Ordner docs/bibliothek ist leer.</p>";
+      document.querySelector("#maps").innerHTML = (data.maps || []).map((m) =>
+        `<a class="card" href="${m.href}" target="_blank"><div class="name">${m.title}</div></a>`
+      ).join("");
+    });
+  </script>
+</body>
+</html>
