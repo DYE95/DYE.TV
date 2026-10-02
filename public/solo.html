@@ -21,6 +21,14 @@
         <label>Bogen <select id="pc"></select></label>
         <button class="btn" id="btnStart">Solo öffnen</button>
         <button class="btn primary" id="btnLevel">Level-Up</button>
+        <div id="levelBox" class="hidden" style="margin-top:8px;">
+          <p class="hint" id="levelPreview"></p>
+          <label>Neue Experience <input id="levelXp" placeholder="leer = keine neue" /></label>
+          <label>Oder erhöhen <select id="levelUpgrade"><option value="">—</option></select></label>
+          <label>Notiz <input id="levelNote" placeholder="Domain-Karte, Subclass" /></label>
+          <label><input id="levelParty" type="checkbox" /> ganze Kampagne</label>
+          <button class="btn" id="btnLevelGo" type="button">Bestätigen</button>
+        </div>
         <p class="hint" id="levelOut"></p>
       </div>
       <div class="menu-card" style="text-align:left;margin-bottom:12px;">

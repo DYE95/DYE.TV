@@ -22,10 +22,17 @@ test("Dungeon hat drei bis sechs Räume", () => {
 });
 
 test("Level-Up hebt das Level und hängt eine Experience an", () => {
-  const pc = { level: 1, hopeMax: 6, experiences: [] };
-  solo.levelUp(pc, "Waldläufer");
+  const pc = { name: "Sable", level: 1, hopeMax: 6, experiences: [] };
+  const result = solo.levelUp(pc, { experience: "Waldläufer" });
+  assert.equal(result.ok, true);
   assert.equal(pc.level, 2);
-  assert.equal(pc.hope, 6);
+  assert.equal(pc.proficiency, 2);
   assert.equal(pc.experiences[0].name, "Waldläufer");
-  assert.equal(pc.experiences[0].bonus, 2);
+});
+
+test("Level 10 ist das Ende", () => {
+  const pc = { name: "Ivo", level: 10 };
+  const result = solo.levelUp(pc, {});
+  assert.equal(result.ok, false);
+  assert.equal(pc.level, 10);
 });

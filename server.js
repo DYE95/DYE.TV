@@ -921,17 +921,23 @@ if (method === "POST" && p === "/api/update") {
   if (method === "POST" && p === "/api/solo/level") {
     const body = await readJson(req);
     const state = store.read();
-    const character = state.characters.find((c) => c.id === body.characterId);
-    if (!character) return send(res, 404, { error: "Bogen fehlt." });
-    if (Number(character.level || 1) >= 10) return send(res, 400, { error: "Level 10 ist das Ende." });
-    solo.levelUp(character, body.experience);
-    const added = character.experiences[character.experiences.length - 1];
-    if (added && !added.id) added.id = id("xp");
+    const origin = state.characters.find((c) => c.id === body.characterId);
+    if (!origin) return send(res, 404, { error: "Bogen fehlt." });
+    const targets = body.party
+      ? state.characters.filter((c) => c.campaignId === origin.campaignId)
+      : [origin];
+    const lines = [];
+    for (const character of targets) {
+      const result = solo.levelUp(character, { experience: body.experience, upgrade: body.upgrade, note: body.note });
+      if (!result.ok) { lines.push(result.text); continue; }
+      for (const xp of character.experiences || []) if (!xp.id) xp.id = id("xp");
+      lines.push(result.text);
+    }
+    const text = lines.join(" ");
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
-    const text = character.name + " ist Level " + character.level + (body.experience ? ". Experience: " + body.experience : ".");
     if (session) addLog(session, { kind: "system", author: "Level", text });
     store.write(state); emitState();
-    return send(res, 200, { text, level: character.level });
+    return send(res, 200, { text, level: origin.level });
   }
 
   return send(res, 404, { error: "Unbekannte Route." });

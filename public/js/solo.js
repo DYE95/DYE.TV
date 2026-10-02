@@ -56,11 +56,27 @@ $("#grid").addEventListener("pointerdown", (ev) => {
   paint();
 });
 
-$("#btnLevel").addEventListener("click", async () => {
-  const experience = prompt("Neue Experience? Leer lassen, nur Level.", "") || "";
-  const res = await api("/api/solo/level", { characterId: $("#pc").value, experience });
+$("#btnLevel").addEventListener("click", () => {
+  const pc = (state.characters || []).find((c) => c.id === $("#pc").value);
+  const box = $("#levelBox");
+  if (!pc || !box) return;
+  const next = Math.min(10, Number(pc.level || 1) + 1);
+  const prof = [2, 5, 8].includes(next) ? " Proficiency +1." : "";
+  $("#levelPreview").textContent = pc.name + " wird Level " + next + "." + prof;
+  $("#levelUpgrade").innerHTML = `<option value="">—</option>` + (pc.experiences || []).map((e) => `<option value="${e.id || e.name}">${e.name} +${e.bonus}</option>`).join("");
+  box.classList.toggle("hidden");
+});
+$("#btnLevelGo").addEventListener("click", async () => {
+  const res = await api("/api/solo/level", {
+    characterId: $("#pc").value,
+    experience: $("#levelXp").value,
+    upgrade: $("#levelUpgrade").value,
+    note: $("#levelNote").value,
+    party: $("#levelParty").checked,
+  });
   note(res.text);
-  if ($("#levelOut")) $("#levelOut").textContent = res.text;
+  $("#levelOut").textContent = res.text;
+  $("#levelBox").classList.add("hidden");
   refresh();
 });
 $("#btnStart").addEventListener("click", async () => {
