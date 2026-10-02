@@ -966,7 +966,11 @@ if (method === "POST" && p === "/api/update") {
     return send(res, 200, { notes: fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : [] });
   }
 
-return send(res, 404, { error: "Unbekannte Route." });
+if (method === "GET" && p === "/api/cards") {
+    const file = path.join(PUBLIC, "data", "cards.json");
+    return send(res, 200, { cards: fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : [] });
+  }
+  return send(res, 404, { error: "Unbekannte Route." });
 }
 
 const server = http.createServer(async (req, res) => {
@@ -995,6 +999,9 @@ const server = http.createServer(async (req, res) => {
     }
     if (url.pathname === "/bibliothek" || url.pathname === "/bibliothek/") {
       return serveFile(res, path.join(PUBLIC, "bibliothek.html"), req);
+    }
+    if (url.pathname === "/karten" || url.pathname === "/karten/") {
+      return serveFile(res, path.join(PUBLIC, "karten.html"), req);
     }
     if (url.pathname.startsWith("/docs/bibliothek/")) {
       const rel = decodeURIComponent(url.pathname.slice("/docs/bibliothek/".length));

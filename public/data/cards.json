@@ -1,0 +1,23 @@
+[
+  {"name":"Blighting Strike","domain":"Dread","level":1,"kind":"Spell","text":"Spellcast auf Far. Hope: d6+1, Fear: d10+1, mal Proficiency. Der nächste Treffer des Ziels macht halben Schaden. Fehlschlag kostet Hope oder Stress."},
+  {"name":"Umbral Veil","domain":"Dread","level":1,"kind":"Spell","text":"Einmal pro Rast, 1 Stress. Marken gleich der Fear im Pool. Jede Marke gibt einem Angriff gegen dich −1."},
+  {"name":"Voice of Dread","domain":"Dread","level":1,"kind":"Spell","text":"Spellcast gegen ein sichtbares Wesen. Erfolg: Stress und kurz Restrained."},
+  {"name":"Hideous Retribution","domain":"Dread","level":2,"kind":"Spell","text":"Wenn ein Verbündeter in Close Schaden nimmt, Reaction. Erfolg: d6 magischer Schaden mit Proficiency."},
+  {"name":"Siphon Essence","domain":"Dread","level":2,"kind":"Spell","text":"Spellcast in Very Close. Mit Fear nimmt das Ziel d12+4 und du +1 auf den Trait. Du heilst die markierten Hit Points."},
+  {"name":"Shared Trauma","domain":"Dread","level":2,"kind":"Spell","text":"Leiden auf ein williges Wesen in Melee schieben. Beide markieren Stress."},
+  {"name":"Terrify","domain":"Dread","level":4,"kind":"Spell","text":"Spellcast in Close. Erfolg: Ziel markiert 1d4 Stress und kann eine Stufe weggeschoben werden. Fear: kurz Vulnerable."},
+  {"name":"Chains of Affliction","domain":"Dread","level":4,"kind":"Spell","text":"2 Stress, ein Wesen ist verkettet. Sein Angriff macht einen Hit Point weniger. Höchstens ein Wesen."},
+  {"name":"Summon Horror","domain":"Dread","level":4,"kind":"Spell","rule":"neu","text":"Einmal pro Szene, 1 Stress. d8+1 magischer Schaden in Far. Trifft es, Reaction 12, sonst Chained. Danach ist es weg."},
+  {"name":"Dire Strike","domain":"Dread","level":5,"kind":"Spell","text":"Wenn ein Ziel alle Hit Points markiert, 1 Hope: der GM verliert 1 Fear."},
+  {"name":"Spectral Mist","domain":"Dread","level":5,"kind":"Spell","text":"2 Hope, unkörperlicher Nebel in Close bis Szenenende. Feste Dinge gehen durch, Angriffe und Schaden nicht."},
+  {"name":"Darkfire","domain":"Dread","level":6,"kind":"Spell","rule":"neu","text":"Einmal pro Szene, beliebig Hope ausgeben. Jede Hope ein Ziel in Close, Reaction 15. d8+6. Wer besteht, nimmt halben Schaden."},
+  {"name":"Jump Scare","domain":"Dread","level":6,"kind":"Spell","text":"Nach Schaden 1 Hope, um in Melee zu springen. Das Ziel markiert 1 oder mehr Hit Points."},
+  {"name":"Dread-Touched","domain":"Dread","level":7,"kind":"Ability","text":"Ab vier Dread-Karten: Fear kann keinen Stress geben, und mit Fear +Fear-Zahl auf den Wurf."},
+  {"name":"Wall of Hunger","domain":"Dread","level":7,"kind":"Spell","text":"Spellcast 10, Wand zwischen zwei Punkten in Far. Wer hindurch will, markiert 2 Stress."},
+  {"name":"Dark Army","domain":"Dread","level":8,"kind":"Spell","text":"Spellcast 14, einmal pro Long Rest. Acht Marken. Schaden gibt 1d8 pro Marke, erlittener Schaden senkt um 1d8 pro Marke."},
+  {"name":"Eldritch Flesh","domain":"Dread","level":8,"kind":"Spell","text":"+1 auf Schwellen pro markiertem Stress. 2 Hope leeren einen Armor-Slot."},
+  {"name":"Damnation","domain":"Dread","level":9,"kind":"Spell","text":"Spellcast in Far, d20s gleich der Stress-Zahl. Unterliegt das Ziel, markieren alle in Far 1 Stress."},
+  {"name":"Savor the Anguish","domain":"Dread","level":9,"kind":"Ability","rule":"neu","text":"Ability, kein Spell. Nimmt ein Gegner in Close Severe, darfst du 1 Stress leeren."},
+  {"name":"Avatar of Terror","domain":"Dread","level":10,"kind":"Spell","text":"1 Stress, Gestalt aus Fear. Schaden +1d6 pro Fear im Pool. Der GM kann 1 Fear ausgeben, um dich in Very Close zu beleuchten."},
+  {"name":"Invoke Torment","domain":"Dread","level":10,"kind":"Ability","rule":"neu","text":"Ability, kein Spell. Doppelter Schaden gegen Ziele, deren Stress voll ist. Besiegst du eins mit vollem Stress, 1 Hope."}
+]

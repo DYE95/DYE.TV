@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ember · Karten</title>
+  <link rel="stylesheet" href="/css/ember.css?v=9" />
+  <style>
+    .deck { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:10px; }
+    .card.rule { outline:1px solid #c45c26; }
+  </style>
+</head>
+<body class="house-body">
+  <div class="player-shell">
+    <header class="topbar">
+      <a class="btn tiny ghost" href="/">Home</a>
+      <div class="brand">Karten</div>
+      <div class="grow"></div>
+      <select id="kind"><option value="">alle</option><option>Spell</option><option>Ability</option></select>
+    </header>
+    <div class="scroll" style="padding:16px;">
+      <p class="hint">Dread aus Hope & Fear. Orange ist die Errata vom 25. August 2026.</p>
+      <div class="deck" id="deck"></div>
+    </div>
+  </div>
+  <script>
+    let cards = [];
+    function paint() {
+      const kind = document.querySelector("#kind").value;
+      document.querySelector("#deck").innerHTML = cards.filter((c) => !kind || c.kind === kind).map((c) =>
+        `<article class="card${c.rule ? " rule" : ""}"><div class="name">${c.name}</div><div class="meta">${c.domain} · ${c.level} · ${c.kind}</div><p>${c.text}</p></article>`
+      ).join("");
+    }
+    document.querySelector("#kind").addEventListener("change", paint);
+    fetch("/api/cards").then((r) => r.json()).then((data) => { cards = data.cards || []; paint(); });
+  </script>
+</body>
+</html>
