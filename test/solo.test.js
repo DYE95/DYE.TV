@@ -20,3 +20,12 @@ test("Dungeon hat drei bis sechs Räume", () => {
   assert.ok(rooms.some((r) => r.bot));
   assert.ok(rooms.some((r) => !r.bot));
 });
+
+test("Level-Up hebt das Level und hängt eine Experience an", () => {
+  const pc = { level: 1, hopeMax: 6, experiences: [] };
+  solo.levelUp(pc, "Waldläufer");
+  assert.equal(pc.level, 2);
+  assert.equal(pc.hope, 6);
+  assert.equal(pc.experiences[0].name, "Waldläufer");
+  assert.equal(pc.experiences[0].bonus, 2);
+});

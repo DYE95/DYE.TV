@@ -56,6 +56,13 @@ $("#grid").addEventListener("pointerdown", (ev) => {
   paint();
 });
 
+$("#btnLevel").addEventListener("click", async () => {
+  const experience = prompt("Neue Experience? Leer lassen, nur Level.", "") || "";
+  const res = await api("/api/solo/level", { characterId: $("#pc").value, experience });
+  note(res.text);
+  if ($("#levelOut")) $("#levelOut").textContent = res.text;
+  refresh();
+});
 $("#btnStart").addEventListener("click", async () => {
   const res = await api("/api/solo/start", { characterId: $("#pc").value });
   note(res.text);
