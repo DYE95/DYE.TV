@@ -215,12 +215,12 @@ function renderEncounter() {
   const who = init?.on && init.order?.length ? init.order[init.index] : null;
   if ($("#sessionTurn")) $("#sessionTurn").textContent = who ? "Initiative · Runde " + init.round + " · " + who.label : "";
   const meta = $("#initMeta");
-  const list = $("#initList");
+  const initRows = $("#initList");
   if (meta) meta.textContent = who
     ? "Runde " + init.round + " · " + who.label + " ist dran." + (init.auto === false ? " Ablauf von Hand." : " Wurf gibt weiter.")
     : "Noch keine Reihenfolge. Play Event setzt sie aus den Tokens.";
-  if (list) {
-    list.innerHTML = "";
+  if (initRows) {
+    initRows.innerHTML = "";
     (init?.order || []).forEach((row, i) => {
       const el = document.createElement("div");
       el.className = "card init-row" + (i === init.index && init.on ? " current" : "");
@@ -237,9 +237,9 @@ function renderEncounter() {
       go.type = "button"; go.className = "btn tiny"; go.textContent = "dran";
       go.addEventListener("click", () => api("/api/session/initiative", { as: "gm", action: "set", id: row.id }));
       el.appendChild(label); el.appendChild(up); el.appendChild(down); el.appendChild(go);
-      list.appendChild(el);
+      initRows.appendChild(el);
     });
-    if (!init?.order?.length) list.innerHTML = "<p class='hint'>Tokens auf die Karte, dann Aus Tokens.</p>";
+    if (!init?.order?.length) initRows.innerHTML = "<p class='hint'>Tokens auf die Karte, dann Aus Tokens.</p>";
   }
 }
 
