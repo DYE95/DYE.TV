@@ -17,7 +17,7 @@ function sit(id, asGuest) {
 function applyState(next) {
   state = next;
   if (meId && !state.characters.some((c) => c.id === meId)) meId = "";
-  const typing = document.activeElement && document.activeElement.id === "question";
+  const typing = document.activeElement && ["question", "hopeDie", "fearDie", "compQ", "playLogQ"].includes(document.activeElement.id);
   if (!typing) render();
   else {
     const pc = me();
@@ -100,12 +100,16 @@ function render() {
   const whoTurn = init?.on && init.order?.length ? init.order[init.index] : null;
   const chip = $("#turnChip");
   if (chip) chip.textContent = whoTurn ? "R" + init.round + " " + whoTurn.label : "keine Reihenfolge";
-  renderMap($("#mapStage"), state, {
-    viewer: pc ? pc.id : "guest",
-    actor: "player",
-    characterId: pc ? pc.id : null,
-    canMove: (token) => pc && token.characterId === pc.id,
-  });
+  const mapKey = (sesTurn?.map?.tokens || []).map((t) => t.id + ":" + t.x + ":" + t.y + ":" + (t.rev || 0)).join("|") + "|" + (sesTurn?.map?.fow?.on ? "1" : "0");
+  if ($("#mapStage") && mapKey !== $("#mapStage").dataset.key) {
+    $("#mapStage").dataset.key = mapKey;
+    renderMap($("#mapStage"), state, {
+      viewer: pc ? pc.id : "guest",
+      actor: "player",
+      characterId: pc ? pc.id : null,
+      canMove: (token) => pc && token.characterId === pc.id,
+    });
+  }
   renderClips();
   if (!pc) {
     $("#sheet").innerHTML = "<p class='hint'>Gast: Karte und Video. Bogen über „Anderen Bogen“.</p>";
@@ -165,15 +169,25 @@ $("#btnGuest")?.addEventListener("click", () => sit("", true));
 $("#btnLeaveSeat")?.addEventListener("click", () => sit("", false));
 $("#btnSpotlight")?.addEventListener("click", async () => {
   if (!meId) return;
-  await fetch("/api/session/spotlight", {
-    method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      characterId: meId,
-      action: $("#actionPick").value.startsWith("—") ? "" : $("#actionPick").value,
-      question: $("#question").value.trim(),
-    }),
-  });
-  $("#question").value = "";
+  const btn = $("#btnSpotlight");
+  btn.disabled = true;
+  const out = $("#rollOut");
+  try {
+    const res = await fetch("/api/session/spotlight", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        characterId: meId,
+        action: ($("#actionPick")?.value || "").startsWith("—") ? "" : $("#actionPick").value,
+        question: $("#question").value.trim(),
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (out) out.textContent = res.ok ? "Spotlight ist beim Tisch." : (data.error || "Nicht angekommen.");
+    if (res.ok) $("#question").value = "";
+  } catch (err) {
+    if (out) out.textContent = "Keine Verbindung.";
+  }
+  btn.disabled = false;
 });
 async function playerRoll(table) {
   const pc = me();

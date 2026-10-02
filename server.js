@@ -357,6 +357,7 @@ async function handleApi(req, res, url) {
       question: body.question || "",
       at: new Date().toISOString(),
     });
+    addLog(session, { kind: "note", author: pc ? pc.name : "Spieler", text: "Will Spotlight" + (body.action ? " · " + body.action : "") + (body.question ? ": " + body.question : "") });
     store.write(state); emitState();
     return send(res, 200, { ok: true });
   }
