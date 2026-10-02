@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Ember</title>
   <link rel="stylesheet" href="/css/ember.css?v=9" />
+  <link rel="stylesheet" href="/css/table-indicator.css?v=1" />
   <link rel="stylesheet" href="/css/topbar.css?v=9" />
   <link rel="stylesheet" href="/css/start.css?v=9" />
   <script>
@@ -63,6 +64,7 @@
               <button class="start-item start-item-danger" id="btnLeave"><b>Verlöschen</b><span>Ember schließen</span></button>
             </div>
           </div>
+          <div id="tableHome" data-table="gm"></div>
         </div>
         <div class="start-art" role="img" aria-label="Lagerfeuer am Rand der Umbra"></div>
       </div>
@@ -78,6 +80,7 @@
           <button class="btn" id="btnStartSession" style="width:100%;margin-bottom:8px;">Session öffnen</button>
           <button class="btn ghost" id="btnEndSession" style="width:100%;">Session schließen</button>
           <h2 style="margin-top:18px;">Am Tisch</h2>
+          <div id="tableIndicator" data-table="gm"></div>
           <div class="list" id="sessionPlayers"></div>
         </aside>
         <main class="panel" style="display:flex;flex-direction:column;padding:0;">
@@ -321,8 +324,9 @@
       </div>
     </section>
   </div>
+  <script src="/js/table-indicator.js?v=1"></script>
   <script src="/js/map.js?v=5"></script>
   <script src="/js/token.js?v=4"></script>
-  <script src="/js/gm.js?v=5"></script>
+  <script src="/js/gm.js?v=6"></script>
 </body>
 </html>

@@ -272,6 +272,8 @@ function renderSession() {
       players.appendChild(el);
     });
   }
+  const table = $("#tableIndicator");
+  if (table && window.renderTableIndicator) renderTableIndicator(table, state);
   const harmFoe = $("#harmFoe");
   if (harmFoe) {
     const current = harmFoe.value;

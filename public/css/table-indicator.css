@@ -1,0 +1,112 @@
+.table-indicator {
+  margin: 10px 0 14px;
+  background: #10200e;
+  border: 1px solid #3a3228;
+  color: #f4efe4;
+}
+.table-indicator .plate {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1872 / 1056;
+  background:
+    radial-gradient(ellipse at 50% 42%, #86c901 0%, #39700a 42%, #1a2d14 78%);
+  overflow: hidden;
+}
+.table-indicator .trunk {
+  position: absolute;
+  top: -4%;
+  bottom: -8%;
+  width: 18%;
+  background: linear-gradient(#3a2a18, #1a140e);
+  border-radius: 40% 46% 20% 24%;
+}
+.table-indicator .trunk.left { left: -2%; }
+.table-indicator .trunk.right { right: -2%; }
+.table-indicator .board {
+  position: absolute;
+  left: 31%;
+  top: 52%;
+  width: 38%;
+  height: 16%;
+  background: repeating-linear-gradient(#9f643c, #9f643c 3px, #7a4a2c 4px);
+  box-shadow: 0 8px 0 #3a2a18;
+}
+.table-indicator .seat {
+  position: absolute;
+  width: 9%;
+  height: 18%;
+  transform: translate(-50%, -100%);
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+.table-indicator .seat .marker {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 8%;
+  height: 28%;
+  background: #823a20;
+  box-shadow: 0 6px 0 #3a2a18;
+}
+.table-indicator .seat.selected .marker { outline: 2px solid #f4efe4; }
+.table-indicator .seat .who {
+  position: absolute;
+  left: 50%;
+  bottom: 22%;
+  transform: translateX(-50%);
+  width: 70%;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+.table-indicator .seat.off .who { opacity: .35; }
+.table-indicator .seat .cap {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translate(-50%, -110%);
+  font: 10px/1.2 Palatino, Georgia, serif;
+  letter-spacing: .04em;
+  color: #f4efe4;
+  background: rgba(20, 23, 16, .8);
+  padding: 2px 4px;
+  white-space: nowrap;
+  opacity: 0;
+}
+.table-indicator .seat:hover .cap,
+.table-indicator .seat.selected .cap { opacity: 1; }
+.table-indicator .gm {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -100%);
+  width: 7%;
+  opacity: .28;
+}
+.table-indicator .gm.on { opacity: 1; }
+.table-indicator .bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding: 8px;
+  background: #1a1914;
+}
+.table-indicator .bar button {
+  appearance: none;
+  border: 1px solid #6a432c;
+  background: #2a211c;
+  color: #f4efe4;
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+.table-indicator .bar button[aria-pressed="true"],
+.table-indicator .bar button:hover { background: #c4513a; }
+.table-indicator .readout {
+  min-width: 140px;
+  color: #e4d2b0;
+  font-size: 13px;
+}

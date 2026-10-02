@@ -7,6 +7,7 @@
   <meta name="theme-color" content="#1b2733" />
   <title>Ember · Spieler</title>
   <link rel="stylesheet" href="/css/ember.css?v=7" />
+  <link rel="stylesheet" href="/css/table-indicator.css?v=1" />
 </head>
 <body class="house-body">
   <div class="player-shell">
@@ -19,9 +20,10 @@
       <div class="chip" id="who">offen</div>
     </header>
     <div class="scroll" id="gate">
-      <div class="menu-card" style="width:min(480px,94%);margin:24px auto;text-align:left;">
+      <div class="menu-card" style="width:min(640px,94%);margin:24px auto;text-align:left;">
         <h1>An den Tisch</h1>
-        <p class="hint">Kein PIN. Namen antippen. Auf Android: Browser-Menü, Zum Startbildschirm.</p>
+        <p class="hint">Sitz antippen, dann den Charakter. Leer heißt nicht verbunden.</p>
+        <div id="tablePlayer" data-table="player"></div>
         <div class="list" id="seatList"></div>
         <button class="btn" id="btnGuest" style="width:100%;margin-top:12px;">Als Gast (Karte + Video)</button>
       </div>
@@ -43,6 +45,7 @@
       <div class="list" id="playClips"></div>
     </div>
     <div class="actions hidden" id="playActions">
+      <div id="tablePlay" data-table="player"></div>
       <label>Was willst du tun? <select id="actionPick"></select></label>
       <label>Frage <input id="question" placeholder="Darf ich …" /></label>
       <button class="btn primary" id="btnRoll">Würfeln</button>
@@ -68,6 +71,7 @@
       <button class="btn ghost" id="btnLeaveSeat">Anderen Bogen</button>
     </div>
   </div>
+  <script src="/js/table-indicator.js?v=1"></script>
   <script src="/js/video-deck.js?v=5"></script>
   <script src="/js/map.js?v=5"></script>
   <script src="/js/player.js?v=7"></script>
