@@ -182,10 +182,13 @@ $("#btnSpotlight")?.addEventListener("click", async () => {
       }),
     });
     const data = await res.json().catch(() => ({}));
-    if (out) out.textContent = res.ok ? "Spotlight ist beim Tisch." : (data.error || "Nicht angekommen.");
+    const note = data.error || (res.ok ? "Spotlight ist beim Tisch." : "Nicht angekommen.");
+    if (out) out.textContent = note;
+    if ($("#tableNote")) $("#tableNote").textContent = note;
     if (res.ok) $("#question").value = "";
   } catch (err) {
     if (out) out.textContent = "Keine Verbindung.";
+    if ($("#tableNote")) $("#tableNote").textContent = "Keine Verbindung.";
   }
   btn.disabled = false;
 });
