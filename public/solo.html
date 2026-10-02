@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ember · Solo</title>
+  <link rel="stylesheet" href="/css/ember.css?v=9" />
+</head>
+<body class="house-body">
+  <div class="player-shell">
+    <header class="topbar">
+      <a class="btn tiny ghost" href="/">Home</a>
+      <div class="brand">Solo</div>
+      <div class="grow"></div>
+      <div class="chip" id="who">kein Bogen</div>
+    </header>
+    <div class="scroll" style="padding:16px;">
+      <div class="menu-card" style="text-align:left;margin-bottom:12px;">
+        <h1>Üben</h1>
+        <p class="hint">Nicht der Spielabend. Ein Bogen, ein Bot, eine Karte.</p>
+        <label>Bogen <select id="pc"></select></label>
+        <button class="btn" id="btnStart">Solo öffnen</button>
+      </div>
+      <div class="menu-card" style="text-align:left;margin-bottom:12px;">
+        <h2>Bot</h2>
+        <label>Gegenspieler <select id="bot"></select></label>
+        <button class="btn" id="btnBot">Bot setzen</button>
+        <button class="btn primary" id="btnAct">Bot zieht</button>
+      </div>
+      <div class="menu-card" style="text-align:left;margin-bottom:12px;">
+        <h2>Karten-Editor</h2>
+        <p class="hint">Tippen setzt einen Pin. Speichern legt die Karte an die Kampagne.</p>
+        <label>Name <input id="mapName" value="Übungskarte" /></label>
+        <div id="grid" style="position:relative;height:220px;background:#1b2733;border:1px solid #3d5166;margin:8px 0;"></div>
+        <button class="btn" id="btnSaveMap">Karte speichern</button>
+        <div class="list" id="maps"></div>
+      </div>
+      <div class="menu-card" style="text-align:left;">
+        <h2>Dungeon</h2>
+        <p class="hint">Räume werden gelegt. Ein Erfolg räumt den Raum. Alle leer: Level +1.</p>
+        <button class="btn" id="btnDungeon">Dungeon legen</button>
+        <div class="list" id="rooms"></div>
+      </div>
+      <div class="log" id="log" style="margin-top:12px;"></div>
+    </div>
+  </div>
+  <script src="/js/solo.js?v=1"></script>
+</body>
+</html>

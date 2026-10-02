@@ -12,6 +12,7 @@ const catalog = require("./lib/catalog");
 const spark = require("./lib/spark");
 const initiative = require("./lib/initiative");
 const compendium = require("./lib/compendium");
+const solo = require("./lib/solo");
 
 const PORT = Number(process.env.EMBER_PORT || 3478);
 const HOST = process.env.EMBER_HOST || "0.0.0.0";
@@ -795,6 +796,128 @@ if (method === "POST" && p === "/api/update") {
     });
   }
 }
+  if (method === "GET" && p === "/api/solo/bots") return send(res, 200, { bots: solo.list() });
+  if (method === "POST" && p === "/api/solo/start") {
+    const body = await readJson(req);
+    const state = store.read();
+    const character = state.characters.find((c) => c.id === body.characterId) || state.characters[0];
+    if (!character) return send(res, 400, { error: "Erst einen Bogen anlegen." });
+    if (!state.active.sessionId) {
+      const session = store.makeSession(character.campaignId);
+      session.solo = true;
+      state.sessions.push(session);
+      state.active.sessionId = session.id;
+      state.active.campaignId = character.campaignId;
+    }
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    session.solo = true;
+    store.activeEncounter(session);
+    if (!session.map.tokens.some((t) => t.characterId === character.id)) {
+      session.map.tokens.push({ id: id("tok"), kind: "pc", characterId: character.id, label: character.name, color: "#e9c46a", x: 30, y: 70 });
+    }
+    addLog(session, { kind: "system", text: "Solo. " + character.name + " übt allein." });
+    store.write(state); emitState();
+    return send(res, 200, { text: character.name + " ist auf der Übungskarte." });
+  }
+  if (method === "POST" && p === "/api/solo/bot") {
+    const body = await readJson(req);
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Erst Solo öffnen." });
+    const bot = solo.find(body.botId);
+    store.activeEncounter(session);
+    const token = {
+      id: id("tok"), kind: "foe", bot: true, botId: bot.id, label: bot.name, color: "#6a040f",
+      x: 62, y: 36, difficulty: bot.difficulty, stress: 0, stressMax: bot.stressMax, attack: bot.attack,
+    };
+    session.map.tokens.push(token);
+    initiative.addFoe(session, token);
+    addLog(session, { kind: "system", author: "Bot", text: bot.name + " stellt sich. Difficulty " + bot.difficulty + "." });
+    store.write(state); emitState();
+    return send(res, 200, { text: bot.name + " steht auf der Karte." });
+  }
+  if (method === "POST" && p === "/api/solo/act") {
+    const body = await readJson(req);
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Erst Solo öffnen." });
+    const token = (session.map.tokens || []).filter((t) => t.bot).pop();
+    if (!token) return send(res, 400, { error: "Kein Bot auf der Karte." });
+    const character = state.characters.find((c) => c.id === body.characterId);
+    const line = solo.act(token, character?.evasion || 10);
+    if (line.hit) {
+      if (character) character.hpMarked = Math.min(character.hpMax || 6, Number(character.hpMarked || 0) + 1);
+    } else token.stress = Number(token.stress || 0) + 1;
+    addLog(session, { kind: "roll", author: token.label, text: line.text });
+    store.write(state); emitState();
+    return send(res, 200, { text: line.text });
+  }
+  if (method === "GET" && p === "/api/maps") {
+    const state = store.read();
+    return send(res, 200, { maps: state.maps || [] });
+  }
+  if (method === "POST" && p === "/api/maps") {
+    const body = await readJson(req);
+    const state = store.read();
+    if (!state.maps) state.maps = [];
+    const map = { id: id("map"), name: body.name || "Karte", tokens: body.tokens || [], at: new Date().toISOString() };
+    state.maps.unshift(map);
+    store.write(state);
+    return send(res, 200, map);
+  }
+  if (method === "POST" && p === "/api/maps/load") {
+    const body = await readJson(req);
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    const map = (state.maps || []).find((m) => m.id === body.id);
+    if (!session || !map) return send(res, 404, { error: "Karte oder Session fehlt." });
+    store.activeEncounter(session);
+    for (const pin of map.tokens || []) {
+      session.map.tokens.push({ id: id("tok"), kind: "marker", label: pin.label, color: "#e9c46a", x: pin.x, y: pin.y });
+    }
+    addLog(session, { kind: "system", text: "Karte geladen: " + map.name });
+    store.write(state); emitState();
+    return send(res, 200, { text: map.name + " liegt auf dem Tisch." });
+  }
+  if (method === "POST" && p === "/api/dungeon") {
+    const body = await readJson(req);
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Erst Solo öffnen." });
+    const rooms = solo.generate(body.rooms);
+    session.dungeon = { rooms };
+    store.activeEncounter(session);
+    rooms.forEach((room) => {
+      session.map.tokens.push({ id: id("tok"), kind: room.bot ? "foe" : "marker", bot: Boolean(room.bot), label: room.name, color: room.bot ? "#6a040f" : "#7ea0c4", x: room.x, y: room.y, difficulty: room.bot?.difficulty || null, stress: 0, stressMax: room.bot?.stressMax || null, attack: room.bot?.attack || 0, roomId: room.id });
+    });
+    addLog(session, { kind: "system", text: "Dungeon mit " + rooms.length + " Räumen." });
+    store.write(state); emitState();
+    return send(res, 200, { text: rooms.length + " Räume liegen.", rooms });
+  }
+  if (method === "POST" && p === "/api/dungeon/room") {
+    const body = await readJson(req);
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    const room = session?.dungeon?.rooms?.find((r) => r.id === body.roomId);
+    const character = state.characters.find((c) => c.id === body.characterId);
+    if (!room || !character) return send(res, 400, { error: "Raum oder Bogen fehlt." });
+    if (room.clear) return send(res, 200, { text: room.name + " ist schon leer." });
+    const roll = solo.act({ name: character.name, attack: Number(character.traits?.agility || 0) }, room.bot?.difficulty || 10);
+    let leveled = false;
+    if (roll.hit) {
+      room.clear = true;
+      if (session.dungeon.rooms.every((r) => r.clear || !r.bot)) {
+        character.level = Number(character.level || 1) + 1;
+        character.hope = character.hopeMax || 6;
+        leveled = true;
+      }
+    }
+    const text = roll.text + (leveled ? " — Level " + character.level : room.clear ? " — Raum leer" : "");
+    addLog(session, { kind: "roll", author: character.name, text });
+    store.write(state); emitState();
+    return send(res, 200, { text, leveled });
+  }
+
   return send(res, 404, { error: "Unbekannte Route." });
 }
 
@@ -818,6 +941,9 @@ const server = http.createServer(async (req, res) => {
     }
     if (url.pathname === "/token" || url.pathname === "/token/") {
       return serveFile(res, path.join(PUBLIC, "token.html"), req);
+    }
+    if (url.pathname === "/solo" || url.pathname === "/solo/") {
+      return serveFile(res, path.join(PUBLIC, "solo.html"), req);
     }
     if (url.pathname === "/runner" || url.pathname === "/runner/") {
       return serveFile(res, path.join(PUBLIC, "runner.html"), req);
