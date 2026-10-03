@@ -102,3 +102,11 @@ body:has(#view-menu.on) #lanChip { display: none; }
 .hub-ready { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
 .hub-ready .card { min-height:88px; }
 .hub #btnEnter { justify-self:center; min-width:280px; }
+
+body:has(.app) { overflow: hidden; }
+.app { overflow: hidden; min-height: 0; }
+#view-session.on { overflow: hidden; min-height: 0; }
+.hub { height: 100%; min-height: 0; overflow: hidden; padding: 12px 4vw 16px; box-sizing: border-box; }
+.hub-table { min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+.hub-table .plate { flex: 1; min-height: 0; aspect-ratio: auto; }
+.hub-ready { min-height: 0; }
