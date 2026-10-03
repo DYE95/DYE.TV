@@ -211,3 +211,23 @@ body.narrating .hud { border-color: var(--ember); }
 .house-body .card { background: #16202a; border-color: #2c3a48; }
 .house-meta { display: grid; gap: 8px; text-align: left; }
 .topbar a.btn { text-decoration: none; }
+
+button, .btn, .icon-btn, select, input { font: inherit; }
+.btn, .icon-btn, select, input, textarea {
+  border-radius: 6px;
+  transition: border-color .15s ease, background .15s ease;
+}
+.btn:focus-visible, .icon-btn:focus-visible, select:focus-visible, input:focus-visible {
+  outline: 2px solid #e9c46a;
+  outline-offset: 2px;
+}
+.card {
+  border-radius: 8px;
+  background: rgba(22, 16, 16, .92);
+}
+.hub-banner, .play-dock, .gear-panel, .role-menu {
+  border-radius: 10px;
+  background: #14100e;
+}
+h1, h2, .start-title { font-family: var(--serif); font-weight: 500; letter-spacing: .03em; }
+.hint { letter-spacing: .01em; }

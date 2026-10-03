@@ -112,3 +112,11 @@ body:has(.app) { overflow: hidden; }
 .hub-ready { min-height: 0; }
 
 .measure-line { position:absolute; border:1px dashed #e9c46a; color:#e9c46a; font-size:12px; pointer-events:none; z-index:4; }
+
+.start-item {
+  border-radius: 8px;
+  transition: border-color .15s ease, background .15s ease;
+}
+.start-item:hover { border-color: #c45c26; }
+.hub { gap: 20px; }
+.hub-ready .card { padding: 12px; }
