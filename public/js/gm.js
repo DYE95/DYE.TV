@@ -491,6 +491,9 @@ $("#btnAddPin")?.addEventListener("click", () => {
   const label = prompt("Pin?", "Die Kiste");
   if (label) api("/api/session/map/token", { as: "gm", kind: "marker", label, color: "#e9c46a", x: 48, y: 48 });
 });
+$("#mapPick")?.addEventListener("change", (ev) => {
+  if (ev.target.value) api("/api/session/map/image", { as: "gm", image: ev.target.value });
+});
 $("#btnFow")?.addEventListener("click", () => api("/api/session/map/fow", { as: "gm", on: !activeSession()?.map?.fow?.on }));
 $("#btnFowClear")?.addEventListener("click", () => { MapKit.draggingId = null; api("/api/session/map/fow", { as: "gm", clear: true, on: true }); });
 $("#mapImage")?.addEventListener("change", (ev) => {
