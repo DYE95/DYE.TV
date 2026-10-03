@@ -971,6 +971,19 @@ if (method === "GET" && p === "/api/cards") {
     const file = path.join(PUBLIC, "data", "cards.json");
     return send(res, 200, { cards: fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : [] });
   }
+  if (method === "POST" && p === "/api/session/ready") {
+    const body = await readJson(req);
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Keine offene Session." });
+    session.ready = session.ready || {};
+    session.ready[body.characterId] = Boolean(body.ready);
+    const pc = state.characters.find((c) => c.id === body.characterId);
+    addLog(session, { kind: "system", author: pc ? pc.name : "Spieler", text: body.ready ? "ready" : "nicht ready" });
+    store.write(state); emitState();
+    return send(res, 200, { ok: true });
+  }
+
   return send(res, 404, { error: "Unbekannte Route." });
 }
 

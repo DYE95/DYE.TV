@@ -64,23 +64,29 @@
             <h1 class="start-title">Ember</h1>
             <p class="tagline">Die Glut am Rand der Umbra</p>
             <div class="start-menu">
-              <button class="start-item" data-go="session"><b>Entfache die Glut</b><span>Session öffnen, Speak the Dark</span></button>
+              <button class="start-item" data-go="session"><b>Entfache die Glut</b><span>Tisch, Ready, dann rein</span></button>
               <button class="start-item" data-go="encounter"><b>Events</b><span>Karten bereitlegen, dann Play Event</span></button>
-              <button class="start-item" data-go="campaign"><b>Kampagne</b><span>was jetzt brennt</span></button>
-              <button class="start-item" data-go="campaign-manager"><b>Kampagnen-Manager</b><span>Editor</span></button>
-              <button class="start-item" data-go="character"><b>Charakter</b><span>aktiver Bogen</span></button>
-              <button class="start-item" data-go="character-manager"><b>Charakter-Manager</b><span>Editor + Fotos</span></button>
+              <button class="start-item" data-go="campaign-manager"><b>Kampagne</b><span>was brennt und Editor</span></button>
+              <button class="start-item" data-go="character-manager"><b>Charakter</b><span>Bogen, Editor, Fotos</span></button>
               <button class="start-item start-item-danger" id="btnLeave"><b>Verlöschen</b><span>Ember schließen</span></button>
             </div>
           </div>
-          <div id="tableHome" data-table="gm"></div>
         </div>
         <div class="start-art" role="img" aria-label="Lagerfeuer am Rand der Umbra"></div>
       </div>
     </section>
 
     <section class="view" id="view-session">
-      <div class="workspace">
+      <div class="workspace" id="sessionHub">
+        <aside class="panel">
+          <h2>Am Tisch</h2>
+          <p class="hint" id="hubCampaign">Noch keine Kampagne.</p>
+          <div id="tableIndicator" data-table="gm"></div>
+          <div class="list" id="readyList"></div>
+          <button class="btn primary" id="btnEnter" style="width:100%;margin-top:12px;" disabled>Rein, wenn alle ready sind</button>
+        </aside>
+      </div>
+      <div class="workspace hidden" id="sessionLive">
         <aside class="panel">
           <h2>Die Glut</h2>
           <p class="hint" id="sessionMeta"></p>
@@ -89,7 +95,7 @@
           <button class="btn" id="btnStartSession" style="width:100%;margin-bottom:8px;">Session öffnen</button>
           <button class="btn ghost" id="btnEndSession" style="width:100%;">Session schließen</button>
           <h2 style="margin-top:18px;">Am Tisch</h2>
-          <div id="tableIndicator" data-table="gm"></div>
+          <div id="tableLive" data-table="gm"></div>
           <div class="list" id="sessionPlayers"></div>
         </aside>
         <main class="panel" style="display:flex;flex-direction:column;padding:0;">
@@ -260,6 +266,10 @@
           <button class="btn" id="btnQuickstart" style="width:100%;margin-top:8px;">Sablewood Quickstart</button>
         </aside>
         <div class="scroll">
+          <div class="menu-card" style="margin-bottom:12px;text-align:left;">
+            <h2>Was jetzt brennt</h2>
+            <div id="campaignView"></div>
+          </div>
           <form class="form" id="campaignForm">
             <h2>Editor</h2>
             <label>Name <input name="name" required /></label>
@@ -286,6 +296,7 @@
           <button class="btn primary" id="btnNewCharacter" style="width:100%;margin-top:12px;">Neuer Charakter</button>
         </aside>
         <div class="scroll">
+          <div id="characterView"></div>
           <form class="form" id="characterForm">
             <h2>Bogen</h2>
             <div class="row">
@@ -365,6 +376,10 @@
   <script src="/js/float-panels.js?v=1"></script>
   <script src="/js/gm.js?v=6"></script>
   <script>
+    document.getElementById("btnEnter")?.addEventListener("click", () => {
+      document.getElementById("sessionHub")?.classList.add("hidden");
+      document.getElementById("sessionLive")?.classList.remove("hidden");
+    });
     document.getElementById("btnGear").addEventListener("click", () => {
       document.getElementById("gearPanel").classList.toggle("hidden");
     });

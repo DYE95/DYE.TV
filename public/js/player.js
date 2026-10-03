@@ -167,6 +167,15 @@ function render() {
 
 $("#btnGuest")?.addEventListener("click", () => sit("", true));
 $("#btnLeaveSeat")?.addEventListener("click", () => sit("", false));
+$("#btnReady")?.addEventListener("click", async () => {
+  if (!meId) return;
+  const res = await fetch("/api/session/ready", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ characterId: meId, ready: true }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if ($("#tableNote")) $("#tableNote").textContent = res.ok ? "Ready." : (data.error || "Nicht ready.");
+});
 $("#btnSpotlight")?.addEventListener("click", async () => {
   if (!meId) return;
   const btn = $("#btnSpotlight");

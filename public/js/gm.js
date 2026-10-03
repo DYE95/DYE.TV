@@ -247,6 +247,24 @@ function renderSession() {
   const camp = campaignById(activeCampaignId());
   const ses = activeSession();
   if ($("#sessionMeta")) $("#sessionMeta").textContent = camp ? `${camp.name}${ses ? " · Glut offen" : ""}` : "Keine Kampagne.";
+  const hub = $("#hubCampaign");
+  if (hub) hub.textContent = camp ? "Kampagne: " + camp.name : "Noch keine Kampagne.";
+  const readyList = $("#readyList");
+  const seated = charsOf(activeCampaignId());
+  const ready = ses?.ready || {};
+  if (readyList) {
+    readyList.innerHTML = seated.map((c) => `<div class="card"><div class="name">${c.name}</div><div class="meta">${ready[c.id] ? "ready" : "wartet"}</div></div>`).join("") || "<p class='hint'>Noch niemand sitzt.</p>";
+  }
+  const allReady = seated.length > 0 && seated.every((c) => ready[c.id]);
+  const enter = $("#btnEnter");
+  if (enter) {
+    enter.disabled = !allReady;
+    enter.textContent = allReady ? "Alle ready. Rein." : "Rein, wenn alle ready sind";
+    if (allReady) {
+      $("#sessionHub")?.classList.add("hidden");
+      $("#sessionLive")?.classList.remove("hidden");
+    }
+  }
   if ($("#btnNarrate")) {
     $("#btnNarrate").textContent = ses?.narrating ? "Die Stimme senken" : "Speak the Dark";
     $("#btnNarrate").disabled = !ses;
