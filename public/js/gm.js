@@ -248,7 +248,12 @@ function renderSession() {
   const ses = activeSession();
   if ($("#sessionMeta")) $("#sessionMeta").textContent = camp ? `${camp.name}${ses ? " · Glut offen" : ""}` : "Keine Kampagne.";
   const hub = $("#hubCampaign");
-  if (hub) hub.textContent = camp ? "Kampagne: " + camp.name : "Noch keine Kampagne.";
+  if (hub) hub.textContent = camp ? "Aktiv: " + camp.name : "Noch keine Kampagne.";
+  const pick = $("#campaignPick");
+  if (pick && document.activeElement !== pick) {
+    pick.innerHTML = `<option value="">—</option>` + (state.campaigns || []).map((c) => `<option value="${c.id}">${c.name}</option>`).join("");
+    pick.value = activeCampaignId() || "";
+  }
   const readyList = $("#readyList");
   const seated = charsOf(activeCampaignId());
   const ready = ses?.ready || {};
@@ -513,6 +518,9 @@ $("#campaignForm")?.addEventListener("submit", async (ev) => {
   await api("/api/active-campaign", { campaignId: selectedCampaignId });
 });
 $("#btnUseCampaign")?.addEventListener("click", () => selectedCampaignId && api("/api/active-campaign", { campaignId: selectedCampaignId }));
+$("#campaignPick")?.addEventListener("change", (ev) => {
+  if (ev.target.value) api("/api/active-campaign", { campaignId: ev.target.value });
+});
 $("#btnQuickstart")?.addEventListener("click", async () => {
   const res = await api("/api/quickstart/sablewood", {});
   selectedCampaignId = res.campaignId;

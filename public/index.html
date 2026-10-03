@@ -10,10 +10,17 @@
   <link rel="stylesheet" href="/css/float.css?v=1" />
   <link rel="stylesheet" href="/css/start.css?v=9" />
   <script>
-    function emberGo(name) {
+    var emberStack = ["menu"];
+    function emberGo(name, back) {
+      var current = emberStack[emberStack.length - 1];
+      if (!back && name !== current) emberStack.push(name);
       document.querySelectorAll(".view").forEach(function (v) {
         v.classList.toggle("on", v.id === "view-" + name);
       });
+    }
+    function emberBack() {
+      if (emberStack.length > 1) emberStack.pop();
+      emberGo(emberStack[emberStack.length - 1] || "menu", true);
     }
     function emberLeave() {
       try { window.close(); } catch (e) {}
@@ -23,6 +30,7 @@
       var btn = ev.target.closest("[data-go]");
       if (btn) emberGo(btn.getAttribute("data-go"));
       if (ev.target.closest("#btnLeave")) emberLeave();
+      if (ev.target.closest("#btnBack")) emberBack();
     });
   </script>
 </head>
@@ -37,7 +45,7 @@
       <div class="brand">Ember · Age of Umbra</div>
       <div class="grow"></div>
       <div class="chip" id="lanChip">LAN …</div>
-      <button class="icon-btn" data-go="menu" title="Zurück" aria-label="Zurück">
+      <button class="icon-btn" id="btnBack" type="button" title="Zurück" aria-label="Zurück auf vorherige Seite">
         <img src="/img/icon-back.svg" alt="" width="18" height="18" />
       </button>
       <a class="icon-btn" href="/home" title="Home" aria-label="Home">
@@ -81,6 +89,7 @@
         <aside class="panel">
           <h2>Am Tisch</h2>
           <p class="hint" id="hubCampaign">Noch keine Kampagne.</p>
+          <label>Kampagne <select id="campaignPick"><option value="">—</option></select></label>
           <div id="tableIndicator" data-table="gm"></div>
           <div class="list" id="readyList"></div>
           <button class="btn primary" id="btnEnter" style="width:100%;margin-top:12px;" disabled>Rein, wenn alle ready sind</button>
