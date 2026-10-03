@@ -40,13 +40,21 @@
       <button class="icon-btn" data-go="menu" title="Zurück" aria-label="Zurück">
         <img src="/img/icon-back.svg" alt="" width="18" height="18" />
       </button>
-      <a class="icon-btn" href="/" title="Home" aria-label="Home">
+      <a class="icon-btn" href="/home" title="Home" aria-label="Home">
         <img src="/img/icon-home.svg" alt="" width="18" height="18" />
       </a>
-      <a class="icon-btn" href="/#panelSettings" title="Einstellungen" aria-label="Einstellungen">
+      <button class="icon-btn" id="btnGear" type="button" title="Einstellungen" aria-label="Einstellungen">
         <img src="/img/icon-gear.svg" alt="" width="18" height="18" />
-      </a>
+      </button>
     </header>
+    <div class="gear-panel hidden" id="gearPanel">
+      <h2>Einstellungen</h2>
+      <label>Schriftgröße <input id="gearFont" type="range" min="14" max="22" value="16" /></label>
+      <p class="hint" id="gearLog">Update, Schrift, Neustart.</p>
+      <button class="btn primary" id="btnUpdate" type="button">Jetzt prüfen & ziehen</button>
+      <button class="btn" id="btnRestart" type="button">Server neu starten</button>
+      <a class="btn" href="/home">Altes Home</a>
+    </div>
 
     <section class="view on" id="view-menu">
       <div class="start">
@@ -347,10 +355,40 @@
       </div>
     </section>
   </div>
+  <style>
+    .gear-panel { position:fixed; top:52px; right:16px; z-index:40; width:min(320px,92vw); padding:14px; background:#141c27; border:1px solid #3d5166; text-align:left; }
+    .gear-panel label, .gear-panel .btn, .gear-panel a.btn { display:block; width:100%; margin-top:8px; }
+  </style>
   <script src="/js/table-indicator.js?v=1"></script>
   <script src="/js/map.js?v=5"></script>
   <script src="/js/token.js?v=4"></script>
   <script src="/js/float-panels.js?v=1"></script>
   <script src="/js/gm.js?v=6"></script>
+  <script>
+    document.getElementById("btnGear").addEventListener("click", () => {
+      document.getElementById("gearPanel").classList.toggle("hidden");
+    });
+    document.getElementById("gearFont").addEventListener("input", (ev) => {
+      document.body.style.fontSize = ev.target.value + "px";
+    });
+    document.getElementById("btnUpdate").addEventListener("click", async () => {
+      const log = document.getElementById("gearLog");
+      log.textContent = "Prüfe …";
+      try {
+        const res = await fetch("/api/update", { method: "POST" });
+        const data = await res.json();
+        if (!res.ok) { log.textContent = data.error || "Update fehlgeschlagen."; return; }
+        log.textContent = data.changed ? "Neu: " + data.before + " → " + data.after + ". Danach neu starten." : "Schon aktuell.";
+      } catch (err) {
+        log.textContent = "Keine Verbindung.";
+      }
+    });
+    document.getElementById("btnRestart").addEventListener("click", async () => {
+      if (!confirm("Ember neu starten? Die Seite verliert kurz die Verbindung.")) return;
+      document.getElementById("gearLog").textContent = "Neustart … gleich neu laden.";
+      try { await fetch("/api/restart", { method: "POST" }); } catch (err) {}
+      setTimeout(() => location.reload(), 2000);
+    });
+  </script>
 </body>
 </html>

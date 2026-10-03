@@ -986,11 +986,11 @@ const server = http.createServer(async (req, res) => {
       if (!file) { res.writeHead(403); return res.end(); }
       return serveFile(res, file, req);
     }
-    if (url.pathname === "/" || url.pathname === "/house") {
-      return serveFile(res, path.join(PUBLIC, "home.html"), req);
-    }
-    if (url.pathname === "/ember" || url.pathname === "/ember/") {
+    if (url.pathname === "/" || url.pathname === "/ember" || url.pathname === "/ember/") {
       return serveFile(res, path.join(PUBLIC, "index.html"), req);
+    }
+    if (url.pathname === "/home" || url.pathname === "/house") {
+      return serveFile(res, path.join(PUBLIC, "home.html"), req);
     }
     if (url.pathname === "/token" || url.pathname === "/token/") {
       return serveFile(res, path.join(PUBLIC, "token.html"), req);
