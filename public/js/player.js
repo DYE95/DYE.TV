@@ -167,6 +167,10 @@ function render() {
 
 $("#btnGuest")?.addEventListener("click", () => sit("", true));
 $("#btnLeaveSeat")?.addEventListener("click", () => sit("", false));
+$("#rolePick")?.addEventListener("change", (ev) => {
+  if (ev.target.value.includes("gast")) localStorage.setItem("ember.guest", "1");
+  if (ev.target.value) location.href = ev.target.value;
+});
 $("#btnSheet")?.addEventListener("click", () => $("#sheet")?.classList.toggle("hidden"));
 $("#btnReady")?.addEventListener("click", async () => {
   if (!meId) return;

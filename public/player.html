@@ -14,6 +14,13 @@
     <header class="topbar">
       <a class="btn tiny ghost" href="/">Home</a>
       <div class="brand">Spieler</div>
+      <label class="chip">Rolle
+        <select id="rolePick">
+          <option value="/">Spielleitung</option>
+          <option value="/player" selected>Spieler</option>
+          <option value="/player?gast=1">Gast</option>
+        </select>
+      </label>
       <div class="grow"></div>
       <a class="btn tiny ghost" href="/token">Atelier</a>
       <div class="chip" id="tableNote">—</div>
@@ -72,6 +79,6 @@
     .play-dock { position: sticky; bottom: 0; z-index: 5; padding: 8px 12px 12px; background: #121820; border-top: 1px solid #334556; }
     #sheet { max-height: 32dvh; }
   </style>
-  <script src="/js/player.js?v=11"></script>
+  <script src="/js/player.js?v=12"></script>
 </body>
 </html>
