@@ -596,6 +596,8 @@ async function handleApi(req, res, url) {
     const enc = store.makeEncounter(body.name || "Prepared Event", {
       image: body.image || session.map?.image || "",
       tokens: (session.map?.tokens || []).filter((t) => t.kind === "pc" || t.kind === "foe").map((t, i) => ({ ...t, x: 18 + i * 10, y: t.kind === "foe" ? 40 : 70 })),
+      walls: session.map?.walls || [],
+      doors: session.map?.doors || [],
       fow: store.defaultFow(),
     });
     session.encounters.push(enc);

@@ -231,3 +231,10 @@ button, .btn, .icon-btn, select, input { font: inherit; }
 }
 h1, h2, .start-title { font-family: var(--serif); font-weight: 500; letter-spacing: .03em; }
 .hint { letter-spacing: .01em; }
+
+.btn.primary { background: #9a3412; border-color: #c45c26; }
+.btn.primary:hover { background: #c2410c; }
+.play-dock label, .hub-banner label { color: #d9c7b8; font-size: 13px; }
+select, input, textarea { background: #1b1411; color: #f3e6d8; border: 1px solid #3a2a24; padding: 6px 8px; }
+.door { background: #1b1411; color: #f4d6a0; border: 1px solid #c45c26; border-radius: 4px; }
+.log-item { padding: 6px 0; border-bottom: 1px solid rgba(58,42,36,.6); }
