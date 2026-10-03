@@ -81,6 +81,7 @@ Abgedeckt sind die Kernlogik ohne laufenden Server:
 - `test/initiative.test.js` — Seed, Runden, Gegenseite, Spotlight-Vorrücken, auto=aus
 - `test/solo.test.js` — Bots, Dungeon, Level-Ups, Subklassen
 - `test/store.test.js` — Fog-of-War-Standards, `patchById`, Encounter-/Bogen-Erzeugung
+- `test/auth.test.js` — GM-Key-Logik (`isGm`, `recordGmKey`)
 
 ## Daten & Betrieb
 
@@ -92,6 +93,9 @@ Abgedeckt sind die Kernlogik ohne laufenden Server:
   Danach beendet er sich mit Exit-Code 42 — `start.bat` startet ihn automatisch neu.
   Neustart und Update sind nur vom SL-Rechner (localhost) erlaubt.
 - **Presence:** SL und Spieler melden sich alle 4 s; Einträge älter als 15 s gelten als fort.
+- **GM-Schlüssel:** Der SL-Rechner erzeugt beim ersten Presence-Ping einen `gmKey` (nur von
+  localhost). Sobald der Schlüssel bekannt ist, müssen alle `as:"gm"`-Routen ihn mitsenden —
+  Spieler im LAN können die SL-Routen dann nicht mehr aufrufen.
 - **SSE:** Clients hängen an `/api/events`; bei Funkstille pollt der Client `/api/state`
   als Rückfall.
 

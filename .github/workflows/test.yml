@@ -41,4 +41,4 @@ jobs:
         run: node --check server.js && node --check lib/initiative.js && node --check lib/dice.js
 
       - name: Rundenlogik und Duality
-        run: node --test test/initiative.test.js test/dice.test.js test/solo.test.js test/store.test.js
+        run: node --test test/initiative.test.js test/dice.test.js test/solo.test.js test/store.test.js test/auth.test.js

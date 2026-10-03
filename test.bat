@@ -12,5 +12,5 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
-node --test test/initiative.test.js test/dice.test.js test/solo.test.js test/store.test.js
+node --test test/initiative.test.js test/dice.test.js test/solo.test.js test/store.test.js test/auth.test.js
 if errorlevel 1 pause

@@ -13,6 +13,7 @@ const spark = require("./lib/spark");
 const initiative = require("./lib/initiative");
 const compendium = require("./lib/compendium");
 const solo = require("./lib/solo");
+const { isGm, recordGmKey } = require("./lib/auth");
 
 const PORT = Number(process.env.EMBER_PORT || 3478);
 const HOST = process.env.EMBER_HOST || "0.0.0.0";
@@ -440,6 +441,10 @@ async function handleApi(req, res, url) {
       detail: body.detail || "", at: Date.now(),
     };
     presence.set(key, row);
+    const state = store.read();
+    if (recordGmKey(state, body, req.socket.remoteAddress || "")) {
+      store.write(state);
+    }
     const changed = !prev || prev.status !== row.status;
     if (changed || Date.now() - presenceEmitAt > 2500) {
       presenceEmitAt = Date.now();
@@ -469,8 +474,8 @@ async function handleApi(req, res, url) {
 
   if (method === "POST" && p === "/api/session/map") {
     const body = await readJson(req);
-    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
     const state = store.read();
+    if (!isGm(state, body)) return send(res, 403, { error: "Nur der SL." });
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
     store.activeEncounter(session);
@@ -481,8 +486,8 @@ async function handleApi(req, res, url) {
   }
   if (method === "POST" && p === "/api/session/map/token") {
     const body = await readJson(req);
-    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
     const state = store.read();
+    if (!isGm(state, body)) return send(res, 403, { error: "Nur der SL." });
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
     store.activeEncounter(session);
@@ -507,7 +512,7 @@ async function handleApi(req, res, url) {
     if (!session || !session.map) return send(res, 400, { error: "Keine Karte." });
     const token = session.map.tokens.find((t) => t.id === body.id);
     if (!token) return send(res, 404, { error: "Token fehlt." });
-    if (body.as !== "gm" && (!body.characterId || token.characterId !== body.characterId)) {
+    if (!isGm(state, body) && (!body.characterId || token.characterId !== body.characterId)) {
       return send(res, 403, { error: "Nur das eigene Token." });
     }
     if (body.rev != null && Number(body.rev) !== Number(token.rev || 0)) {
@@ -526,8 +531,8 @@ async function handleApi(req, res, url) {
   }
   if (method === "POST" && p === "/api/session/map/fow") {
     const body = await readJson(req);
-    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
     const state = store.read();
+    if (!isGm(state, body)) return send(res, 403, { error: "Nur der SL." });
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
     store.activeEncounter(session);
@@ -543,8 +548,8 @@ async function handleApi(req, res, url) {
   }
   if (method === "POST" && p === "/api/session/map/image") {
     const body = await readJson(req);
-    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
     const state = store.read();
+    if (!isGm(state, body)) return send(res, 403, { error: "Nur der SL." });
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
     store.activeEncounter(session);
@@ -560,8 +565,8 @@ async function handleApi(req, res, url) {
   }
   if (method === "POST" && p === "/api/session/map/brush") {
     const body = await readJson(req);
-    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
     const state = store.read();
+    if (!isGm(state, body)) return send(res, 403, { error: "Nur der SL." });
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
     const enc = store.activeEncounter(session);
@@ -575,8 +580,8 @@ async function handleApi(req, res, url) {
   }
   if (method === "POST" && p === "/api/session/map/trap") {
     const body = await readJson(req);
-    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
     const state = store.read();
+    if (!isGm(state, body)) return send(res, 403, { error: "Nur der SL." });
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
     const enc = store.activeEncounter(session);
@@ -587,8 +592,8 @@ async function handleApi(req, res, url) {
   }
   if (method === "POST" && p === "/api/session/map/zone") {
     const body = await readJson(req);
-    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
     const state = store.read();
+    if (!isGm(state, body)) return send(res, 403, { error: "Nur der SL." });
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
     const enc = store.activeEncounter(session);
@@ -602,8 +607,8 @@ async function handleApi(req, res, url) {
   }
   if (method === "POST" && p === "/api/session/encounter") {
     const body = await readJson(req);
-    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
     const state = store.read();
+    if (!isGm(state, body)) return send(res, 403, { error: "Nur der SL." });
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
     store.activeEncounter(session);
@@ -623,8 +628,8 @@ async function handleApi(req, res, url) {
   }
   if (method === "POST" && p === "/api/session/encounter/select") {
     const body = await readJson(req);
-    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
     const state = store.read();
+    if (!isGm(state, body)) return send(res, 403, { error: "Nur der SL." });
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
     store.activeEncounter(session);
@@ -637,8 +642,8 @@ async function handleApi(req, res, url) {
   }
   if (method === "POST" && p === "/api/session/encounter/status") {
     const body = await readJson(req);
-    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
     const state = store.read();
+    if (!isGm(state, body)) return send(res, 403, { error: "Nur der SL." });
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
     const enc = store.activeEncounter(session);
@@ -657,8 +662,8 @@ async function handleApi(req, res, url) {
   }
   if (method === "POST" && p === "/api/session/initiative") {
     const body = await readJson(req);
-    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
     const state = store.read();
+    if (!isGm(state, body)) return send(res, 403, { error: "Nur der SL." });
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
     const before = initiative.spoken(session);
@@ -673,8 +678,8 @@ async function handleApi(req, res, url) {
   if (method === "GET" && p === "/api/compendium") return send(res, 200, compendium.search(url.searchParams.get("q"), url.searchParams.get("kind"), url.searchParams.get("scope")));
   if (method === "POST" && p === "/api/session/voice") {
     const body = await readJson(req);
-    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
     const state = store.read();
+    if (!isGm(state, body)) return send(res, 403, { error: "Nur der SL." });
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
     session.narrating = true;
@@ -685,8 +690,8 @@ async function handleApi(req, res, url) {
   }
   if (method === "POST" && p === "/api/session/undo") {
     const body = await readJson(req);
-    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
     const state = store.read();
+    if (!isGm(state, body)) return send(res, 403, { error: "Nur der SL." });
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session || !session.undo || !session.undo.length) return send(res, 400, { error: "Nichts zum Zurücknehmen." });
     const entry = session.undo.pop();
@@ -705,8 +710,8 @@ async function handleApi(req, res, url) {
   }
   if (method === "POST" && p === "/api/session/fear-spend") {
     const body = await readJson(req);
-    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
     const state = store.read();
+    if (!isGm(state, body)) return send(res, 403, { error: "Nur der SL." });
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
     const camp = state.campaigns.find((c) => c.id === session.campaignId);
@@ -719,8 +724,8 @@ async function handleApi(req, res, url) {
   }
   if (method === "POST" && p === "/api/session/handout") {
     const body = await readJson(req);
-    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
     const state = store.read();
+    if (!isGm(state, body)) return send(res, 403, { error: "Nur der SL." });
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
     if (!session.handouts) session.handouts = [];
@@ -746,7 +751,7 @@ async function handleApi(req, res, url) {
     if (!session) return send(res, 400, { error: "Keine Session." });
     const amount = Math.max(0, Number(body.amount || 0));
     if (body.tokenId) {
-      if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
+      if (!isGm(state, body)) return send(res, 403, { error: "Nur der SL." });
       const token = (session.map?.tokens || []).find((t) => t.id === body.tokenId);
       if (!token) return send(res, 404, { error: "Foe fehlt." });
       token.stress = Math.min(Number(token.stressMax || 99), Number(token.stress || 0) + amount);
@@ -763,8 +768,8 @@ async function handleApi(req, res, url) {
   }
   if (method === "POST" && p === "/api/session/map/foe") {
     const body = await readJson(req);
-    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
     const state = store.read();
+    if (!isGm(state, body)) return send(res, 403, { error: "Nur der SL." });
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
     store.activeEncounter(session);
@@ -1007,8 +1012,8 @@ async function handleApi(req, res, url) {
   }
   if (method === "POST" && p === "/api/session/map/wall") {
     const body = await readJson(req);
-    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
     const state = store.read();
+    if (!isGm(state, body)) return send(res, 403, { error: "Nur der SL." });
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
     store.activeEncounter(session);
@@ -1019,8 +1024,8 @@ async function handleApi(req, res, url) {
   }
   if (method === "POST" && p === "/api/session/map/door") {
     const body = await readJson(req);
-    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
     const state = store.read();
+    if (!isGm(state, body)) return send(res, 403, { error: "Nur der SL." });
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
     store.activeEncounter(session);
@@ -1036,8 +1041,8 @@ async function handleApi(req, res, url) {
   }
   if (method === "POST" && p === "/api/session/journal") {
     const body = await readJson(req);
-    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
     const state = store.read();
+    if (!isGm(state, body)) return send(res, 403, { error: "Nur der SL." });
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
     session.journal = session.journal || [];
@@ -1048,8 +1053,8 @@ async function handleApi(req, res, url) {
   }
   if (method === "POST" && p === "/api/session/scene-track") {
     const body = await readJson(req);
-    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
     const state = store.read();
+    if (!isGm(state, body)) return send(res, 403, { error: "Nur der SL." });
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
     const enc = store.activeEncounter(session);

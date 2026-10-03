@@ -34,7 +34,8 @@ function currentEncounter() {
 }
 
 async function api(url, body, method = "POST") {
-  const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined });
+  const payload = body && body.as === "gm" ? { ...body, gmKey: localStorage.getItem("ember.gmKey") || "" } : body;
+  const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: payload ? JSON.stringify(payload) : undefined });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || "Fehler");
   return data;
@@ -624,7 +625,7 @@ localStorage.setItem("ember.gmKey", gmSeat);
 setInterval(() => {
   fetch("/api/presence", {
     method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ key: gmSeat, role: "gm", name: "SL", status: activeSession()?.narrating ? "narrating" : "online" }),
+    body: JSON.stringify({ key: gmSeat, role: "gm", name: "SL", gmKey: gmSeat, status: activeSession()?.narrating ? "narrating" : "online" }),
   }).catch(() => {});
 }, 4000);
 

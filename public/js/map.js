@@ -1,5 +1,7 @@
 const MapKit = { draggingId: null, lastSig: "", tool: "move", zoneStart: null };
 
+function gm(body) { return { as: "gm", ...body, gmKey: localStorage.getItem("ember.gmKey") || "" }; }
+
 function initials(label) {
   return String(label || "?").split(/\s+/).map((p) => p[0]).join("").slice(0, 2).toUpperCase();
 }
@@ -174,7 +176,7 @@ function drawOverlays(stage, ses, opts) {
     el.style.left = d.x + "%";
     el.style.top = d.y + "%";
     el.textContent = d.open ? "auf" : "zu";
-    if (opts.actor === "gm") el.addEventListener("click", () => fetch("/api/session/map/door", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ as: "gm", id: d.id }) }));
+    if (opts.actor === "gm") el.addEventListener("click", () => fetch("/api/session/map/door", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(gm({ id: d.id })) }));
     stage.appendChild(el);
   });
   (enc.traps || []).forEach((t) => {
@@ -196,13 +198,13 @@ function bindFieldTools(stage, opts) {
     const x = ((ev.clientX - box.left) / box.width) * 100;
     const y = ((ev.clientY - box.top) / box.height) * 100;
     if (MapKit.tool === "brush") {
-      await fetch("/api/session/map/brush", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ as: "gm", x, y, r: 9 }) });
+      await fetch("/api/session/map/brush", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(gm({ x, y, r: 9 })) });
     } else if (MapKit.tool === "trap") {
       const label = prompt("Snare?", "Fallgrube") || "Snare";
       const note = prompt("Was geschieht?", "") || "";
-      await fetch("/api/session/map/trap", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ as: "gm", x, y, r: 7, label, note }) });
+      await fetch("/api/session/map/trap", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(gm({ x, y, r: 7, label, note })) });
     } else if (MapKit.tool === "ping") {
-      await fetch("/api/session/ping", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ as: "gm", x, y, name: "SL" }) });
+      await fetch("/api/session/ping", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(gm({ x, y, name: "SL" })) });
     } else if (MapKit.tool === "measure") {
       if (!MapKit.measureStart) { MapKit.measureStart = { x, y }; return; }
       const a = MapKit.measureStart; MapKit.measureStart = null;
@@ -220,9 +222,9 @@ function bindFieldTools(stage, opts) {
     } else if (MapKit.tool === "wall") {
       if (!MapKit.wallStart) { MapKit.wallStart = { x, y }; return; }
       const a = MapKit.wallStart; MapKit.wallStart = null;
-      await fetch("/api/session/map/wall", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ as: "gm", x1: a.x, y1: a.y, x2: x, y2: y }) });
+      await fetch("/api/session/map/wall", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(gm({ x1: a.x, y1: a.y, x2: x, y2: y })) });
     } else if (MapKit.tool === "door") {
-      await fetch("/api/session/map/door", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ as: "gm", x, y }) });
+      await fetch("/api/session/map/door", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(gm({ x, y })) });
     } else if (MapKit.tool === "zone") {
       if (!MapKit.zoneStart) { MapKit.zoneStart = { x, y }; return; }
       const a = MapKit.zoneStart; MapKit.zoneStart = null;
@@ -230,7 +232,7 @@ function bindFieldTools(stage, opts) {
       const text = prompt("Wenn jemand eintritt?", "") || "";
       await fetch("/api/session/map/zone", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ as: "gm", x: Math.min(a.x, x), y: Math.min(a.y, y), w: Math.max(6, Math.abs(a.x - x)), h: Math.max(6, Math.abs(a.y - y)), label, text, secret: true }),
+        body: JSON.stringify(gm({ x: Math.min(a.x, x), y: Math.min(a.y, y), w: Math.max(6, Math.abs(a.x - x)), h: Math.max(6, Math.abs(a.y - y)), label, text, secret: true })),
       });
     }
   });
@@ -258,7 +260,7 @@ function startDrag(ev, el, token, opts) {
     if (!Number.isFinite(x)) return;
     const res = await fetch("/api/session/map/move", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: token.id, x, y, rev: Number(el.dataset.rev || 0), as: opts.actor || "player", characterId: opts.characterId || token.characterId || null }),
+      body: JSON.stringify(gm({ id: token.id, x, y, rev: Number(el.dataset.rev || 0), as: opts.actor || "player", characterId: opts.characterId || token.characterId || null })),
     });
     if (res.status === 409) alert("Das Token hat schon jemand gezogen.");
   };
