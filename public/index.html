@@ -45,15 +45,7 @@
       <div class="brand">Ember · Age of Umbra</div>
       <div class="grow"></div>
       <div class="chip" id="lanChip">LAN …</div>
-      <label class="chip">Rolle
-        <select id="rolePick">
-          <option value="/" selected>Spielleitung</option>
-          <option value="/player">Spieler</option>
-          <option value="/player?gast=1">Gast</option>
-          <option value="/karten">Karten</option>
-          <option value="/solo">Solo</option>
-        </select>
-      </label>
+      <button class="btn tiny" id="btnRoles" type="button">Rollen</button>
       <button class="icon-btn" id="btnBack" type="button" title="Zurück" aria-label="Zurück auf vorherige Seite">
         <img src="/img/icon-back.svg" alt="" width="18" height="18" />
       </button>
@@ -64,6 +56,7 @@
         <img src="/img/icon-gear.svg" alt="" width="18" height="18" />
       </button>
     </header>
+    <div class="gear-panel hidden" id="roleMenu"><p class="hint">Rollen am Tisch</p></div>
     <div class="gear-panel hidden" id="gearPanel">
       <h2>Einstellungen</h2>
       <label>Schriftgröße <input id="gearFont" type="range" min="14" max="22" value="16" /></label>
@@ -418,8 +411,8 @@
       document.getElementById("sessionHub")?.classList.add("hidden");
       document.getElementById("sessionLive")?.classList.remove("hidden");
     });
-    document.getElementById("rolePick")?.addEventListener("change", (ev) => {
-      if (ev.target.value) location.href = ev.target.value;
+    document.getElementById("btnRoles")?.addEventListener("click", () => {
+      document.getElementById("roleMenu")?.classList.toggle("hidden");
     });
     document.getElementById("btnGear").addEventListener("click", () => {
       document.getElementById("gearPanel").classList.toggle("hidden");
