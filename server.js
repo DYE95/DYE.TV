@@ -304,9 +304,6 @@ async function handleApi(req, res, url) {
       }));
     }
     store.activeEncounter(session);
-    if (session.encounters[0]) {
-      session.encounters[0].name = camp && /sablewood/i.test(camp.name) ? "The Road Into Sablewood" : "The First Dark";
-    }
     state.sessions.push(session);
     state.active.campaignId = campaignId;
     state.active.sessionId = session.id;
@@ -326,7 +323,7 @@ async function handleApi(req, res, url) {
     const state = store.read();
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine offene Session." });
-    session.narrating = Boolean(body.narrating);
+    session.narrating = body.narrating == null ? !session.narrating : Boolean(body.narrating);
     addLog(session, {
       kind: "system",
       text: session.narrating ? "Speak the Dark — die Umbra lauscht." : "Die Stimme verstummt.",

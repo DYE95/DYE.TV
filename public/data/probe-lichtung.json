@@ -1,20 +1,21 @@
 {
+  "revision": 3,
   "campaigns": [
     {
-      "id": "cmp_6dc87df30073913a3",
+      "id": "cmp_082350712ac79e1a0",
       "name": "Asche \u00fcber der Lichtung",
       "frame": "Age of Umbra",
       "notes": "Probelauf. Die Stra\u00dfe gibt nach.",
       "gmFear": 0,
       "fearMax": 12,
-      "createdAt": "2026-10-03T10:16:41.123Z"
+      "createdAt": "2026-10-03T10:19:44.928Z"
     }
   ],
   "characters": [
     {
-      "id": "pc_e30d883d42eb713a5",
-      "campaignId": "cmp_6dc87df30073913a3",
-      "playerPin": "1964",
+      "id": "pc_9d97fcbee711e1a4",
+      "campaignId": "cmp_082350712ac79e1a0",
+      "playerPin": "6288",
       "name": "Mira",
       "pronouns": "",
       "ancestry": "Elf",
@@ -56,13 +57,13 @@
       },
       "notes": "",
       "sheetPhotos": [],
-      "createdAt": "2026-10-03T10:16:41.125Z",
+      "createdAt": "2026-10-03T10:19:44.932Z",
       "tableSeat": 0
     },
     {
-      "id": "pc_79f69466f438c13a7",
-      "campaignId": "cmp_6dc87df30073913a3",
-      "playerPin": "7967",
+      "id": "pc_bb1c96294787fe1a7",
+      "campaignId": "cmp_082350712ac79e1a0",
+      "playerPin": "2059",
       "name": "Bram",
       "pronouns": "",
       "ancestry": "Human",
@@ -104,13 +105,13 @@
       },
       "notes": "",
       "sheetPhotos": [],
-      "createdAt": "2026-10-03T10:16:41.127Z",
+      "createdAt": "2026-10-03T10:19:44.935Z",
       "tableSeat": 1
     },
     {
-      "id": "pc_0a09ca96c06cd13a9",
-      "campaignId": "cmp_6dc87df30073913a3",
-      "playerPin": "6640",
+      "id": "pc_b2d40fb4632bfe1aa",
+      "campaignId": "cmp_082350712ac79e1a0",
+      "playerPin": "3511",
       "name": "Nix",
       "pronouns": "",
       "ancestry": "Faun",
@@ -152,120 +153,104 @@
       },
       "notes": "",
       "sheetPhotos": [],
-      "createdAt": "2026-10-03T10:16:41.129Z",
+      "createdAt": "2026-10-03T10:19:44.938Z",
       "tableSeat": 2
     }
   ],
   "sessions": [
     {
-      "id": "ses_86031258cbcc513ad",
-      "campaignId": "cmp_6dc87df30073913a3",
-      "startedAt": "2026-10-03T10:16:41.133Z",
+      "id": "ses_50a81b4a23297e1af",
+      "campaignId": "cmp_082350712ac79e1a0",
+      "startedAt": "2026-10-03T10:19:44.943Z",
       "endedAt": null,
       "narrating": false,
       "log": [
         {
-          "id": "log_8867e35c1713d13ad",
-          "at": "2026-10-03T10:16:41.133Z",
+          "id": "log_5e2fb293d4b14e1af",
+          "at": "2026-10-03T10:19:44.943Z",
           "kind": "system",
           "author": "Ember",
           "text": "Die Glut ist klein. Jemand muss sprechen, bevor die Umbra n\u00e4herkommt.",
           "meta": {}
         },
         {
-          "id": "log_7611ab3a0c0c713b2",
-          "at": "2026-10-03T10:16:41.138Z",
+          "id": "log_6e211f9794393e1b6",
+          "at": "2026-10-03T10:19:44.950Z",
+          "kind": "system",
+          "author": "Ember",
+          "text": "Speak the Dark \u2014 die Umbra lauscht.",
+          "meta": {}
+        },
+        {
+          "id": "log_56cb2230e3548e1bb",
+          "at": "2026-10-03T10:19:44.955Z",
           "kind": "note",
           "author": "SL",
           "text": "Die Glut ist klein. Der Weg endet an einer Lichtung, die Kutsche liegt auf der Seite.",
           "meta": {}
         },
         {
-          "id": "log_4843c47de68f313b4",
-          "at": "2026-10-03T10:16:41.140Z",
-          "kind": "system",
-          "author": "Ember",
-          "text": "Die Stimme verstummt.",
-          "meta": {}
-        },
-        {
-          "id": "log_0fd3d663034c313b6",
-          "at": "2026-10-03T10:16:41.142Z",
+          "id": "log_6ce542a81ec6de1bf",
+          "at": "2026-10-03T10:19:44.959Z",
           "kind": "note",
           "author": "SL",
           "text": "\u2026und pl\u00f6tzlich brach der Boden unter der Kutsche ein.",
           "meta": {}
         },
         {
-          "id": "log_a8ee1fdefc5c113bc",
-          "at": "2026-10-03T10:16:41.148Z",
+          "id": "log_d38479d354088e1c4",
+          "at": "2026-10-03T10:19:44.964Z",
           "kind": "system",
           "author": "Mira",
           "text": "ready",
           "meta": {}
         },
         {
-          "id": "log_757e93a48613513be",
-          "at": "2026-10-03T10:16:41.150Z",
+          "id": "log_2adff32b7d2fae1c9",
+          "at": "2026-10-03T10:19:44.969Z",
           "kind": "system",
           "author": "Bram",
           "text": "ready",
           "meta": {}
         },
         {
-          "id": "log_89d87ca8913c13c0",
-          "at": "2026-10-03T10:16:41.152Z",
+          "id": "log_c1050c70bdf45e1ce",
+          "at": "2026-10-03T10:19:44.974Z",
           "kind": "system",
           "author": "Nix",
           "text": "ready",
           "meta": {}
         },
         {
-          "id": "log_1211b0c6ccc5c13c2",
-          "at": "2026-10-03T10:16:41.154Z",
+          "id": "log_5b4a4ba1724afe1d3",
+          "at": "2026-10-03T10:19:44.979Z",
           "kind": "system",
           "author": "Ember",
           "text": "Ein Event liegt bereit: Der Boden gibt nach",
           "meta": {}
         },
         {
-          "id": "log_a63bd47b32e6e13c7",
-          "at": "2026-10-03T10:16:41.159Z",
+          "id": "log_118766d333429e1dd",
+          "at": "2026-10-03T10:19:44.989Z",
           "kind": "system",
           "author": "Ember",
           "text": "Play Event \u2014 Der Boden gibt nach. Runde 1 \u2014 Mira ist dran.",
           "meta": {}
         },
         {
-          "id": "log_1fe6a7bd1f1bb13ca",
-          "at": "2026-10-03T10:16:41.162Z",
-          "kind": "system",
-          "author": "Initiative",
-          "text": "Runde 1 \u2014 Bram ist dran.",
+          "id": "log_c6faeadc2b30ee1e3",
+          "at": "2026-10-03T10:19:44.995Z",
+          "kind": "note",
+          "author": "Mira",
+          "text": "Mira springt vom Rand und kommt auf.",
           "meta": {}
         },
         {
-          "id": "log_ebeacea46fc3113cc",
-          "at": "2026-10-03T10:16:41.164Z",
-          "kind": "system",
-          "author": "Initiative",
-          "text": "Runde 1 \u2014 Nix ist dran.",
-          "meta": {}
-        },
-        {
-          "id": "log_169dafc52379c13ce",
-          "at": "2026-10-03T10:16:41.166Z",
-          "kind": "system",
-          "author": "Initiative",
-          "text": "Runde 1 \u2014 Wurzelmaul ist dran.",
-          "meta": {}
-        },
-        {
-          "id": "log_b7d68095433e913d0",
-          "at": "2026-10-03T10:16:41.168Z",
+          "id": "log_2dcfe3f56408ee1e8",
+          "at": "2026-10-03T10:19:45.000Z",
           "kind": "roll",
           "author": "Mira",
-          "text": "Hope 8 \u00b7 Fear 3 +0 = 11 \u2014 Failure with Hope",
+          "text": "Hope 8 \u00b7 Fear 3 +0 = 11 \u2014 Success with Hope",
           "meta": {
             "hopeDie": 8,
             "fearDie": 3,
@@ -275,41 +260,73 @@
             "hopeDelta": 1,
             "fearDelta": 0,
             "outcome": {
-              "label": "Failure with Hope",
-              "success": false,
+              "label": "Success with Hope",
+              "success": true,
               "critical": false,
               "withHope": true
             },
-            "spoken": "Hope 8 \u00b7 Fear 3 +0 = 11 \u2014 Failure with Hope"
+            "spoken": "Hope 8 \u00b7 Fear 3 +0 = 11 \u2014 Success with Hope"
           }
         },
         {
-          "id": "log_9408fa6a870b613d4",
-          "at": "2026-10-03T10:16:41.172Z",
-          "kind": "note",
-          "author": "Mira",
-          "text": "Mira springt vom Rand.",
+          "id": "log_994632e4e69cbe1e9",
+          "at": "2026-10-03T10:19:45.001Z",
+          "kind": "system",
+          "author": "Initiative",
+          "text": "Runde 1 \u2014 Bram ist dran.",
           "meta": {}
         },
         {
-          "id": "log_ddb8e3fccd11913d7",
-          "at": "2026-10-03T10:16:41.175Z",
+          "id": "log_55321bc377216e1ee",
+          "at": "2026-10-03T10:19:45.006Z",
+          "kind": "note",
+          "author": "Bram",
+          "text": "Bram h\u00e4lt die Deichsel.",
+          "meta": {}
+        },
+        {
+          "id": "log_9d6b50a23e3f5e1f3",
+          "at": "2026-10-03T10:19:45.011Z",
+          "kind": "system",
+          "author": "Initiative",
+          "text": "Runde 1 \u2014 Nix ist dran.",
+          "meta": {}
+        },
+        {
+          "id": "log_aae590c5797f5e1f9",
+          "at": "2026-10-03T10:19:45.017Z",
+          "kind": "note",
+          "author": "Nix",
+          "text": "Nix wirft Glut in das Maul.",
+          "meta": {}
+        },
+        {
+          "id": "log_ae706b33fd617e203",
+          "at": "2026-10-03T10:19:45.027Z",
           "kind": "note",
           "author": "Schaden",
           "text": "Wurzelmaul +2 Stress (2)",
           "meta": {}
         },
         {
-          "id": "log_507bb233971e913d9",
-          "at": "2026-10-03T10:16:41.177Z",
-          "kind": "note",
-          "author": "Bram",
-          "text": "Bram h\u00e4lt die Deichsel. Das Wurzelmaul rei\u00dft an der Achse.",
+          "id": "log_0b885e1e3b4f1e208",
+          "at": "2026-10-03T10:19:45.032Z",
+          "kind": "system",
+          "author": "Initiative",
+          "text": "Runde 1 \u2014 Wurzelmaul ist dran.",
           "meta": {}
         },
         {
-          "id": "log_abbba84cf17ee13db",
-          "at": "2026-10-03T10:16:41.179Z",
+          "id": "log_57328fe595d06e20d",
+          "at": "2026-10-03T10:19:45.037Z",
+          "kind": "note",
+          "author": "SL",
+          "text": "Das Wurzelmaul rei\u00dft an der Achse und zieht sich in die Wurzeln.",
+          "meta": {}
+        },
+        {
+          "id": "log_c77f0d378be5e211",
+          "at": "2026-10-03T10:19:45.041Z",
           "kind": "system",
           "author": "Ember",
           "text": "Das Event verlischt: Der Boden gibt nach",
@@ -322,40 +339,40 @@
         "image": "/maps/lichtung.jpg",
         "tokens": [
           {
-            "id": "tok_453ea096b4ad13ae",
+            "id": "tok_da3337a969324e1af",
             "kind": "pc",
-            "characterId": "pc_e30d883d42eb713a5",
+            "characterId": "pc_9d97fcbee711e1a4",
             "label": "Mira",
             "color": "#e85d04",
             "x": 18,
             "y": 70
           },
           {
-            "id": "tok_2711f3d491ad413ae",
+            "id": "tok_f4c4e0e1b04fce1af",
             "kind": "pc",
-            "characterId": "pc_79f69466f438c13a7",
+            "characterId": "pc_bb1c96294787fe1a7",
             "label": "Bram",
             "color": "#e85d04",
             "x": 28,
             "y": 70
           },
           {
-            "id": "tok_ebb6cb133352913ae",
+            "id": "tok_8570e1570e42be1af",
             "kind": "pc",
-            "characterId": "pc_0a09ca96c06cd13a9",
+            "characterId": "pc_b2d40fb4632bfe1aa",
             "label": "Nix",
             "color": "#e85d04",
             "x": 38,
             "y": 70
           },
           {
-            "id": "tok_495de547c76da13c4",
+            "id": "tok_993caf1101967e1d8",
             "kind": "foe",
             "label": "Wurzelmaul",
             "color": "#6a040f",
             "x": 55,
             "y": 40,
-            "difficulty": 14,
+            "difficulty": 10,
             "stress": 2,
             "stressMax": 4,
             "thresholds": "5/11"
@@ -371,94 +388,47 @@
       },
       "encounters": [
         {
-          "id": "enc_00a113980c9a613ae",
-          "name": "The First Dark",
-          "status": "ready",
-          "map": {
-            "image": "/maps/lichtung.jpg",
-            "tokens": [
-              {
-                "id": "tok_453ea096b4ad13ae",
-                "kind": "pc",
-                "characterId": "pc_e30d883d42eb713a5",
-                "label": "Mira",
-                "color": "#e85d04",
-                "x": 20,
-                "y": 60
-              },
-              {
-                "id": "tok_2711f3d491ad413ae",
-                "kind": "pc",
-                "characterId": "pc_79f69466f438c13a7",
-                "label": "Bram",
-                "color": "#e85d04",
-                "x": 30,
-                "y": 60
-              },
-              {
-                "id": "tok_ebb6cb133352913ae",
-                "kind": "pc",
-                "characterId": "pc_0a09ca96c06cd13a9",
-                "label": "Nix",
-                "color": "#e85d04",
-                "x": 40,
-                "y": 60
-              }
-            ],
-            "fow": {
-              "on": false,
-              "radius": 16,
-              "persist": false,
-              "gmSeesAll": true,
-              "explored": []
-            }
-          },
-          "traps": [],
-          "zones": [],
-          "alerts": []
-        },
-        {
-          "id": "enc_f8af9608120ee13c2",
+          "id": "enc_4af62742595b8e1d3",
           "name": "Der Boden gibt nach",
           "status": "ended",
           "map": {
             "image": "/maps/lichtung.jpg",
             "tokens": [
               {
-                "id": "tok_453ea096b4ad13ae",
+                "id": "tok_da3337a969324e1af",
                 "kind": "pc",
-                "characterId": "pc_e30d883d42eb713a5",
+                "characterId": "pc_9d97fcbee711e1a4",
                 "label": "Mira",
                 "color": "#e85d04",
                 "x": 18,
                 "y": 70
               },
               {
-                "id": "tok_2711f3d491ad413ae",
+                "id": "tok_f4c4e0e1b04fce1af",
                 "kind": "pc",
-                "characterId": "pc_79f69466f438c13a7",
+                "characterId": "pc_bb1c96294787fe1a7",
                 "label": "Bram",
                 "color": "#e85d04",
                 "x": 28,
                 "y": 70
               },
               {
-                "id": "tok_ebb6cb133352913ae",
+                "id": "tok_8570e1570e42be1af",
                 "kind": "pc",
-                "characterId": "pc_0a09ca96c06cd13a9",
+                "characterId": "pc_b2d40fb4632bfe1aa",
                 "label": "Nix",
                 "color": "#e85d04",
                 "x": 38,
                 "y": 70
               },
               {
-                "id": "tok_495de547c76da13c4",
+                "id": "tok_993caf1101967e1d8",
                 "kind": "foe",
                 "label": "Wurzelmaul",
                 "color": "#6a040f",
                 "x": 55,
                 "y": 40,
-                "difficulty": 14,
+                "difficulty": 10,
                 "stress": 2,
                 "stressMax": 4,
                 "thresholds": "5/11"
@@ -477,11 +447,11 @@
           "alerts": []
         }
       ],
-      "activeEncounterId": "enc_f8af9608120ee13c2",
+      "activeEncounterId": "enc_4af62742595b8e1d3",
       "ready": {
-        "pc_e30d883d42eb713a5": true,
-        "pc_79f69466f438c13a7": true,
-        "pc_0a09ca96c06cd13a9": true
+        "pc_9d97fcbee711e1a4": true,
+        "pc_bb1c96294787fe1a7": true,
+        "pc_b2d40fb4632bfe1aa": true
       },
       "initiative": {
         "on": false,
@@ -490,38 +460,39 @@
         "index": 3,
         "order": [
           {
-            "id": "ini_a1059df493cb813c7",
+            "id": "ini_6b3695528021fe1dd",
             "label": "Mira",
             "kind": "pc",
-            "characterId": "pc_e30d883d42eb713a5",
-            "tokenId": "tok_453ea096b4ad13ae"
+            "characterId": "pc_9d97fcbee711e1a4",
+            "tokenId": "tok_da3337a969324e1af",
+            "acted": true
           },
           {
-            "id": "ini_074801de201ad13c7",
+            "id": "ini_66391d2866bcee1dd",
             "label": "Bram",
             "kind": "pc",
-            "characterId": "pc_79f69466f438c13a7",
-            "tokenId": "tok_2711f3d491ad413ae",
+            "characterId": "pc_bb1c96294787fe1a7",
+            "tokenId": "tok_f4c4e0e1b04fce1af",
             "acted": false
           },
           {
-            "id": "ini_d9c664ff1757e13c7",
+            "id": "ini_7dd19ae1bc28e1dd",
             "label": "Nix",
             "kind": "pc",
-            "characterId": "pc_0a09ca96c06cd13a9",
-            "tokenId": "tok_ebb6cb133352913ae",
+            "characterId": "pc_b2d40fb4632bfe1aa",
+            "tokenId": "tok_8570e1570e42be1af",
             "acted": false
           },
           {
-            "id": "ini_fcf07444fcfc213c7",
+            "id": "ini_c176bbb53c632e1dd",
             "label": "Wurzelmaul",
             "kind": "foe",
             "characterId": null,
-            "tokenId": "tok_495de547c76da13c4",
+            "tokenId": "tok_993caf1101967e1d8",
             "acted": false
           },
           {
-            "id": "ini_67529e84c939313c7",
+            "id": "ini_b968400b9e7e7e1dd",
             "label": "SL",
             "kind": "gm",
             "characterId": null,
@@ -532,16 +503,16 @@
       "undo": [
         {
           "kind": "roll",
-          "characterId": "pc_e30d883d42eb713a5",
+          "characterId": "pc_9d97fcbee711e1a4",
           "hope": 2,
           "gmFear": 0,
-          "campaignId": "cmp_6dc87df30073913a3"
+          "campaignId": "cmp_082350712ac79e1a0"
         }
       ]
     }
   ],
   "active": {
-    "campaignId": "cmp_6dc87df30073913a3",
-    "sessionId": "ses_86031258cbcc513ad"
+    "campaignId": "cmp_082350712ac79e1a0",
+    "sessionId": "ses_50a81b4a23297e1af"
   }
 }
