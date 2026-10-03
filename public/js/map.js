@@ -109,7 +109,6 @@ function drawFog(canvas, stage, map, opts) {
   ctx.globalCompositeOperation = "destination-out";
   const radiusPct = Number(fow.radius || 16);
   const stamps = [...(fow.explored || [])];
-  const lines = segments(map);
   (map.tokens || []).filter((t) => t.kind === "pc").forEach((t) => {
     if (opts.viewer !== "gm" && opts.characterId && t.characterId !== opts.characterId) return;
     const cx = (t.x / 100) * w;

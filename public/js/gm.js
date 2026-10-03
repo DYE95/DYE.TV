@@ -381,7 +381,7 @@ async function sendRoll(source) {
   const trait = $("#rollTrait").value;
   const expId = $("#rollExperience").value;
   const payload = {
-    characterId, source, difficulty: Number($("#rollDifficulty").value || 0), trait,
+    characterId, source, difficulty: Number($("#rollDifficulty").value || 0) || tableFoeDifficulty(), trait,
     traitMod: trait && pc ? Number(pc.traits[trait] || 0) : 0,
     experiences: expId && pc ? pc.experiences.filter((e) => e.id === expId) : [],
     mode: $("#rollMode").value,
