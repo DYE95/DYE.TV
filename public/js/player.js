@@ -93,7 +93,7 @@ function render() {
   $("#gate").classList.add("hidden");
   $("#mapStage")?.classList.remove("hidden");
   $("#playActions").classList.toggle("hidden", !pc);
-  $("#sheet").classList.toggle("hidden", !pc);
+  if (!pc) $("#sheet")?.classList.add("hidden");
   $("#who").textContent = pc ? pc.name : "Gast";
   const sesTurn = (state.sessions || []).find((s) => s.id === state.active?.sessionId);
   const init = sesTurn?.initiative;
@@ -167,6 +167,7 @@ function render() {
 
 $("#btnGuest")?.addEventListener("click", () => sit("", true));
 $("#btnLeaveSeat")?.addEventListener("click", () => sit("", false));
+$("#btnSheet")?.addEventListener("click", () => $("#sheet")?.classList.toggle("hidden"));
 $("#btnReady")?.addEventListener("click", async () => {
   if (!meId) return;
   const res = await fetch("/api/session/ready", {

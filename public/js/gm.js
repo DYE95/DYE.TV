@@ -255,7 +255,7 @@ function renderSession() {
     pick.value = activeCampaignId() || "";
   }
   const readyList = $("#readyList");
-  const seated = charsOf(activeCampaignId());
+  const seated = charsOf(activeCampaignId()).filter((c) => Number.isInteger(c.tableSeat) || (state.presence || []).some((p) => p.characterId === c.id && p.status !== "offline"));
   const ready = ses?.ready || {};
   if (readyList) {
     readyList.innerHTML = seated.map((c) => `<div class="card"><div class="name">${c.name}</div><div class="meta">${ready[c.id] ? "ready" : "wartet"}</div></div>`).join("") || "<p class='hint'>Noch niemand sitzt.</p>";
