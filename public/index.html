@@ -85,15 +85,17 @@
     </section>
 
     <section class="view" id="view-session">
-      <div class="workspace" id="sessionHub">
-        <aside class="panel">
-          <h2>Am Tisch</h2>
-          <p class="hint" id="hubCampaign">Noch keine Kampagne.</p>
+      <div class="hub" id="sessionHub">
+        <header class="hub-banner">
+          <div>
+            <h2>Am Tisch</h2>
+            <p class="hint" id="hubCampaign">Noch keine Kampagne.</p>
+          </div>
           <label>Kampagne <select id="campaignPick"><option value="">—</option></select></label>
-          <div id="tableIndicator" data-table="gm"></div>
-          <div class="list" id="readyList"></div>
-          <button class="btn primary" id="btnEnter" style="width:100%;margin-top:12px;" disabled>Rein, wenn alle ready sind</button>
-        </aside>
+        </header>
+        <div class="hub-table" id="tableIndicator" data-table="gm"></div>
+        <div class="hub-ready" id="readyList"></div>
+        <button class="btn primary" id="btnEnter" type="button" disabled>Rein, wenn alle ready sind</button>
       </div>
       <div class="workspace hidden" id="sessionLive">
         <aside class="panel">
