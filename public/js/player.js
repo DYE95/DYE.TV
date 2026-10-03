@@ -114,7 +114,7 @@ function render() {
   document.body.classList.toggle("seated", open);
   document.querySelector(".player-shell")?.classList.toggle("seated", open);
   $("#playActions")?.classList.toggle("hidden", !pc || watching);
-  if (!pc) $("#sheet")?.classList.add("hidden");
+  if (pc && !watching) $("#sheet")?.classList.remove("hidden");
   $("#who").textContent = pc ? pc.name : "Gast";
   renderRoles();
   const sesTurn = (state.sessions || []).find((s) => s.id === state.active?.sessionId);
