@@ -54,6 +54,10 @@ function note(text) {
   log.prepend(line);
 }
 
+function run(fn) {
+  fn().catch((err) => note(err.message || "Fehler"));
+}
+
 $("#grid").addEventListener("pointerdown", (ev) => {
   const box = $("#grid").getBoundingClientRect();
   const x = Math.round(((ev.clientX - box.left) / box.width) * 100);
@@ -104,18 +108,18 @@ $("#btnLevelGo").addEventListener("click", async () => {
   $("#levelBox").classList.add("hidden");
   refresh();
 });
-$("#btnStart").addEventListener("click", async () => {
+$("#btnStart").addEventListener("click", () => run(async () => {
   const res = await api("/api/solo/start", { characterId: $("#pc").value });
   note(res.text);
-});
-$("#btnBot").addEventListener("click", async () => {
+}));
+$("#btnBot").addEventListener("click", () => run(async () => {
   const res = await api("/api/solo/bot", { botId: $("#bot").value });
   note(res.text);
-});
-$("#btnAct").addEventListener("click", async () => {
+}));
+$("#btnAct").addEventListener("click", () => run(async () => {
   const res = await api("/api/solo/act", { characterId: $("#pc").value });
   note(res.text);
-});
+}));
 $("#btnSaveMap").addEventListener("click", async () => {
   const res = await api("/api/maps", { name: $("#mapName").value, tokens: pins });
   note("Karte " + res.name);
@@ -123,7 +127,7 @@ $("#btnSaveMap").addEventListener("click", async () => {
   paint();
   refresh();
 });
-$("#btnDungeon").addEventListener("click", async () => {
+$("#btnDungeon").addEventListener("click", () => run(async () => {
   const res = await api("/api/dungeon", { characterId: $("#pc").value });
   const box = $("#rooms");
   box.innerHTML = "";
@@ -131,16 +135,16 @@ $("#btnDungeon").addEventListener("click", async () => {
     const b = document.createElement("button");
     b.className = "btn";
     b.textContent = room.name + (room.bot ? " · " + room.bot.name : " · leer");
-    b.addEventListener("click", async () => {
+    b.addEventListener("click", () => run(async () => {
       const out = await api("/api/dungeon/room", { roomId: room.id, characterId: $("#pc").value });
       b.textContent = out.text;
       note(out.text);
       if (out.leveled) refresh();
-    });
+    }));
     box.appendChild(b);
   });
   note(res.text);
-});
+}));
 
 api("/api/solo/subclasses").then((data) => { window.emberSubs = data.subclasses || []; fillSubs((state.characters || []).find((c) => c.id === $("#pc").value)); });
 api("/api/solo/bots").then((data) => {

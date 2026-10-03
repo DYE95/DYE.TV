@@ -1,7 +1,7 @@
 const $ = (sel) => document.querySelector(sel);
 let state = { characters: [], sessions: [], active: {}, media: [] };
 let meId = localStorage.getItem("ember.characterId") || "";
-let guest = localStorage.getItem("ember.guest") === "1";
+let guest = localStorage.getItem("ember.guest") === "1" || location.search.includes("gast=1");
 
 function me() { return (state.characters || []).find((c) => c.id === meId); }
 
@@ -108,9 +108,9 @@ function render() {
   }
   $("#gate").classList.add("hidden");
   $("#mapStage")?.classList.remove("hidden");
-  const watch = location.search.includes("watch=1");
-  if (watch) localStorage.setItem("ember.watch", "1");
-  const watching = watch || localStorage.getItem("ember.watch") === "1";
+  const watching = location.search.includes("watch=1");
+  if (watching) localStorage.setItem("ember.watch", "1");
+  else localStorage.removeItem("ember.watch");
   document.body.classList.toggle("seated", open);
   document.querySelector(".player-shell")?.classList.toggle("seated", open);
   $("#playActions")?.classList.toggle("hidden", !pc || watching);
@@ -122,7 +122,14 @@ function render() {
   const whoTurn = init?.on && init.order?.length ? init.order[init.index] : null;
   const chip = $("#turnChip");
   if (chip) chip.textContent = whoTurn ? "R" + init.round + " " + whoTurn.label : "keine Reihenfolge";
-  const mapKey = (sesTurn?.map?.tokens || []).map((t) => t.id + ":" + t.x + ":" + t.y + ":" + (t.rev || 0)).join("|") + "|" + (sesTurn?.map?.fow?.on ? "1" : "0");
+  const encNow = (sesTurn?.encounters || []).find((e) => e.id === sesTurn.activeEncounterId) || (sesTurn?.encounters || [])[0] || null;
+  const doorsSig = (sesTurn?.map?.doors || []).map((d) => d.id + (d.open ? "o" : "z")).join(",");
+  const zoneSig = (encNow?.zones || []).map((z) => z.id + (z.sprung ? "1" : "0")).join(",");
+  const trapSig = (encNow?.traps || []).map((t) => t.id + (t.sprung ? "1" : "0")).join(",");
+  const mapKey = (sesTurn?.map?.tokens || []).map((t) => t.id + ":" + t.x + ":" + t.y + ":" + (t.rev || 0)).join("|")
+    + "|" + (sesTurn?.map?.fow?.on ? "1" : "0")
+    + "|p:" + (sesTurn?.ping?.at || 0)
+    + "|d:" + doorsSig + "|z:" + zoneSig + "|t:" + trapSig;
   if ($("#mapStage") && mapKey !== $("#mapStage").dataset.key) {
     $("#mapStage").dataset.key = mapKey;
     renderMap($("#mapStage"), state, {

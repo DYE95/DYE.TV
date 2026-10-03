@@ -73,6 +73,8 @@ function drawPing(stage, ses) {
   el.style.top = ping.y + "%";
   el.textContent = ping.name;
   stage.appendChild(el);
+  const left = Math.max(200, 4000 - (Date.now() - ping.at));
+  setTimeout(() => el.remove(), left);
 }
 function segments(map) {
   const lines = (map.walls || []).map((w) => [w.x1, w.y1, w.x2, w.y2]);

@@ -1,6 +1,8 @@
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
+function esc(s) { return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+
 let state = { campaigns: [], characters: [], sessions: [], active: {}, lan: {} };
 let selectedCampaignId = null;
 let selectedCharacterId = null;
@@ -110,13 +112,14 @@ function renderCampaigns() {
   const current = campaignById(selectedCampaignId) || state.campaigns[0];
   const busy = document.activeElement && $("#campaignForm")?.contains(document.activeElement);
   if (current && !busy) fillCampaignForm(current);
-  const view = $("#campaignView");
   const active = campaignById(activeCampaignId());
-  if (view) {
-    view.innerHTML = active
-      ? `<p class="name" style="font-size:28px">${active.name}</p><p class="hint">${active.frame || "kein Frame"}</p><p>${(active.notes || "").replace(/</g, "&lt;")}</p>`
-      : `<p class="hint">Noch keine Kampagne.</p>`;
-  }
+  const html = active
+    ? `<p class="name" style="font-size:28px">${esc(active.name)}</p><p class="hint">${esc(active.frame || "kein Frame")}</p><p>${esc(active.notes || "")}</p>`
+    : `<p class="hint">Noch keine Kampagne.</p>`;
+  const view = $("#campaignView");
+  if (view) view.innerHTML = html;
+  const viewManager = $("#campaignViewManager");
+  if (viewManager) viewManager.innerHTML = html;
 }
 function fillCampaignForm(c) {
   selectedCampaignId = c.id;
@@ -139,7 +142,8 @@ function renderCharacters() {
     list.appendChild(b);
   });
   const current = charsOf(activeCampaignId()).find((c) => c.id === selectedCharacterId) || charsOf(activeCampaignId())[0];
-  if (current) { selectedCharacterId = current.id; fillCharacterForm(current); }
+  const busy = document.activeElement && $("#characterForm")?.contains(document.activeElement);
+  if (current && !busy) { selectedCharacterId = current.id; fillCharacterForm(current); }
   renderCharacterSheet();
 }
 function fillCharacterForm(c) {
@@ -168,20 +172,26 @@ function fillCharacterForm(c) {
   if ($("#playerPin")) $("#playerPin").textContent = c.playerPin || "—";
   if ($("#photoBox")) $("#photoBox").innerHTML = (c.sheetPhotos || []).map((p) => `<img src="/uploads/${p.file}" alt="" />`).join("");
   const frame = $("#tokenFrame");
-  if (frame) frame.src = "/token?embed=1&char=" + encodeURIComponent(c.id);
+  if (frame && frame.dataset.char !== c.id) {
+    frame.dataset.char = c.id;
+    frame.src = "/token?embed=1&char=" + encodeURIComponent(c.id);
+  }
 }
 function renderCharacterSheet() {
   const c = (state.characters || []).find((x) => x.id === selectedCharacterId);
-  const root = $("#characterView");
-  if (!root) return;
-  if (!c) { root.innerHTML = "<p class='hint'>Kein Bogen.</p>"; return; }
-  root.innerHTML = `<div class="menu-card" style="width:min(720px,96%);margin:20px auto;text-align:left;">
-    <h1>${c.name}</h1>
-    <p class="hint">${c.class || ""} · PIN ${c.playerPin}</p>
+  const html = !c
+    ? "<p class='hint'>Kein Bogen.</p>"
+    : `<div class="menu-card" style="width:min(720px,96%);margin:20px auto;text-align:left;">
+    <h1>${esc(c.name)}</h1>
+    <p class="hint">${esc(c.class || "")} · PIN ${esc(c.playerPin)}</p>
     <div class="stat-grid">${["agility","strength","finesse","instinct","presence","knowledge"].map((t) =>
       `<div class="stat"><span>${t}</span><b>${c.traits?.[t] >= 0 ? "+" : ""}${c.traits?.[t] ?? 0}</b></div>`).join("")}</div>
     <p>Hope ${c.hope}/${c.hopeMax} · Stress ${c.stressMarked}/${c.stressMax} · HP ${c.hpMarked}/${c.hpMax}</p>
   </div>`;
+  for (const sel of ["#characterView", "#characterViewManager"]) {
+    const root = $(sel);
+    if (root) root.innerHTML = html;
+  }
 }
 
 function renderEncounter() {
@@ -324,6 +334,12 @@ function renderSession() {
     });
     log.scrollTop = log.scrollHeight;
   }
+  const journal = $("#journalList");
+  if (journal) {
+    journal.innerHTML = [...(ses?.journal || [])].reverse().map((j) =>
+      `<div class="card"><div class="name">${esc(j.title)}${j.secret ? " · geheim" : ""}</div><div class="meta">${esc(j.text)}</div></div>`
+    ).join("") || "<p class='hint'>Noch keine Notizen.</p>";
+  }
   const sel = $("#rollCharacter");
   if (sel) {
     const current = sel.value;
@@ -406,7 +422,7 @@ function render() {
   }
 }
 
-$("#btnStartSession")?.addEventListener("click", () => api("/api/session/start", { campaignId: activeCampaignId() }));
+$("#btnStartSession")?.addEventListener("click", () => api("/api/session/start", { campaignId: activeCampaignId() }).catch((err) => alert(err.message)));
 $("#btnEndSession")?.addEventListener("click", () => api("/api/session/end", {}));
 $("#btnNarrate")?.addEventListener("click", () => {
   const ses = activeSession();
