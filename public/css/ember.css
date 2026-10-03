@@ -20,7 +20,8 @@ html, body { height: 100%; margin: 0; background: var(--bg); color: #f3e6d8; fon
   text-decoration: none; cursor: pointer; padding: 0;
 }
 .icon-btn:hover { border-color: #e85d04; color: #ffb703; }
-body:has(#view-menu.on) #spotlightHud { display: none; }
+#spotlightHud { display: none; }
+body:has(#view-encounter.on) #spotlightHud { display: block; }
 .brand { font-family: var(--serif); letter-spacing: .04em; }
 .grow { flex: 1; }
 .chip { font-size: 12px; color: var(--mute); }
