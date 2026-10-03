@@ -384,7 +384,7 @@ async function handleApi(req, res, url) {
     const state = store.read();
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     const character = state.characters.find((c) => c.id === body.characterId);
-    const roll = resolveActionRoll(body);
+    const roll = resolveActionRoll({ ...body, hopeDie: body.hopeDie || body.hope, fearDie: body.fearDie || body.fear });
     if (session && character) {
       remember(session, {
         kind: "roll",
@@ -744,12 +744,23 @@ async function handleApi(req, res, url) {
     const state = store.read();
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
-    const token = (session.map?.tokens || []).find((t) => t.id === body.id);
-    if (!token) return send(res, 404, { error: "Token fehlt." });
-    if (body.difficulty != null) token.difficulty = Number(body.difficulty) || null;
-    if (body.stress != null) token.stress = Number(body.stress) || 0;
-    if (body.stressMax != null) token.stressMax = Number(body.stressMax) || null;
-    if (body.thresholds != null) token.thresholds = body.thresholds;
+    store.activeEncounter(session);
+    let token = (session.map?.tokens || []).find((t) => t.id === body.id);
+    if (!token) {
+      token = {
+        id: id("tok"), kind: "foe", label: body.label || "Foe", color: body.color || "#6a040f",
+        x: Number(body.x ?? 55), y: Number(body.y ?? 40),
+        difficulty: Number(body.difficulty || 14) || null,
+        stress: 0, stressMax: Number(body.stressMax || 4) || 4, thresholds: body.thresholds || "5/11",
+      };
+      session.map.tokens.push(token);
+      initiative.addFoe(session, token);
+    } else {
+      if (body.difficulty != null) token.difficulty = Number(body.difficulty) || null;
+      if (body.stress != null) token.stress = Number(body.stress) || 0;
+      if (body.stressMax != null) token.stressMax = Number(body.stressMax) || null;
+      if (body.thresholds != null) token.thresholds = body.thresholds;
+    }
     store.write(state); emitState();
     return send(res, 200, token);
   }
