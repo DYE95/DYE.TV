@@ -99,7 +99,13 @@ function drawFog(canvas, stage, map, opts) {
   const fow = map.fow || {};
   const w = Math.max(1, stage.clientWidth);
   const h = Math.max(1, stage.clientHeight);
-  if (w < 2 || h < 2) return;
+  if (w < 2 || h < 2) {
+    if (!stage.dataset.redrawWait) {
+      stage.dataset.redrawWait = "1";
+      requestAnimationFrame(() => { stage.dataset.redrawWait = ""; drawFog(canvas, stage, map, opts); });
+    }
+    return;
+  }
   if (canvas.width !== w) canvas.width = w;
   if (canvas.height !== h) canvas.height = h;
   const ctx = canvas.getContext("2d");
@@ -147,7 +153,7 @@ function drawFog(canvas, stage, map, opts) {
 }
 function drawOverlays(stage, ses, opts) {
   const enc = activeEnc(ses);
-  [...stage.querySelectorAll(".zone,.trap-mark")].forEach((n) => n.remove());
+  [...stage.querySelectorAll(".zone,.trap-mark,.wall,.door")].forEach((n) => n.remove());
   if (!enc) return;
   const gm = opts.viewer === "gm";
   (enc.zones || []).forEach((z) => {
