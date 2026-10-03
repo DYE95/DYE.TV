@@ -6,5 +6,11 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
-node --test test/initiative.test.js test/dice.test.js
+node --check server.js
+if errorlevel 1 (
+  echo Syntaxfehler in server.js
+  pause
+  exit /b 1
+)
+node --test test/initiative.test.js test/dice.test.js test/solo.test.js test/store.test.js
 if errorlevel 1 pause

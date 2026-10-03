@@ -66,3 +66,27 @@ test("next über das Ende hebt die Runde", () => {
   assert.equal(initiative.current(session).label, "Sable");
   assert.match(initiative.spoken(session), /Runde 2 — Sable/);
 });
+
+test("addFoe schiebt den neuen Foe vor den SL", () => {
+  const session = table();
+  initiative.seed(session);
+  initiative.addFoe(session, { id: "t4", kind: "foe", label: "Bramble" });
+  assert.deepEqual(session.initiative.order.map((r) => r.label), ["Sable", "Ivo", "Ash Hound", "Bramble", "SL"]);
+});
+
+test("Gegenseite vom SL springt zur ersten Spielerperson", () => {
+  const session = table();
+  initiative.seed(session);
+  initiative.apply(session, { action: "set", id: session.initiative.order[3].id });
+  assert.equal(initiative.current(session).label, "SL");
+  initiative.apply(session, { action: "side" });
+  assert.equal(initiative.current(session).label, "Sable");
+});
+
+test("auto aus stoppt das automatische Weiterrücken nach Würfen", () => {
+  const session = table();
+  initiative.seed(session);
+  initiative.apply(session, { action: "auto", on: false });
+  assert.equal(initiative.completeIfActor(session, "c1"), false);
+  assert.equal(initiative.current(session).label, "Sable");
+});

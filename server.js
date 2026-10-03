@@ -77,6 +77,7 @@ function addLog(session, entry) {
     text: entry.text || "",
     meta: entry.meta || {},
   });
+  if (session.log.length > 500) session.log = session.log.slice(-500);
 }
 
 function remember(session, entry) {
@@ -102,12 +103,19 @@ function readBody(req) {
 async function readJson(req) {
   const raw = await readBody(req);
   if (!raw.length) return {};
-  return JSON.parse(raw.toString("utf8"));
+  try {
+    return JSON.parse(raw.toString("utf8"));
+  } catch {
+    const err = new Error("Kaputtes JSON.");
+    err.badJson = true;
+    throw err;
+  }
 }
 
 function safeJoin(root, rel) {
   const resolved = path.resolve(root, rel);
-  if (!resolved.startsWith(path.resolve(root))) return null;
+  const relPath = path.relative(path.resolve(root), resolved);
+  if (relPath.startsWith("..") || path.isAbsolute(relPath)) return null;
   return resolved;
 }
 
@@ -122,8 +130,13 @@ function serveFile(res, filePath, req) {
     const range = req && req.headers.range;
     if (range && /^bytes=/.test(range)) {
       const [startStr, endStr] = range.replace("bytes=", "").split("-");
-      const start = Number(startStr) || 0;
-      const end = endStr ? Number(endStr) : st.size - 1;
+      const start = Math.max(0, Number(startStr) || 0);
+      let end = endStr ? Number(endStr) : st.size - 1;
+      if (end > st.size - 1) end = st.size - 1;
+      if (start > end) {
+        res.writeHead(416, { "Content-Type": "text/plain; charset=utf-8", "Content-Range": `bytes */${st.size}` });
+        return res.end("Bereich ungueltig.");
+      }
       res.writeHead(206, {
         "Content-Type": type,
         "Content-Range": `bytes ${start}-${end}/${st.size}`,
@@ -356,6 +369,7 @@ async function handleApi(req, res, url) {
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine offene Session." });
     const pc = state.characters.find((c) => c.id === body.characterId);
+    if (!session.spotlightQueue) session.spotlightQueue = [];
     session.spotlightQueue.push({
       id: id("spot"),
       characterId: body.characterId || null,
@@ -496,12 +510,12 @@ async function handleApi(req, res, url) {
     if (body.as !== "gm" && (!body.characterId || token.characterId !== body.characterId)) {
       return send(res, 403, { error: "Nur das eigene Token." });
     }
-    remember(session, { kind: "move", tokenId: token.id, x: token.x, y: token.y });
     if (body.rev != null && Number(body.rev) !== Number(token.rev || 0)) {
       addLog(session, { kind: "system", author: "Karte", text: (token.label || "Token") + " wurde gerade woanders gezogen." });
       store.write(state); emitState();
       return send(res, 409, { error: "Jemand hat das Token schon gezogen.", token });
     }
+    remember(session, { kind: "move", tokenId: token.id, x: token.x, y: token.y });
     token.x = clamp(Number(body.x), 2, 98);
     token.y = clamp(Number(body.y), 4, 96);
     token.rev = Number(token.rev || 0) + 1;
@@ -774,50 +788,50 @@ async function handleApi(req, res, url) {
     return send(res, 200, token);
   }
   if (method === "POST" && p === "/api/restart") {
-  const remote = req.socket.remoteAddress || "";
-  const local = ["127.0.0.1", "::1", "::ffff:127.0.0.1", "localhost"].includes(remote);
-  if (!local) return send(res, 403, { error: "Neustart nur am SL-Rechner." });
-  send(res, 200, { restarting: true });
-  setTimeout(() => process.exit(42), 250);
-  return;
-}
-if (method === "POST" && p === "/api/update") {
-  const remote = req.socket.remoteAddress || "";
-  const local = ["127.0.0.1", "::1", "::ffff:127.0.0.1", "localhost"].includes(remote);
-  if (!local) return send(res, 403, { error: "Update nur am SL-Rechner." });
-
-  try {
-    const cwd = __dirname;
-    const before = execSync("git rev-parse HEAD", { cwd }).toString().trim();
-    execSync("git fetch --all --prune", { cwd, stdio: "pipe" });
-    const pullLog = execSync("git pull --ff-only", { cwd }).toString().trim();
-    const after = execSync("git rev-parse HEAD", { cwd }).toString().trim();
-    const changed = before !== after;
-
-    let installLog = "";
-    if (changed) {
-      const diff = execSync(`git diff --name-only ${before} ${after}`, { cwd }).toString();
-      if (diff.split("\n").some((f) => f.trim() === "package.json")) {
-        installLog = execSync("npm install --omit=dev", { cwd }).toString();
-      }
-    }
-
-    return send(res, 200, {
-      changed,
-      before: before.slice(0, 8),
-      after: after.slice(0, 8),
-      pullLog,
-      installLog,
-      needsRestart: changed,
-    });
-  } catch (err) {
-    return send(res, 500, {
-      error: err.message,
-      stdout: err.stdout ? err.stdout.toString() : "",
-      stderr: err.stderr ? err.stderr.toString() : "",
-    });
+    const remote = req.socket.remoteAddress || "";
+    const local = ["127.0.0.1", "::1", "::ffff:127.0.0.1", "localhost"].includes(remote);
+    if (!local) return send(res, 403, { error: "Neustart nur am SL-Rechner." });
+    send(res, 200, { restarting: true });
+    setTimeout(() => process.exit(42), 250);
+    return;
   }
-}
+  if (method === "POST" && p === "/api/update") {
+    const remote = req.socket.remoteAddress || "";
+    const local = ["127.0.0.1", "::1", "::ffff:127.0.0.1", "localhost"].includes(remote);
+    if (!local) return send(res, 403, { error: "Update nur am SL-Rechner." });
+
+    try {
+      const cwd = __dirname;
+      const before = execSync("git rev-parse HEAD", { cwd }).toString().trim();
+      execSync("git fetch --all --prune", { cwd, stdio: "pipe" });
+      const pullLog = execSync("git pull --ff-only", { cwd }).toString().trim();
+      const after = execSync("git rev-parse HEAD", { cwd }).toString().trim();
+      const changed = before !== after;
+
+      let installLog = "";
+      if (changed) {
+        const diff = execSync(`git diff --name-only ${before} ${after}`, { cwd }).toString();
+        if (diff.split("\n").some((f) => f.trim() === "package.json")) {
+          installLog = execSync("npm install --omit=dev", { cwd }).toString();
+        }
+      }
+
+      return send(res, 200, {
+        changed,
+        before: before.slice(0, 8),
+        after: after.slice(0, 8),
+        pullLog,
+        installLog,
+        needsRestart: changed,
+      });
+    } catch (err) {
+      return send(res, 500, {
+        error: err.message,
+        stdout: err.stdout ? err.stdout.toString() : "",
+        stderr: err.stderr ? err.stderr.toString() : "",
+      });
+    }
+  }
   if (method === "GET" && p === "/api/solo/bots") return send(res, 200, { bots: solo.list() });
   if (method === "POST" && p === "/api/solo/start") {
     const body = await readJson(req);
@@ -987,7 +1001,7 @@ if (method === "POST" && p === "/api/update") {
     return send(res, 200, { notes: fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : [] });
   }
 
-if (method === "GET" && p === "/api/cards") {
+  if (method === "GET" && p === "/api/cards") {
     const file = path.join(PUBLIC, "data", "cards.json");
     return send(res, 200, { cards: fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : [] });
   }
@@ -1114,6 +1128,7 @@ const server = http.createServer(async (req, res) => {
     if (!file) { res.writeHead(403); return res.end(); }
     return serveFile(res, file, req);
   } catch (err) {
+    if (err && err.badJson) return send(res, 400, { error: err.message });
     send(res, 500, { error: err.message || "Serverfehler" });
   }
 });

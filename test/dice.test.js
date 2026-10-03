@@ -36,3 +36,28 @@ test("Experience kostet Hope", () => {
   assert.equal(roll.total, 13);
   assert.equal(roll.hopeDelta, 0);
 });
+
+test("Advantage addiert den W6", () => {
+  const roll = resolveActionRoll({ hopeDie: 4, fearDie: 2, mode: "advantage", advantageDie: 3, difficulty: 0 });
+  assert.equal(roll.total, 9);
+  assert.equal(roll.hopeDelta, 1);
+});
+
+test("Disadvantage zieht den W6 ab", () => {
+  const roll = resolveActionRoll({ hopeDie: 2, fearDie: 4, mode: "disadvantage", advantageDie: 3, difficulty: 0 });
+  assert.equal(roll.total, 3);
+  assert.equal(roll.fearDelta, 1);
+});
+
+test("negativer Trait-Mod zeigt sein Vorzeichen korrekt", () => {
+  const roll = resolveActionRoll({ hopeDie: 5, fearDie: 2, traitMod: -2, difficulty: 0 });
+  assert.equal(roll.total, 5);
+  assert.ok(roll.spoken.includes(" -2 = "));
+  assert.ok(!roll.spoken.includes("+-2"));
+});
+
+test("ohne Würfel wird zufällig im Bereich 1-12 gewürfelt", () => {
+  const roll = resolveActionRoll({ difficulty: 0 });
+  assert.ok(roll.hopeDie >= 1 && roll.hopeDie <= 12);
+  assert.ok(roll.fearDie >= 1 && roll.fearDie <= 12);
+});
