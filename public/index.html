@@ -188,7 +188,7 @@
             <div class="stage field" id="mapStage">
               <div class="map-grid" aria-hidden="true"></div>
             </div>
-            <img class="scene-wall" src="/maps/umbra-road.jpg" alt="Szenenwand" style="position:absolute;right:12px;bottom:12px;width:180px;border:1px solid #c45c26;z-index:3;" />
+            <img class="scene-wall" id="sceneWall" src="/maps/umbra-road.jpg" alt="Szenenwand" style="position:absolute;right:12px;bottom:12px;width:180px;border:1px solid #c45c26;z-index:3;" />
             <div class="map-tools float-dock" id="mapDock">
               <button class="btn tiny on" id="btnGrid" type="button">Gitter</button>
               <button class="btn tiny" id="btnAddFoe">+ Foe</button>
@@ -211,6 +211,7 @@
                 </select>
               </label>
               <label class="btn tiny">Eigenes Bild <input id="mapImage" type="file" accept="image/*" hidden /></label>
+              <button class="btn tiny" id="btnWall" type="button">Wand</button>
               <button class="btn tiny" id="btnFow">Umbra: AUS</button>
               <button class="btn tiny ghost" id="btnFowClear">Umbra wischen</button>
             </div>
@@ -247,6 +248,7 @@
             <button class="btn tiny" data-tool="brush">Reveal</button>
             <button class="btn tiny" data-tool="trap">Snare</button>
             <button class="btn tiny" data-tool="zone">Threshold</button>
+            <button class="btn tiny" data-tool="ping">Ping</button>
             <button class="btn tiny" data-tool="measure">Messen</button>
           </div>
           <p class="hint" id="toolHint">Ziehen: Tokens. Reveal bleibt. Snare und Threshold sieht der Tisch erst, wenn sie zuschlagen.</p>

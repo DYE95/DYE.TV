@@ -145,12 +145,22 @@ function bindFieldTools(stage, opts) {
       const label = prompt("Snare?", "Fallgrube") || "Snare";
       const note = prompt("Was geschieht?", "") || "";
       await fetch("/api/session/map/trap", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ as: "gm", x, y, r: 7, label, note }) });
+    } else if (MapKit.tool === "ping") {
+      await fetch("/api/session/ping", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ as: "gm", x, y, name: "SL" }) });
     } else if (MapKit.tool === "measure") {
       if (!MapKit.measureStart) { MapKit.measureStart = { x, y }; return; }
       const a = MapKit.measureStart; MapKit.measureStart = null;
       const dx = x - a.x, dy = y - a.y;
       const dist = Math.round(Math.sqrt(dx * dx + dy * dy));
-      alert("Abstand " + dist + " auf der Karte.");
+      const line = document.createElement("div");
+      line.className = "measure-line";
+      line.style.left = Math.min(a.x, x) + "%";
+      line.style.top = Math.min(a.y, y) + "%";
+      line.style.width = Math.abs(dx) + "%";
+      line.style.height = Math.abs(dy) + "%";
+      line.textContent = dist + " Felder";
+      stage.appendChild(line);
+      setTimeout(() => line.remove(), 4000);
     } else if (MapKit.tool === "zone") {
       if (!MapKit.zoneStart) { MapKit.zoneStart = { x, y }; return; }
       const a = MapKit.zoneStart; MapKit.zoneStart = null;

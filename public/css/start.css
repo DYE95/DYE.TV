@@ -110,3 +110,5 @@ body:has(.app) { overflow: hidden; }
 .hub-table { min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
 .hub-table .plate { flex: 1; min-height: 0; aspect-ratio: auto; }
 .hub-ready { min-height: 0; }
+
+.measure-line { position:absolute; border:1px dashed #e9c46a; color:#e9c46a; font-size:12px; pointer-events:none; z-index:4; }

@@ -509,6 +509,7 @@ $("#btnAddPin")?.addEventListener("click", () => {
 $("#mapPick")?.addEventListener("change", (ev) => {
   if (ev.target.value) api("/api/session/map/image", { as: "gm", image: ev.target.value });
 });
+$("#btnWall")?.addEventListener("click", () => document.getElementById("sceneWall")?.classList.toggle("hidden"));
 $("#btnFow")?.addEventListener("click", () => api("/api/session/map/fow", { as: "gm", on: !activeSession()?.map?.fow?.on }));
 $("#btnFowClear")?.addEventListener("click", () => { MapKit.draggingId = null; api("/api/session/map/fow", { as: "gm", clear: true, on: true }); });
 $("#mapImage")?.addEventListener("change", (ev) => {
