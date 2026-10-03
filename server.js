@@ -979,6 +979,69 @@ if (method === "GET" && p === "/api/cards") {
     const file = path.join(PUBLIC, "data", "cards.json");
     return send(res, 200, { cards: fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : [] });
   }
+  if (method === "POST" && p === "/api/session/map/wall") {
+    const body = await readJson(req);
+    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Keine Session." });
+    store.activeEncounter(session);
+    session.map.walls = session.map.walls || [];
+    session.map.walls.push({ id: id("wall"), x1: body.x1, y1: body.y1, x2: body.x2, y2: body.y2 });
+    store.write(state); emitState();
+    return send(res, 200, session.map.walls);
+  }
+  if (method === "POST" && p === "/api/session/map/door") {
+    const body = await readJson(req);
+    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Keine Session." });
+    store.activeEncounter(session);
+    session.map.doors = session.map.doors || [];
+    if (body.id) {
+      const door = session.map.doors.find((d) => d.id === body.id);
+      if (door) door.open = !door.open;
+    } else {
+      session.map.doors.push({ id: id("door"), x: body.x, y: body.y, open: false });
+    }
+    store.write(state); emitState();
+    return send(res, 200, session.map.doors);
+  }
+  if (method === "POST" && p === "/api/session/journal") {
+    const body = await readJson(req);
+    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Keine Session." });
+    session.journal = session.journal || [];
+    session.journal.push({ id: id("note"), title: body.title || "Notiz", text: body.text || "", secret: Boolean(body.secret), at: new Date().toISOString() });
+    if (!body.secret) addLog(session, { kind: "handout", author: "Journal", text: body.title || "Notiz" });
+    store.write(state); emitState();
+    return send(res, 200, session.journal);
+  }
+  if (method === "POST" && p === "/api/session/scene-track") {
+    const body = await readJson(req);
+    if (body.as !== "gm") return send(res, 403, { error: "Nur der SL." });
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Keine Session." });
+    const enc = store.activeEncounter(session);
+    enc.track = body.track || "";
+    store.write(state); emitState();
+    return send(res, 200, { track: enc.track });
+  }
+  if (method === "POST" && p === "/api/characters/feature") {
+    const body = await readJson(req);
+    const state = store.read();
+    const character = state.characters.find((c) => c.id === body.characterId);
+    if (!character) return send(res, 404, { error: "Bogen fehlt." });
+    character.features = character.features || [];
+    character.features.push({ name: body.name || "Feature", text: body.text || "" });
+    store.write(state); emitState();
+    return send(res, 200, character);
+  }
+
   if (method === "POST" && p === "/api/session/ready") {
     const body = await readJson(req);
     const state = store.read();

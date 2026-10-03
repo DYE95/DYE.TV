@@ -120,3 +120,7 @@ body:has(.app) { overflow: hidden; }
 .start-item:hover { border-color: #c45c26; }
 .hub { gap: 20px; }
 .hub-ready .card { padding: 12px; }
+
+.wall { position:absolute; background:#1a120e; border:1px solid #c45c26; pointer-events:none; z-index:3; }
+.door { position:absolute; z-index:4; font-size:10px; }
+.door.open { opacity:.45; }

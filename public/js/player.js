@@ -108,7 +108,12 @@ function render() {
   }
   $("#gate").classList.add("hidden");
   $("#mapStage")?.classList.remove("hidden");
-  $("#playActions").classList.toggle("hidden", !pc);
+  const watch = location.search.includes("watch=1");
+  if (watch) localStorage.setItem("ember.watch", "1");
+  const watching = watch || localStorage.getItem("ember.watch") === "1";
+  document.body.classList.toggle("seated", open);
+  document.querySelector(".player-shell")?.classList.toggle("seated", open);
+  $("#playActions")?.classList.toggle("hidden", !pc || watching);
   if (!pc) $("#sheet")?.classList.add("hidden");
   $("#who").textContent = pc ? pc.name : "Gast";
   renderRoles();
@@ -227,7 +232,7 @@ async function playerRoll(table) {
   const pc = me();
   if (!pc) return;
   const action = $("#actionPick").value || "";
-  const trait = ["agility","strength","finesse","instinct","presence","knowledge"].find((t) => action.toLowerCase().includes(t));
+  const trait = $("#traitPick")?.value || ["agility","strength","finesse","instinct","presence","knowledge"].find((t) => action.toLowerCase().includes(t));
   const payload = { characterId: pc.id, trait, traitMod: trait ? Number(pc.traits?.[trait] || 0) : 0, difficulty: 0 };
   if (table) {
     payload.hopeDie = Number($("#hopeDie").value);

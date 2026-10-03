@@ -344,7 +344,8 @@ function renderGmRoles() {
     `<button class="card" data-go="session"><div class="name">Spielleitung</div><div class="meta">diese Glut</div></button>` +
     chars.map((c) => `<a class="card" href="/player" data-sit="${c.id}"><div class="name">${c.name}</div><div class="meta">${c.class || "Spieler"}</div></a>`).join("") +
     `<a class="card" href="/player?gast=1"><div class="name">Gast</div><div class="meta">Karte, kein Bogen</div></a>` +
-    `<a class="btn" href="/karten">Karten</a><a class="btn" href="/solo">Solo</a>`;
+    `<a class="card" href="/player?watch=1"><div class="name">Zuschauer</div><div class="meta">schaut nur</div></a>` +
+    `<a class="btn" href="/">Co-SL</a><a class="btn" href="/karten">Karten</a><a class="btn" href="/solo">Solo</a>`;
   menu.querySelectorAll("[data-sit]").forEach((link) => {
     link.addEventListener("click", () => localStorage.setItem("ember.characterId", link.getAttribute("data-sit")));
   });
@@ -509,6 +510,12 @@ $("#btnAddPin")?.addEventListener("click", () => {
 $("#mapPick")?.addEventListener("change", (ev) => {
   if (ev.target.value) api("/api/session/map/image", { as: "gm", image: ev.target.value });
 });
+$("#btnJournal")?.addEventListener("click", () => api("/api/session/journal", {
+  as: "gm",
+  title: $("#journalTitle")?.value || "Notiz",
+  text: $("#journalText")?.value || "",
+  secret: Boolean($("#journalSecret")?.checked),
+}));
 $("#btnWall")?.addEventListener("click", () => document.getElementById("sceneWall")?.classList.toggle("hidden"));
 $("#btnFow")?.addEventListener("click", () => api("/api/session/map/fow", { as: "gm", on: !activeSession()?.map?.fow?.on }));
 $("#btnFowClear")?.addEventListener("click", () => { MapKit.draggingId = null; api("/api/session/map/fow", { as: "gm", clear: true, on: true }); });

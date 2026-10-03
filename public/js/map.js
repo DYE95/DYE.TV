@@ -121,6 +121,25 @@ function drawOverlays(stage, ses, opts) {
     el.innerHTML = `<span>${z.label}</span>`;
     stage.appendChild(el);
   });
+  (map.walls || []).forEach((w) => {
+    const el = document.createElement("div");
+    el.className = "wall";
+    el.style.left = w.x1 + "%";
+    el.style.top = w.y1 + "%";
+    el.style.width = Math.abs(w.x2 - w.x1) + "%";
+    el.style.height = Math.max(2, Math.abs(w.y2 - w.y1)) + "%";
+    stage.appendChild(el);
+  });
+  (map.doors || []).forEach((d) => {
+    const el = document.createElement("button");
+    el.type = "button";
+    el.className = "door" + (d.open ? " open" : "");
+    el.style.left = d.x + "%";
+    el.style.top = d.y + "%";
+    el.textContent = d.open ? "auf" : "zu";
+    if (opts.actor === "gm") el.addEventListener("click", () => fetch("/api/session/map/door", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ as: "gm", id: d.id }) }));
+    stage.appendChild(el);
+  });
   (enc.traps || []).forEach((t) => {
     if (!gm && !t.sprung) return;
     const el = document.createElement("div");
@@ -151,16 +170,22 @@ function bindFieldTools(stage, opts) {
       if (!MapKit.measureStart) { MapKit.measureStart = { x, y }; return; }
       const a = MapKit.measureStart; MapKit.measureStart = null;
       const dx = x - a.x, dy = y - a.y;
-      const dist = Math.round(Math.sqrt(dx * dx + dy * dy));
+      const steps = Math.max(1, Math.round(Math.sqrt(dx * dx + dy * dy) / 5));
       const line = document.createElement("div");
       line.className = "measure-line";
       line.style.left = Math.min(a.x, x) + "%";
       line.style.top = Math.min(a.y, y) + "%";
       line.style.width = Math.abs(dx) + "%";
       line.style.height = Math.abs(dy) + "%";
-      line.textContent = dist + " Felder";
+      line.textContent = steps + (steps === 1 ? " Schritt" : " Schritte");
       stage.appendChild(line);
       setTimeout(() => line.remove(), 4000);
+    } else if (MapKit.tool === "wall") {
+      if (!MapKit.wallStart) { MapKit.wallStart = { x, y }; return; }
+      const a = MapKit.wallStart; MapKit.wallStart = null;
+      await fetch("/api/session/map/wall", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ as: "gm", x1: a.x, y1: a.y, x2: x, y2: y }) });
+    } else if (MapKit.tool === "door") {
+      await fetch("/api/session/map/door", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ as: "gm", x, y }) });
     } else if (MapKit.tool === "zone") {
       if (!MapKit.zoneStart) { MapKit.zoneStart = { x, y }; return; }
       const a = MapKit.zoneStart; MapKit.zoneStart = null;
