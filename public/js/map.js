@@ -74,6 +74,22 @@ function drawPing(stage, ses) {
   el.textContent = ping.name;
   stage.appendChild(el);
 }
+function segments(map) {
+  const lines = (map.walls || []).map((w) => [w.x1, w.y1, w.x2, w.y2]);
+  (map.doors || []).filter((d) => !d.open).forEach((d) => lines.push([d.x - 3, d.y, d.x + 3, d.y]));
+  return lines;
+}
+function hit(x1, y1, x2, y2, lines) {
+  let best = 1;
+  for (const [ax, ay, bx, by] of lines) {
+    const den = (x2 - x1) * (ay - by) - (y2 - y1) * (ax - bx);
+    if (!den) continue;
+    const t = ((ax - x1) * (ay - by) - (ay - y1) * (ax - bx)) / den;
+    const u = ((ax - x1) * (y2 - y1) - (ay - y1) * (x2 - x1)) / den;
+    if (t > 0.02 && t < best && u >= 0 && u <= 1) best = t;
+  }
+  return best;
+}
 function drawFog(canvas, stage, map, opts) {
   try {
   const fow = map.fow || {};
@@ -84,14 +100,33 @@ function drawFog(canvas, stage, map, opts) {
   if (canvas.height !== h) canvas.height = h;
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, w, h);
-  if (!fow.on) { canvas.style.opacity = "0"; MapKit.draggingId = null; return; }
+  const lines = segments(map);
+  const sight = fow.on || (opts.viewer !== "gm" && lines.length);
+  if (!sight) { canvas.style.opacity = "0"; MapKit.draggingId = null; return; }
   canvas.style.opacity = opts.viewer === "gm" ? "0.72" : "1";
   ctx.fillStyle = "rgba(4,2,2,0.88)";
   ctx.fillRect(0, 0, w, h);
   ctx.globalCompositeOperation = "destination-out";
   const radiusPct = Number(fow.radius || 16);
   const stamps = [...(fow.explored || [])];
-  (map.tokens || []).filter((t) => t.kind === "pc").forEach((t) => stamps.push({ x: t.x, y: t.y, r: radiusPct }));
+  const lines = segments(map);
+  (map.tokens || []).filter((t) => t.kind === "pc").forEach((t) => {
+    if (opts.viewer !== "gm" && opts.characterId && t.characterId !== opts.characterId) return;
+    const cx = (t.x / 100) * w;
+    const cy = (t.y / 100) * h;
+    const reach = (radiusPct / 100) * Math.min(w, h) * 1.6;
+    ctx.beginPath();
+    for (let i = 0; i <= 48; i++) {
+      const a = (i / 48) * Math.PI * 2;
+      const far = hit(t.x, t.y, t.x + Math.cos(a) * radiusPct, t.y + Math.sin(a) * radiusPct, lines);
+      const x = cx + Math.cos(a) * reach * far;
+      const y = cy + Math.sin(a) * reach * far;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fill();
+  });
   stamps.forEach((s) => {
     const x = (s.x / 100) * w;
     const y = (s.y / 100) * h;
@@ -121,6 +156,7 @@ function drawOverlays(stage, ses, opts) {
     el.innerHTML = `<span>${z.label}</span>`;
     stage.appendChild(el);
   });
+  const map = ses?.map || {};
   (map.walls || []).forEach((w) => {
     const el = document.createElement("div");
     el.className = "wall";

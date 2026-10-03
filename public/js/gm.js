@@ -371,6 +371,10 @@ function parseFeatures(text) {
   });
 }
 
+function tableFoeDifficulty() {
+  const foe = (activeSession()?.map?.tokens || []).find((t) => t.id === $("#harmFoe")?.value && t.difficulty);
+  return foe ? Number(foe.difficulty) : 0;
+}
 async function sendRoll(source) {
   const characterId = $("#rollCharacter").value;
   const pc = (state.characters || []).find((c) => c.id === characterId);

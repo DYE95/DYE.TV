@@ -58,6 +58,16 @@ function emitState() {
 
 function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
 
+function tableDifficulty(session, character) {
+  if (!session) return 0;
+  if (session.tableDifficulty) return Number(session.tableDifficulty);
+  const foes = (session.map?.tokens || []).filter((t) => t.kind === "foe" && t.difficulty);
+  if (!foes.length) return 0;
+  const mine = (session.map.tokens || []).find((t) => t.characterId === character?.id);
+  if (!mine) return foes[0].difficulty;
+  foes.sort((a, b) => Math.hypot(a.x - mine.x, a.y - mine.y) - Math.hypot(b.x - mine.x, b.y - mine.y));
+  return foes[0].difficulty;
+}
 function addLog(session, entry) {
   session.log.push({
     id: id("log"),
@@ -381,7 +391,7 @@ async function handleApi(req, res, url) {
     const state = store.read();
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     const character = state.characters.find((c) => c.id === body.characterId);
-    const roll = resolveActionRoll({ ...body, hopeDie: body.hopeDie || body.hope, fearDie: body.fearDie || body.fear });
+    const roll = resolveActionRoll({ ...body, hopeDie: body.hopeDie || body.hope, fearDie: body.fearDie || body.fear, difficulty: body.difficulty || tableDifficulty(session, character) });
     if (session && character) {
       remember(session, {
         kind: "roll",
