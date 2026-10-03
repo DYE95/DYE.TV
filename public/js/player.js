@@ -130,7 +130,7 @@ function render() {
     + "|" + (sesTurn?.map?.fow?.on ? "1" : "0")
     + "|p:" + (sesTurn?.ping?.at || 0)
     + "|d:" + doorsSig + "|z:" + zoneSig + "|t:" + trapSig;
-  if ($("#mapStage") && mapKey !== $("#mapStage").dataset.key) {
+  if ($("#mapStage")) {
     $("#mapStage").dataset.key = mapKey;
     renderMap($("#mapStage"), state, {
       viewer: pc ? pc.id : "guest",
