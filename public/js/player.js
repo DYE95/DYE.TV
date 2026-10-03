@@ -56,6 +56,21 @@ function renderClips() {
   });
 }
 
+function renderRoles() {
+  const menu = $("#roleMenu");
+  if (!menu) return;
+  const chars = state.characters || [];
+  menu.innerHTML = "<p class='hint'>Rolle am Tisch</p>" + chars.map((c) => `<button class="card" data-role="${c.id}"><div class="name">${c.name}</div><div class="meta">${c.class || "Spieler"}</div></button>`).join("") + `<button class="card" data-role="guest"><div class="name">Gast</div><div class="meta">Karte, kein Bogen</div></button><a class="btn" href="/">Spielleitung</a>`;
+  menu.querySelectorAll("[data-role]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const role = btn.getAttribute("data-role");
+      if (role === "guest") sit("", true);
+      else sit(role, false);
+      menu.classList.add("hidden");
+    });
+  });
+}
+$("#btnRoles")?.addEventListener("click", () => $("#roleMenu")?.classList.toggle("hidden"));
 function renderGate() {
   const list = $("#seatList");
   if (!list) return;
@@ -87,14 +102,16 @@ function render() {
     $("#mapStage")?.classList.add("hidden");
     $("#playVideoBox")?.classList.add("hidden");
     $("#who").textContent = "offen";
-    renderGate();
-    return;
+  renderGate();
+  renderRoles();
+  return;
   }
   $("#gate").classList.add("hidden");
   $("#mapStage")?.classList.remove("hidden");
   $("#playActions").classList.toggle("hidden", !pc);
   if (!pc) $("#sheet")?.classList.add("hidden");
   $("#who").textContent = pc ? pc.name : "Gast";
+  renderRoles();
   const sesTurn = (state.sessions || []).find((s) => s.id === state.active?.sessionId);
   const init = sesTurn?.initiative;
   const whoTurn = init?.on && init.order?.length ? init.order[init.index] : null;
