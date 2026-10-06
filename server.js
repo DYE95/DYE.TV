@@ -180,6 +180,18 @@ async function handleApi(req, res, url) {
   const method = req.method;
   const p = url.pathname;
 
+  if (method === "GET" && p === "/api/chats") {
+    const file = path.join(PUBLIC, "data", "chats.json");
+    const dir = path.join(__dirname, "docs", "chats");
+    const rows = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : [];
+    if (fs.existsSync(dir)) {
+      for (const name of fs.readdirSync(dir)) {
+        if (!name.endsWith(".md")) continue;
+        rows.push({ id: name, title: name.replace(/\.md$/, ""), text: fs.readFileSync(path.join(dir, name), "utf8").slice(0, 1200) });
+      }
+    }
+    return send(res, 200, rows);
+  }
   if (method === "GET" && p === "/api/state") return send(res, 200, snapshot());
   if (method === "GET" && p === "/api/events") {
     res.writeHead(200, {

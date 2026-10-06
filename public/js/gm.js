@@ -411,12 +411,19 @@ async function sendRoll(source) {
   $("#lastRoll").textContent = result.roll.spoken;
 }
 
+async function renderChats() {
+  const box = $("#chatList");
+  if (!box) return;
+  const rows = await fetch("/api/chats").then((r) => r.json()).catch(() => []);
+  box.innerHTML = rows.map((c) => `<div class="card"><div class="name">${c.title}</div><div class="meta">${c.text}</div></div>`).join("") || "<p class='hint'>Noch keine Fäden.</p>";
+}
 function render() {
   try {
     renderLan();
     renderCampaigns();
     renderCharacters();
     renderSession();
+    renderChats();
   } catch (err) {
     const box = $("#emberError");
     if (box) { box.hidden = false; box.textContent = err.message; }

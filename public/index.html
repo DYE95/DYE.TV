@@ -78,6 +78,7 @@
               <button class="start-item" data-go="encounter"><b>Events</b><span>Karten bereitlegen, dann Play Event</span></button>
               <button class="start-item" data-go="campaign-manager"><b>Kampagne</b><span>was brennt und Editor</span></button>
               <button class="start-item" data-go="character-manager"><b>Charakter</b><span>Bogen, Editor, Fotos</span></button>
+              <button class="start-item" data-go="chats"><b>Chats</b><span>Fäden aus dem Projekt</span></button>
               <button class="start-item start-item-danger" id="btnLeave"><b>Verlöschen</b><span>Ember schließen</span></button>
             </div>
           </div>
@@ -86,6 +87,13 @@
       </div>
     </section>
 
+    <section class="view" id="view-chats">
+      <div class="panel" style="margin:24px auto;max-width:720px;">
+        <h2>Chats</h2>
+        <p class="hint">Fäden, die im Projekt lagen. Neue Dateien kommen unter docs/chats.</p>
+        <div class="list" id="chatList"></div>
+      </div>
+    </section>
     <section class="view" id="view-session">
       <div class="hub" id="sessionHub">
         <header class="hub-banner">

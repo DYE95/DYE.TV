@@ -1,0 +1,533 @@
+{
+  "revision": 1,
+  "campaigns": [
+    {
+      "id": "cmp_4b2f92b7dc47c5b3d",
+      "name": "Die zweite Glut",
+      "frame": "Age of Umbra",
+      "notes": "Test nach dem Zug-Fix.",
+      "gmFear": 0,
+      "fearMax": 12,
+      "createdAt": "2026-10-06T15:28:12.093Z"
+    }
+  ],
+  "characters": [
+    {
+      "id": "pc_4b685100d3a185b3f",
+      "campaignId": "cmp_4b2f92b7dc47c5b3d",
+      "playerPin": "6305",
+      "name": "Mira",
+      "pronouns": "",
+      "ancestry": "",
+      "community": "",
+      "class": "Ranger",
+      "subclass": "",
+      "level": 1,
+      "traits": {
+        "agility": 1,
+        "presence": 2
+      },
+      "experiences": [],
+      "hope": 3,
+      "hopeMax": 6,
+      "stressMarked": 0,
+      "stressMax": 6,
+      "hpMarked": 0,
+      "hpMax": 6,
+      "major": 7,
+      "severe": 14,
+      "evasion": 10,
+      "armorScore": 0,
+      "armorMarked": 0,
+      "proficiency": 1,
+      "portrait": "",
+      "color": "#e85d04",
+      "hopeFeature": "",
+      "features": [],
+      "weapons": [],
+      "armor": {
+        "name": "",
+        "thresholds": "",
+        "score": 0,
+        "feature": ""
+      },
+      "notes": "",
+      "sheetPhotos": [],
+      "createdAt": "2026-10-06T15:28:12.095Z",
+      "tableSeat": 0
+    },
+    {
+      "id": "pc_29b9ca841b2a35b41",
+      "campaignId": "cmp_4b2f92b7dc47c5b3d",
+      "playerPin": "8725",
+      "name": "Bram",
+      "pronouns": "",
+      "ancestry": "",
+      "community": "",
+      "class": "Guardian",
+      "subclass": "",
+      "level": 1,
+      "traits": {
+        "agility": 1,
+        "presence": 2
+      },
+      "experiences": [],
+      "hope": 2,
+      "hopeMax": 6,
+      "stressMarked": 0,
+      "stressMax": 6,
+      "hpMarked": 0,
+      "hpMax": 6,
+      "major": 7,
+      "severe": 14,
+      "evasion": 10,
+      "armorScore": 0,
+      "armorMarked": 0,
+      "proficiency": 1,
+      "portrait": "",
+      "color": "#e85d04",
+      "hopeFeature": "",
+      "features": [],
+      "weapons": [],
+      "armor": {
+        "name": "",
+        "thresholds": "",
+        "score": 0,
+        "feature": ""
+      },
+      "notes": "",
+      "sheetPhotos": [],
+      "createdAt": "2026-10-06T15:28:12.097Z",
+      "tableSeat": 1
+    },
+    {
+      "id": "pc_137887fb4db1a5b44",
+      "campaignId": "cmp_4b2f92b7dc47c5b3d",
+      "playerPin": "2668",
+      "name": "Nix",
+      "pronouns": "",
+      "ancestry": "",
+      "community": "",
+      "class": "Sorcerer",
+      "subclass": "",
+      "level": 1,
+      "traits": {
+        "agility": 1,
+        "presence": 2
+      },
+      "experiences": [],
+      "hope": 2,
+      "hopeMax": 6,
+      "stressMarked": 0,
+      "stressMax": 6,
+      "hpMarked": 0,
+      "hpMax": 6,
+      "major": 7,
+      "severe": 14,
+      "evasion": 10,
+      "armorScore": 0,
+      "armorMarked": 0,
+      "proficiency": 1,
+      "portrait": "",
+      "color": "#e85d04",
+      "hopeFeature": "",
+      "features": [],
+      "weapons": [],
+      "armor": {
+        "name": "",
+        "thresholds": "",
+        "score": 0,
+        "feature": ""
+      },
+      "notes": "",
+      "sheetPhotos": [],
+      "createdAt": "2026-10-06T15:28:12.100Z",
+      "tableSeat": 2
+    }
+  ],
+  "sessions": [
+    {
+      "id": "ses_0494d8713cc3d5b48",
+      "campaignId": "cmp_4b2f92b7dc47c5b3d",
+      "startedAt": "2026-10-06T15:28:12.104Z",
+      "endedAt": null,
+      "narrating": false,
+      "log": [
+        {
+          "id": "log_e11f3795f3b4f5b48",
+          "at": "2026-10-06T15:28:12.104Z",
+          "kind": "system",
+          "author": "Ember",
+          "text": "Die Glut ist klein. Jemand muss sprechen, bevor die Umbra n\u00e4herkommt.",
+          "meta": {}
+        },
+        {
+          "id": "log_273af00ee7e9b5b4e",
+          "at": "2026-10-06T15:28:12.110Z",
+          "kind": "system",
+          "author": "Ember",
+          "text": "Speak the Dark \u2014 die Umbra lauscht.",
+          "meta": {}
+        },
+        {
+          "id": "log_0114937cffcb35b51",
+          "at": "2026-10-06T15:28:12.113Z",
+          "kind": "note",
+          "author": "SL",
+          "text": "Die zweite Glut. Der Weg ist derselbe, die Kutsche liegt noch.",
+          "meta": {}
+        },
+        {
+          "id": "log_c40c32f7ea6085b5c",
+          "at": "2026-10-06T15:28:12.124Z",
+          "kind": "system",
+          "author": "Mira",
+          "text": "ready",
+          "meta": {}
+        },
+        {
+          "id": "log_3ab1f8dc0e2e75b5e",
+          "at": "2026-10-06T15:28:12.126Z",
+          "kind": "system",
+          "author": "Bram",
+          "text": "ready",
+          "meta": {}
+        },
+        {
+          "id": "log_02e2f3f8be8d5b61",
+          "at": "2026-10-06T15:28:12.129Z",
+          "kind": "system",
+          "author": "Nix",
+          "text": "ready",
+          "meta": {}
+        },
+        {
+          "id": "log_0ca73bc1384b65b63",
+          "at": "2026-10-06T15:28:12.131Z",
+          "kind": "system",
+          "author": "Ember",
+          "text": "Ein Event liegt bereit: Die Achse h\u00e4lt",
+          "meta": {}
+        },
+        {
+          "id": "log_8d2953a4cd2d75b70",
+          "at": "2026-10-06T15:28:12.144Z",
+          "kind": "system",
+          "author": "Ember",
+          "text": "Play Event \u2014 Die Achse h\u00e4lt. Runde 1 \u2014 Mira ist dran.",
+          "meta": {}
+        },
+        {
+          "id": "log_04a7e936758265b74",
+          "at": "2026-10-06T15:28:12.148Z",
+          "kind": "roll",
+          "author": "Mira",
+          "text": "Hope 9 \u00b7 Fear 4 +1 = 14 gegen 11 \u2014 Success with Hope",
+          "meta": {
+            "hopeDie": 9,
+            "fearDie": 4,
+            "advantageDie": null,
+            "mode": "none",
+            "total": 14,
+            "hopeDelta": 1,
+            "fearDelta": 0,
+            "outcome": {
+              "label": "Success with Hope",
+              "success": true,
+              "critical": false,
+              "withHope": true
+            },
+            "spoken": "Hope 9 \u00b7 Fear 4 +1 = 14 gegen 11 \u2014 Success with Hope"
+          }
+        },
+        {
+          "id": "log_6bbc81c464ff25b75",
+          "at": "2026-10-06T15:28:12.149Z",
+          "kind": "system",
+          "author": "Initiative",
+          "text": "Runde 1 \u2014 Bram ist dran.",
+          "meta": {}
+        },
+        {
+          "id": "log_3aefa8abe9ef95b7a",
+          "at": "2026-10-06T15:28:12.154Z",
+          "kind": "note",
+          "author": "Bram",
+          "text": "Bram stemmt die Achse.",
+          "meta": {}
+        },
+        {
+          "id": "log_066c0eae7e1ec5b7e",
+          "at": "2026-10-06T15:28:12.158Z",
+          "kind": "note",
+          "author": "Schaden",
+          "text": "Wurzelmaul +2 Stress (2)",
+          "meta": {}
+        },
+        {
+          "id": "log_1aae104c5b5015b82",
+          "at": "2026-10-06T15:28:12.162Z",
+          "kind": "system",
+          "author": "Ember",
+          "text": "Das Event verlischt: Die Achse h\u00e4lt",
+          "meta": {}
+        }
+      ],
+      "spotlightQueue": [],
+      "activeSpotlight": null,
+      "map": {
+        "image": "/maps/lichtung.jpg",
+        "tokens": [
+          {
+            "id": "tok_f1878628183665b48",
+            "kind": "pc",
+            "characterId": "pc_4b685100d3a185b3f",
+            "label": "Mira",
+            "color": "#e85d04",
+            "x": 18,
+            "y": 70
+          },
+          {
+            "id": "tok_88277b317f85f5b48",
+            "kind": "pc",
+            "characterId": "pc_29b9ca841b2a35b41",
+            "label": "Bram",
+            "color": "#e85d04",
+            "x": 28,
+            "y": 70
+          },
+          {
+            "id": "tok_b818cd837018d5b48",
+            "kind": "pc",
+            "characterId": "pc_137887fb4db1a5b44",
+            "label": "Nix",
+            "color": "#e85d04",
+            "x": 38,
+            "y": 70
+          },
+          {
+            "id": "tok_72c3cb217a34e5b65",
+            "kind": "foe",
+            "label": "Wurzelmaul",
+            "color": "#6a040f",
+            "x": 55,
+            "y": 40,
+            "difficulty": 11,
+            "stress": 2,
+            "stressMax": 4,
+            "thresholds": "5/11"
+          },
+          {
+            "id": "tok_184afacc5c6a5b68",
+            "kind": "pc",
+            "characterId": "pc_4b685100d3a185b3f",
+            "label": "Mira",
+            "color": "#e85d04",
+            "portrait": "",
+            "x": 48,
+            "y": 62,
+            "difficulty": null,
+            "stress": 0,
+            "stressMax": null,
+            "thresholds": "",
+            "rev": 1
+          }
+        ],
+        "walls": [
+          {
+            "id": "wall_2f43aa12dbb4e5b57",
+            "x1": 30,
+            "y1": 40,
+            "x2": 60,
+            "y2": 40
+          }
+        ],
+        "doors": [
+          {
+            "id": "door_90baf77ddbb265b5a",
+            "x": 45,
+            "y": 40,
+            "open": false
+          }
+        ],
+        "fow": {
+          "on": false,
+          "radius": 16,
+          "persist": false,
+          "gmSeesAll": true,
+          "explored": []
+        }
+      },
+      "encounters": [
+        {
+          "id": "enc_eed99bad151945b63",
+          "name": "Die Achse h\u00e4lt",
+          "status": "ended",
+          "map": {
+            "image": "/maps/lichtung.jpg",
+            "tokens": [
+              {
+                "id": "tok_f1878628183665b48",
+                "kind": "pc",
+                "characterId": "pc_4b685100d3a185b3f",
+                "label": "Mira",
+                "color": "#e85d04",
+                "x": 18,
+                "y": 70
+              },
+              {
+                "id": "tok_88277b317f85f5b48",
+                "kind": "pc",
+                "characterId": "pc_29b9ca841b2a35b41",
+                "label": "Bram",
+                "color": "#e85d04",
+                "x": 28,
+                "y": 70
+              },
+              {
+                "id": "tok_b818cd837018d5b48",
+                "kind": "pc",
+                "characterId": "pc_137887fb4db1a5b44",
+                "label": "Nix",
+                "color": "#e85d04",
+                "x": 38,
+                "y": 70
+              },
+              {
+                "id": "tok_72c3cb217a34e5b65",
+                "kind": "foe",
+                "label": "Wurzelmaul",
+                "color": "#6a040f",
+                "x": 55,
+                "y": 40,
+                "difficulty": 11,
+                "stress": 2,
+                "stressMax": 4,
+                "thresholds": "5/11"
+              },
+              {
+                "id": "tok_184afacc5c6a5b68",
+                "kind": "pc",
+                "characterId": "pc_4b685100d3a185b3f",
+                "label": "Mira",
+                "color": "#e85d04",
+                "portrait": "",
+                "x": 48,
+                "y": 62,
+                "difficulty": null,
+                "stress": 0,
+                "stressMax": null,
+                "thresholds": "",
+                "rev": 1
+              }
+            ],
+            "walls": [
+              {
+                "id": "wall_2f43aa12dbb4e5b57",
+                "x1": 30,
+                "y1": 40,
+                "x2": 60,
+                "y2": 40
+              }
+            ],
+            "doors": [
+              {
+                "id": "door_90baf77ddbb265b5a",
+                "x": 45,
+                "y": 40,
+                "open": false
+              }
+            ],
+            "fow": {
+              "on": false,
+              "radius": 16,
+              "persist": false,
+              "gmSeesAll": true,
+              "explored": []
+            }
+          },
+          "traps": [],
+          "zones": [],
+          "alerts": []
+        }
+      ],
+      "activeEncounterId": "enc_eed99bad151945b63",
+      "ready": {
+        "pc_4b685100d3a185b3f": true,
+        "pc_29b9ca841b2a35b41": true,
+        "pc_137887fb4db1a5b44": true
+      },
+      "initiative": {
+        "on": false,
+        "auto": true,
+        "round": 1,
+        "index": 1,
+        "order": [
+          {
+            "id": "ini_deaedf684fb785b70",
+            "label": "Mira",
+            "kind": "pc",
+            "characterId": "pc_4b685100d3a185b3f",
+            "tokenId": "tok_f1878628183665b48",
+            "acted": true
+          },
+          {
+            "id": "ini_11564baf641a95b70",
+            "label": "Bram",
+            "kind": "pc",
+            "characterId": "pc_29b9ca841b2a35b41",
+            "tokenId": "tok_88277b317f85f5b48",
+            "acted": false
+          },
+          {
+            "id": "ini_4efa6302052075b70",
+            "label": "Nix",
+            "kind": "pc",
+            "characterId": "pc_137887fb4db1a5b44",
+            "tokenId": "tok_b818cd837018d5b48"
+          },
+          {
+            "id": "ini_799e4c4c649645b70",
+            "label": "Mira",
+            "kind": "pc",
+            "characterId": "pc_4b685100d3a185b3f",
+            "tokenId": "tok_184afacc5c6a5b68"
+          },
+          {
+            "id": "ini_4dfbdef53fd425b70",
+            "label": "Wurzelmaul",
+            "kind": "foe",
+            "characterId": null,
+            "tokenId": "tok_72c3cb217a34e5b65"
+          },
+          {
+            "id": "ini_12b4344da379a5b70",
+            "label": "SL",
+            "kind": "gm",
+            "characterId": null,
+            "tokenId": null
+          }
+        ]
+      },
+      "undo": [
+        {
+          "kind": "move",
+          "tokenId": "tok_184afacc5c6a5b68",
+          "x": 30,
+          "y": 70
+        },
+        {
+          "kind": "roll",
+          "characterId": "pc_4b685100d3a185b3f",
+          "hope": 2,
+          "gmFear": 0,
+          "campaignId": "cmp_4b2f92b7dc47c5b3d"
+        }
+      ]
+    }
+  ],
+  "active": {
+    "campaignId": "cmp_4b2f92b7dc47c5b3d",
+    "sessionId": "ses_0494d8713cc3d5b48"
+  }
+}
