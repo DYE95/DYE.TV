@@ -30,6 +30,7 @@ function renderMap(stage, state, opts = {}) {
   if (!fog) {
     fog = document.createElement("canvas");
     fog.className = "fow";
+    fog.style.pointerEvents = "none";
     stage.prepend(fog);
   }
   const tokens = map.tokens || [];
@@ -112,7 +113,7 @@ function drawFog(canvas, stage, map, opts) {
   ctx.clearRect(0, 0, w, h);
   const lines = segments(map);
   const sight = fow.on || (opts.viewer !== "gm" && lines.length);
-  if (!sight) { canvas.style.opacity = "0"; MapKit.draggingId = null; return; }
+  if (!sight) { canvas.style.opacity = "0"; return; }
   canvas.style.opacity = opts.viewer === "gm" ? "0.72" : "1";
   ctx.fillStyle = "rgba(4,2,2,0.88)";
   ctx.fillRect(0, 0, w, h);
@@ -266,7 +267,12 @@ function startDrag(ev, el, token, opts) {
     if (!Number.isFinite(x)) return;
     const res = await fetch("/api/session/map/move", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(gm({ id: token.id, x, y, rev: Number(el.dataset.rev || 0), as: opts.actor || "player", characterId: opts.characterId || token.characterId || null })),
+      body: JSON.stringify({
+        id: token.id, x, y, rev: Number(el.dataset.rev || 0),
+        as: opts.actor || "player",
+        characterId: opts.characterId || token.characterId || null,
+        gmKey: opts.actor === "gm" ? (localStorage.getItem("ember.gmKey") || "") : "",
+      }),
     });
     if (res.status === 409) alert("Das Token hat schon jemand gezogen.");
   };
