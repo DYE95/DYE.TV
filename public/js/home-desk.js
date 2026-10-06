@@ -1,10 +1,15 @@
 const STORE = "ember.home.desk.v1";
 
 const BUILTIN = [
-  { id: "ember", title: "Ember", sub: "SL · Spieler · Tokenatelier", panel: "panelEmber" },
+  { id: "ember", title: "Ember", sub: "Die Glut · SL", href: "/ember" },
+  { id: "player", title: "Spieler", sub: "Bogen, Spotlight, Würfel", href: "/player" },
+  { id: "token", title: "Tokenatelier", sub: "Pixel-Maker", href: "/token" },
   { id: "runner", title: "Leitungsparcours", sub: "DYE · Endless Runner", href: "/runner" },
   { id: "media", title: "Mediathek", sub: "Videos lokal abspielen", panel: "panelMedia" },
-  { id: "settings", title: "Einstellungen", sub: "Schrift, Kacheln, Raster, Profile", panel: "panelSettings" },
+  { id: "bibliothek", title: "Bibliothek", sub: "PDFs und Regeln", href: "/bibliothek" },
+  { id: "karten", title: "Karten", sub: "Print and Play", href: "/karten" },
+  { id: "solo", title: "Solo", sub: "Bots und Dungeon", href: "/solo" },
+  { id: "settings", title: "Einstellungen", sub: "Schrift, Kacheln, Raster", panel: "panelSettings" },
 ];
 
 function defaults() {
@@ -16,9 +21,14 @@ function defaults() {
     locked: false,
     tiles: {
       ember: { x: 24, y: 24 },
-      runner: { x: 312, y: 24 },
-      media: { x: 24, y: 136 },
-      settings: { x: 312, y: 136 },
+      player: { x: 312, y: 24 },
+      token: { x: 600, y: 24 },
+      runner: { x: 24, y: 136 },
+      media: { x: 312, y: 136 },
+      bibliothek: { x: 600, y: 136 },
+      karten: { x: 24, y: 248 },
+      solo: { x: 312, y: 248 },
+      settings: { x: 600, y: 248 },
     },
     custom: [],
     profiles: {},
