@@ -46,6 +46,7 @@ Umgebungsvariablen: `EMBER_PORT` (Standard `3478`), `EMBER_HOST` (Standard `0.0.
 | `/pastellpfad` | Pastellpfad: First-Person-Labyrinth, Kristalle, Minikarte         |
 | `/scharfschuss`| Scharfschuss: Turmverteidigung, Wellen, Gold für Abschüsse        |
 | `/puls`        | Puls: Live-Umfrage, eine Stimme pro Person, animierte Balken      |
+| `/heft`        | Heft: Notizen mit Markdown, Suche und lokaler Speicherung         |
 | `/home`        | Ältere Home-Ansicht                                              |
 
 Die Spieler-URLs zeigt der Server beim Start an (z. B. `http://192.168.0.151:3478/player`).

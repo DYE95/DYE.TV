@@ -1155,6 +1155,9 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === "/puls" || url.pathname === "/puls/") {
       return serveFile(res, path.join(PUBLIC, "puls.html"), req);
     }
+    if (url.pathname === "/heft" || url.pathname === "/heft/") {
+      return serveFile(res, path.join(PUBLIC, "heft.html"), req);
+    }
     const rel = url.pathname.replace(/^\/+/, "");
     const file = safeJoin(PUBLIC, rel);
     if (!file) { res.writeHead(403); return res.end(); }
@@ -1177,6 +1180,7 @@ server.listen(PORT, HOST, async () => {
   console.log("  Scharfschuss:    http://127.0.0.1:" + PORT + "/scharfschuss");
   console.log("  Pixelstube:      http://127.0.0.1:" + PORT + "/pixelstube");
   console.log("  Puls:            http://127.0.0.1:" + PORT + "/puls");
+  console.log("  Heft:            http://127.0.0.1:" + PORT + "/heft");
   if (!urls.length) console.log("  Kein LAN-Interface.");
   else for (const u of urls) console.log("  Spieler-Ansicht: http://" + u.address + ":" + PORT + "/player   (" + u.name + ")");
   console.log("");

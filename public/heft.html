@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Heft</title>
+  <link rel="icon" href="/img/ember-icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/css/heft.css?v=1" />
+</head>
+<body>
+  <div class="heft">
+    <button class="heft-backdrop" id="backdrop" type="button" aria-label="Liste schließen" hidden></button>
+    <aside class="heft-side" id="sidebar">
+      <div class="heft-brand">
+        <div>
+          <h1>Heft</h1>
+          <p>Notizen, lokal und leise.</p>
+        </div>
+        <button class="heft-icon" id="closeSide" type="button" aria-label="Liste schließen">×</button>
+      </div>
+      <label class="heft-search">
+        <span class="sr">Notizen durchsuchen</span>
+        <input id="search" type="search" placeholder="Suchen" autocomplete="off" />
+      </label>
+      <button class="heft-new" id="create" type="button">Neue Notiz</button>
+      <p class="heft-count" id="count" aria-live="polite"></p>
+      <div class="heft-list" id="list" role="listbox" aria-label="Notizen"></div>
+      <footer class="heft-keys">
+        <p>In diesem Browser gespeichert — bleibt, bis du sie löschst.</p>
+        <p id="keys"></p>
+      </footer>
+    </aside>
+    <main class="heft-main">
+      <header class="heft-bar">
+        <button class="heft-icon" id="openSide" type="button" aria-label="Notizen öffnen" aria-controls="sidebar">☰</button>
+        <div class="heft-meta">
+          <p class="heft-title" id="title"></p>
+          <p class="heft-sub" id="sub"></p>
+        </div>
+        <button class="heft-icon heft-plus" id="createMobile" type="button" aria-label="Neue Notiz">+</button>
+        <button class="heft-toggle" id="previewBtn" type="button" aria-pressed="false">Vorschau</button>
+        <button class="heft-icon" id="deleteBtn" type="button" aria-label="Notiz löschen">⌫</button>
+      </header>
+      <div class="heft-undo" id="undo" role="status" hidden>
+        <span>Notiz gelöscht.</span>
+        <button type="button" id="undoBtn">Rückgängig</button>
+      </div>
+      <section class="heft-empty" id="empty" hidden>
+        <p class="heft-empty-title">Ein leeres Heft.</p>
+        <p>Neue Notiz, dann einfach schreiben. Die erste Zeile wird der Titel.</p>
+        <button class="heft-new" id="createEmpty" type="button">Neue Notiz</button>
+      </section>
+      <textarea class="heft-editor" id="editor" aria-label="Notiz. Die erste Zeile ist der Titel." placeholder="Titel der Notiz&#10;&#10;Schreib weiter. Markdown ist willkommen." spellcheck="true"></textarea>
+      <article class="heft-preview" id="preview" hidden></article>
+    </main>
+  </div>
+  <script src="/js/heft.js?v=1"></script>
+</body>
+</html>
