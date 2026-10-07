@@ -263,3 +263,9 @@ button, .btn, .icon-btn, select, input, textarea { font: inherit; }
 .card { border-radius: 10px; }
 .log-item { padding: 7px 0; border-bottom: 1px solid rgba(58, 42, 36, .55); }
 .topbar { min-height: 52px; }
+
+.map-stage { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.panel { gap: 10px; }
+.panel h2 { letter-spacing: .03em; font-weight: 500; }
+.log-item .who { color: var(--gold); font-size: 12px; }
+.log-item .txt { color: #f3e6d8; }
