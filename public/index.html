@@ -33,6 +33,9 @@
         var names = { menu: "Start", session: "Am Tisch", encounter: "Karte", tunnel: "Tunnel", chats: "Chats", "campaign-manager": "Kampagne", "character-manager": "Charakter" };
         document.title = "DYE.TV: Spielleiter, " + (names[btn.getAttribute("data-go")] || "Start");
         document.querySelectorAll(".brand").forEach(function (el) { el.textContent = document.title; });
+    const topChip = document.getElementById("lanChip");
+    const footChip = document.getElementById("lanChipFoot");
+    if (topChip && footChip) new MutationObserver(function () { footChip.textContent = topChip.textContent; footChip.style.display = topChip.style.display; }).observe(topChip, { childList: true, characterData: true, subtree: true, attributes: true });
         var names = { menu: "Start", session: "Am Tisch", encounter: "Karte", "campaign-manager": "Kampagne", "character-manager": "Charakter", chats: "Chats", tunnel: "Tunnel" };
         var go = btn.getAttribute("data-go");
         document.title = "DYE.TV: Spielleiter, " + (names[go] || go);
@@ -84,9 +87,9 @@
             <h1 class="start-title">Ember</h1>
             <p class="tagline">Die Glut am Rand der Umbra</p>
             <div class="start-menu">
-              <button class="start-item" id="btnIgnite" data-go="session"><b>Ignite the Ember</b><span>The editors keep the fire. The table only sits.</span></button>
-              <a class="start-item" href="/player"><b>Sit by the Fire</b><span>Players only. A new tab keeps its own seat.</span></a>
-              <button class="start-item start-item-danger" id="btnLeave"><b>Extinguish the Ember</b><span>Close the window. The pin stays.</span></button>
+              <button class="start-item" id="btnIgnite" data-go="session"><b>Ignite the Ember</b><span>The fire knows who sits.</span></button>
+              <a class="start-item" href="/player"><b>Sit by the Fire</b><span>Own seat, new tab.</span></a>
+              <button class="start-item start-item-danger" id="btnLeave"><b>Extinguish the Ember</b><span>The pin stays.</span></button>
             </div>
           </div>
         </div>
@@ -497,7 +500,7 @@
   <footer class="ember-topbar ember-foot">
       <div class="brand">DYE.TV: Spielleiter, Start</div>
       <div class="grow"></div>
-      <div class="chip">LAN …</div>
+      <div class="chip" id="lanChipFoot">LAN …</div>
       <button class="btn tiny" type="button" onclick="document.getElementById('btnRoles').click()">Rollen</button>
       <button class="icon-btn" type="button" title="Zurück" onclick="document.getElementById('btnBack').click()">
         <img src="/img/icon-back.svg" alt="" width="18" height="18" />
