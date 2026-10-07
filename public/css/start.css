@@ -88,6 +88,7 @@
   font-size: 11px;
   text-align: right;
   line-height: 1.25;
+  white-space: nowrap;
 }
 .start-item-danger b { color: #e5989b; }
 
@@ -100,7 +101,7 @@
 
 .ember-topbar { border-bottom: 2px solid var(--ember, #e85d04); }
 .ember-topbar .icon-btn img { display: block; width: 18px; height: 18px; }
-body:has(#view-menu.on) #lanChip { display: none; }
+body:has(#view-menu.on) #lanChip, body:has(#view-menu.on) #lanChipFoot { display: none; }
 
 @media (max-width: 900px) {
   .start { grid-template-columns: 1fr; grid-template-rows: minmax(220px, 38vh) 1fr; }
