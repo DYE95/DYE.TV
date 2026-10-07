@@ -1,0 +1,182 @@
+.puls-body {
+  min-height: 100%;
+  background: var(--bg);
+  color: #f3e6d8;
+}
+.puls-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  background: #110c0b;
+}
+.puls-bar .hint { display: block; }
+.puls-main {
+  width: min(32rem, 100%);
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+.puls-kicker {
+  margin: 0;
+  color: var(--ember);
+  font-size: 13px;
+  font-weight: 600;
+}
+.puls-main h1 {
+  font-size: 32px;
+  line-height: 1.15;
+  margin: 8px 0 0;
+}
+.puls-lead { margin: 12px 0 0; }
+.puls-step {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 22px 0 8px;
+}
+.puls-step h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  font-size: 22px;
+}
+.puls-step h2 span {
+  margin-right: 8px;
+  color: var(--ember);
+  font-size: 13px;
+}
+.puls-field {
+  width: 100%;
+  margin: 0 0 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #120c0b;
+  color: inherit;
+  font: inherit;
+}
+.puls-field:focus {
+  outline: 2px solid var(--ember);
+  outline-offset: 1px;
+}
+textarea.puls-field { min-height: 96px; resize: vertical; }
+.puls-row { display: flex; gap: 8px; align-items: center; }
+.puls-row .puls-field { flex: 1; min-width: 0; }
+.puls-icon {
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border-radius: 10px;
+}
+.puls-stack { display: grid; gap: 8px; }
+.puls-tally {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+}
+.puls-tally b {
+  display: block;
+  font-family: var(--serif);
+  font-size: 48px;
+  font-weight: 500;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.puls-live {
+  border-radius: 6px;
+  background: var(--ember);
+  color: #1a0c08;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.puls-choice {
+  width: 100%;
+  margin: 0;
+  padding: 12px 14px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #120c0b;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.puls-choice:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+.puls-choice:active:not(:disabled) { scale: 0.98; }
+.puls-choice[data-state="selected"] {
+  background: #3b1408;
+  border-color: var(--ember);
+  box-shadow: 0 0 0 1px var(--ember);
+  cursor: default;
+}
+.puls-choice[data-state="locked"] { opacity: 0.72; cursor: not-allowed; }
+.puls-choice-top { display: flex; gap: 12px; align-items: flex-start; }
+.puls-mark {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #1c1412;
+  font-family: var(--serif);
+}
+.puls-choice[data-state="selected"] .puls-mark { background: var(--ember); color: #1a0c08; }
+.puls-choice-body { flex: 1; min-width: 0; }
+.puls-choice-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.puls-choice-head strong { font-weight: 600; }
+.puls-pct {
+  font-family: var(--serif);
+  font-size: 24px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.puls-track {
+  display: block;
+  height: 24px;
+  margin-top: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #2a1d18;
+}
+.puls-fill {
+  display: block;
+  height: 100%;
+  width: 100%;
+  border-radius: 999px;
+  transform-origin: left center;
+  background: #f3e6d8;
+  transition: transform 560ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.puls-choice[data-state="selected"] .puls-fill { background: var(--ember); }
+.puls-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--mute);
+}
+.puls-meta .on { color: var(--gold); font-weight: 600; }
+.puls-leads {
+  border-radius: 6px;
+  background: #f3e6d8;
+  color: #1a0c08;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.puls-wide { width: 100%; min-height: 48px; }
+.puls-example { display: block; }
+.puls-example b { display: block; }
+button:disabled { cursor: not-allowed; }
+.puls-wide:disabled, .puls-icon:disabled { opacity: 0.4; }
+@media (prefers-reduced-motion: reduce) {
+  .puls-fill, .puls-choice { transition: none; }
+  .puls-choice:active:not(:disabled) { scale: 1; }
+}
