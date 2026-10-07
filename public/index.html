@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/css/table-indicator.css?v=1" />
   <link rel="stylesheet" href="/css/topbar.css?v=9" />
   <link rel="stylesheet" href="/css/float.css?v=1" />
-  <link rel="stylesheet" href="/css/start.css?v=10" />
+  <link rel="stylesheet" href="/css/start.css?v=11" />
   <script>
     var emberStack = ["menu"];
     function emberGo(name, back) {
@@ -28,7 +28,14 @@
     }
     document.addEventListener("click", function (ev) {
       var btn = ev.target.closest("[data-go]");
-      if (btn) emberGo(btn.getAttribute("data-go"));
+      if (btn) {
+        emberGo(btn.getAttribute("data-go"));
+        var focus = btn.getAttribute("data-focus");
+        if (focus) setTimeout(function () {
+          var el = document.getElementById(focus);
+          if (el) el.scrollIntoView({ block: "center" });
+        }, 40);
+      }
       if (ev.target.closest("#btnLeave")) emberLeave();
       if (ev.target.closest("#btnBack")) emberBack();
     });
@@ -75,16 +82,16 @@
             <p class="tagline">Die Glut am Rand der Umbra</p>
             <div class="start-menu">
               <button class="start-item" data-go="session"><b>Entfache die Glut</b><span>Tisch, Ready, dann rein</span></button>
-              <button class="start-item" data-go="encounter"><b>Events</b><span>Karten bereitlegen, dann Play Event</span></button>
-              <button class="start-item" data-go="campaign-manager"><b>Kampagne</b><span>was brennt und Editor</span></button>
+              <button class="start-item" data-go="encounter" data-focus="mapStage"><b>Karte</b><span>Tokens, Umbra, Play Event</span></button>
+              <button class="start-item" data-go="campaign-manager"><b>Kampagne</b><span>Was brennt, und der Editor</span></button>
               <button class="start-item" data-go="character-manager"><b>Charakter</b><span>Bogen, Editor, Fotos</span></button>
-              <button class="start-item" data-go="chats"><b>Chats</b><span>Fäden aus dem Projekt</span></button>
-              <button class="start-item" data-go="encounter"><b>Handouts</b><span>Zettel an den Tisch oder einen Namen</span></button>
-              <button class="start-item" data-go="tunnel"><b>Tunnel</b><span>Adresse zu Hause, Pings bleiben im Log</span></button>
-              <a class="start-item" href="/solo"><b>Solo</b><span>Bots, Dungeon, Level</span></a>
-              <button class="start-item" data-go="encounter"><b>Karte</b><span>Tischkarte, Tokens, Umbra</span></button>
-              <a class="start-item" href="/karten"><b>Karten</b><span>Marker-Karten laden und speichern</span></a>
-              <button class="start-item start-item-danger" id="btnLeave"><b>Verlöschen</b><span>Ember schließen</span></button>
+              <p class="start-label">Am Rand</p>
+              <button class="start-item tool" data-go="encounter" data-focus="handoutWho"><b>Handouts</b><span>Zettel an den Tisch</span></button>
+              <button class="start-item tool" data-go="tunnel"><b>Tunnel</b><span>Adresse zu Hause</span></button>
+              <a class="start-item tool" href="/solo"><b>Solo</b><span>Bots und Dungeon</span></a>
+              <a class="start-item tool" href="/karten"><b>Karten</b><span>Marker speichern</span></a>
+              <button class="start-item tool" data-go="chats"><b>Chats</b><span>Fäden aus dem Projekt</span></button>
+              <button class="start-item start-item-danger" id="btnLeave"><b>Verlöschen</b><span>Fenster schließen</span></button>
             </div>
           </div>
         </div>
@@ -96,11 +103,15 @@
     <section class="view" id="view-tunnel">
       <div class="panel" style="margin:24px auto;max-width:720px;">
         <h2>Tunnel</h2>
-        <p class="hint">Die Adresse zu Hause. Spieler hängen <b>/player</b> an. Die Spielleitung bleibt <b>http://127.0.0.1:3478/ember</b> auf diesem Rechner.</p>
-        <p class="name" id="tunnelUrl">warten …</p>
-        <p class="hint">Pings schreibt cloudflared nach data/tunnel.log, nicht ins Fenster.</p>
-        <audio id="emberAnsage" controls src="/audio/ember-ansage.mp3" style="width:100%;margin-top:12px;"></audio>
-        <button class="btn" data-go="menu" type="button">Zurück</button>
+        <p class="hint">Spieler zu Hause. Die Spielleitung bleibt auf diesem Rechner: http://127.0.0.1:3478/ember</p>
+        <p class="name" id="tunnelUrl">Tunnel wartet. start.bat offen lassen.</p>
+        <div class="row">
+          <button class="btn tiny" id="btnCopyTunnel" type="button">Adresse kopieren</button>
+          <button class="btn tiny" data-go="menu" type="button">Zurück</button>
+        </div>
+        <p class="hint" id="tunnelNote">Pings liegen in data/tunnel.log und schieben die Adressen nicht weg.</p>
+        <p class="hint">Ansage</p>
+        <audio id="emberAnsage" controls preload="none" src="/audio/ember-ansage.mp3" style="width:100%;margin-top:8px;"></audio>
       </div>
     </section>
 
@@ -490,7 +501,7 @@
   <script src="/js/map.js?v=9"></script>
   <script src="/js/token.js?v=4"></script>
   <script src="/js/float-panels.js?v=1"></script>
-  <script src="/js/gm.js?v=14"></script>
+  <script src="/js/gm.js?v=15"></script>
   <script>
     document.getElementById("btnEnter")?.addEventListener("click", () => {
       document.getElementById("sessionHub")?.classList.add("hidden");

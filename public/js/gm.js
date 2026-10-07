@@ -59,7 +59,7 @@ function renderLan() {
   const remote = state.lan?.remote ? `${state.lan.remote}/player` : "";
   $("#lanChip").textContent = remote ? `Zu Hause: ${remote}` : urls[0] ? `Tisch: ${urls[0]}` : "LAN …";
   const box = $("#tunnelUrl");
-  if (box) box.textContent = remote || (urls[0] ? "Tunnel wartet. Am Tisch: " + urls[0] : "Tunnel wartet.");
+  if (box) box.textContent = remote || (urls[0] ? "Tunnel wartet. Am Tisch: " + urls[0] : "Tunnel wartet. start.bat offen lassen.");
 }
 
 function renderHud() {
@@ -737,3 +737,18 @@ async function fillSubclass(form, className, current) {
   if (current) sel.value = current;
 }
 document.querySelector("#characterForm [name=class]")?.addEventListener("change", (ev) => fillSubclass(ev.target.form, ev.target.value, ""));
+
+$("#btnCopyTunnel")?.addEventListener("click", async () => {
+  const text = $("#tunnelUrl")?.textContent || "";
+  const note = $("#tunnelNote");
+  if (!text.startsWith("http")) {
+    if (note) note.textContent = "Noch keine Adresse. Tunnel offen lassen.";
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    if (note) note.textContent = "Kopiert.";
+  } catch {
+    if (note) note.textContent = text;
+  }
+});
