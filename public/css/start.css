@@ -18,7 +18,7 @@
   border-right: 1px solid var(--line, #3a2a24);
 }
 .start-card {
-  width: min(380px, 100%);
+  width: min(440px, 100%);
   max-height: calc(100dvh - 88px);
   margin: 0;
   padding: 22px 18px 18px;
@@ -137,3 +137,8 @@ body:has(.app) { overflow: hidden; }
 .wall { position:absolute; background:#1a120e; border:1px solid #c45c26; pointer-events:none; z-index:3; }
 .door { position:absolute; z-index:4; font-size:10px; }
 .door.open { opacity:.45; }
+
+.start-card { box-shadow: 0 18px 40px rgba(0,0,0,.35); }
+.start-item { min-height: 42px; }
+.start-item b { font-size: 15px; }
+.start-item span { font-size: 12px; letter-spacing: .01em; }
