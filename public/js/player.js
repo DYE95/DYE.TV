@@ -11,6 +11,14 @@ function sit(id, asGuest) {
   if (meId) localStorage.setItem("ember.characterId", meId);
   else localStorage.removeItem("ember.characterId");
   localStorage.setItem("ember.guest", guest ? "1" : "0");
+  if (meId) {
+    fetch("/api/session/sit", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ characterId: meId }),
+    }).then((r) => r.json()).then((data) => {
+      if (data.seat) localStorage.setItem("ember.seat", data.seat);
+    }).catch(() => {});
+  }
   render();
 }
 
@@ -168,7 +176,7 @@ function render() {
       b.className = "pip" + (i <= val ? " on" : "");
       b.addEventListener("click", () => fetch("/api/characters/" + pc.id, {
         method: "PATCH", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(key === "hope" ? { hope: i === val ? i - 1 : i } : key === "stress" ? { stressMarked: i === val ? i - 1 : i } : { hpMarked: i === val ? i - 1 : i }),
+        body: JSON.stringify(Object.assign(key === "hope" ? { hope: i === val ? i - 1 : i } : key === "stress" ? { stressMarked: i === val ? i - 1 : i } : { hpMarked: i === val ? i - 1 : i }, { seat: localStorage.getItem("ember.seat") || "" })),
       }));
       row.appendChild(b);
     }

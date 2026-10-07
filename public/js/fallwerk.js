@@ -213,7 +213,7 @@ function collapse() {
     if (!entry.body.isValid()) continue;
     entry.body.wakeUp();
     const t = entry.body.translation();
-    entry.body.applyImpulse({ x: (t.x > 0 ? 1.6 : -1.6), y: 0.8, z: (t.z > 0 ? 1.4 : -1.4) }, true);
+    entry.body.applyImpulse({ x: (t.x >= 0 ? 8 : -8), y: 5, z: (t.z >= 0 ? 7 : -7) }, true);
   }
   const status = document.getElementById("fwStatus");
   if (status) {

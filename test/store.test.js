@@ -3,6 +3,13 @@ const assert = require("node:assert/strict");
 const spur = require("../lib/spur");
 const store = require("../lib/store");
 
+test("capScore deckelt Fremdzahlen", () => {
+  assert.equal(spur.capScore("pastell", 40), 8);
+  assert.equal(spur.capScore("fallwerk", 999), 64);
+  assert.equal(spur.capScore("puls", 9), 1);
+  assert.equal(spur.capScore("runner", -4), 0);
+});
+
 test("grade zählt nur die richtige Stimme", () => {
   const ask = { options: [{ id: "a", label: "Asche", right: true }, { id: "b", label: "Gold", right: false }] };
   assert.equal(spur.grade(ask, "a").score, 1);

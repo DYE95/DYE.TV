@@ -280,11 +280,15 @@ async function handleApi(req, res, url) {
   const patchChar = p.match(/^\/api\/characters\/([^/]+)$/);
   if (method === "PATCH" && patchChar) {
     const body = await readJson(req);
+    const state = store.read();
+    const gm = isGm(state, body);
     delete body.id;
     delete body.as;
     delete body.gmKey;
-    const state = store.read();
-    const gm = isGm(state, body);
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    const seatOk = session && session.seats && session.seats[patchChar[1]] && session.seats[patchChar[1]] === body.seat;
+    if (!gm && !seatOk) return send(res, 403, { error: "Nur der eigene Sitz." });
+    delete body.seat;
     if (!gm && Object.keys(body).some((key) => key !== "as" && key !== "gmKey" && !PLAYER_FIELDS.includes(key))) {
       return send(res, 403, { error: "Nur der SL ändert den Bogen." });
     }
@@ -1165,6 +1169,19 @@ async function handleApi(req, res, url) {
     return send(res, 200, { ok: true });
   }
 
+  if (method === "POST" && p === "/api/session/sit") {
+    const body = await readJson(req);
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Keine Session." });
+    const pc = state.characters.find((c) => c.id === body.characterId && c.campaignId === session.campaignId);
+    if (!pc) return send(res, 404, { error: "Bogen fehlt." });
+    session.seats = session.seats || {};
+    const seat = session.seats[pc.id] || id("seat");
+    session.seats[pc.id] = seat;
+    store.write(state);
+    return send(res, 200, { seat });
+  }
   if (method === "GET" && p === "/api/session/handouts") {
     const state = store.read();
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
@@ -1225,12 +1242,14 @@ async function handleApi(req, res, url) {
     const state = store.read();
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session || !session.spur) return send(res, 400, { error: "Kein Ereignis." });
-    const pc = state.characters.find((c) => c.id === body.characterId);
+    const pc = state.characters.find((c) => c.id === body.characterId && c.campaignId === session.campaignId);
+    if (!pc) return send(res, 400, { error: "Nicht an diesem Tisch." });
+    if (!session.seats || session.seats[pc.id] !== body.seat) return send(res, 403, { error: "Nur der eigene Sitz." });
     const graded = session.spur.game === "puls" ? spur.grade(session.spur.ask, body.choice) : null;
     const row = {
-      characterId: body.characterId || null,
-      name: pc ? pc.name : (body.name || "Jemand"),
-      score: graded ? String(graded.score) : (body.score || ""),
+      characterId: pc.id,
+      name: pc.name,
+      score: graded ? String(graded.score) : String(spur.capScore(session.spur.game, body.score)),
       note: graded ? graded.label : (body.note || ""),
       at: new Date().toISOString(),
     };

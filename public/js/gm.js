@@ -417,6 +417,12 @@ async function sendRoll(source) {
     if (foes.some((t) => t.id === prev)) pick.value = prev;
   }
   const chosen = foes.find((t) => t.id === pick?.value) || foes[0];
+  const who = $("#handoutWho");
+  if (who) {
+    const prev = who.value;
+    who.innerHTML = `<option value="">ganzer Tisch</option>` + charsOf(activeCampaignId()).map((c) => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
+    if ([...who.options].some((o) => o.value === prev)) who.value = prev;
+  }
   const box = $("#foeDiff");
   if (box) box.textContent = chosen ? chosen.label + " schiebt " + chosen.difficulty + ", solange das Feld leer ist." : "Kein Foe mit Difficulty auf der Karte.";
   const payload = {
@@ -536,9 +542,7 @@ $("#btnHandout")?.addEventListener("click", () => {
   const title = prompt("Handout?", "Die Kiste");
   if (!title) return;
   const text = prompt("Text?", "") || "";
-  const who = prompt("Für wen? Name, leer = der ganze Tisch", "") || "";
-  const pc = charsOf(activeCampaignId()).find((c) => c.name.toLowerCase() === who.toLowerCase());
-  api("/api/session/handout", { as: "gm", title, text, toId: pc ? pc.id : "" });
+  api("/api/session/handout", { as: "gm", title, text, toId: $("#handoutWho")?.value || "" });
 });
 async function loadCompendium() {
   const q = $("#compQ")?.value || "";
