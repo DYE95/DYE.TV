@@ -271,7 +271,9 @@ function renderSession() {
   const ses = activeSession();
   if ($("#sessionMeta")) $("#sessionMeta").textContent = camp ? `${camp.name}${ses ? " · Glut offen" : ""}` : "Keine Kampagne.";
   const hub = $("#hubCampaign");
-  if (hub) hub.textContent = camp ? "Aktiv: " + camp.name : "Noch keine Kampagne.";
+  if (hub) hub.textContent = camp ? camp.name : "Keine Kampagne";
+  const loaded = document.getElementById("loadedStory");
+  if (loaded) loaded.textContent = camp ? camp.name : "nichts geladen";
   const pick = $("#campaignPick");
   if (pick && document.activeElement !== pick) {
     pick.innerHTML = `<option value="">—</option>` + (state.campaigns || []).map((c) => `<option value="${c.id}">${c.name}</option>`).join("");
@@ -281,7 +283,7 @@ function renderSession() {
   const seated = charsOf(activeCampaignId()).filter((c) => Number.isInteger(c.tableSeat) || (state.presence || []).some((p) => p.characterId === c.id && p.status !== "offline"));
   const ready = ses?.ready || {};
   if (readyList) {
-    readyList.innerHTML = "<p class='hint'>Wer ist da</p>" + (seated.map((c) => `<div class="card seat-claim" data-id="${c.id}"><div class="name">${c.name}</div><div class="meta">${ready[c.id] ? "bereit" : "wartet"}</div></div>`).join("") || "<p class='hint'>Noch niemand sitzt.</p>");
+    readyList.innerHTML = "<p class='hint'>Wer ist on</p><p class='hint'>Bereit für die Geschichte</p>" + (seated.map((c) => `<div class="card seat-claim" data-id="${c.id}"><div class="name">${c.name}</div><div class="meta">${ready[c.id] ? "bereit" : "wartet"}</div></div>`).join("") || "<p class='hint'>Noch niemand sitzt.</p>");
     readyList.querySelectorAll(".seat-claim").forEach((card) => card.addEventListener("click", () => claimSeat(card.dataset.id, card.querySelector(".name").textContent)));
   }
   const allReady = seated.length > 0 && seated.every((c) => ready[c.id]);
@@ -781,3 +783,7 @@ function claimSeat(id, name) {
     };
   }
 }
+
+fetch("/api/sl-pin").then((r) => r.ok ? r.json() : null).then((row) => {
+  if (row && row.pin) localStorage.setItem("ember.gmKey", row.pin);
+}).catch(() => {});

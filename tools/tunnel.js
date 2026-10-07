@@ -10,7 +10,7 @@ let told = false;
 
 function paintTitle(url) {
   const home = url ? "  |  Zu Hause " + url + "/player" : "  |  Zu Hause wartet";
-  process.title = "Ember  SL http://127.0.0.1:" + port + "/ember" + home;
+  process.title = "DYE.TV  Spielleiter http://127.0.0.1:" + port + "/ember" + home;
 }
 
 function writeUrl(url) {
@@ -19,11 +19,6 @@ function writeUrl(url) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, url.trim() + "\n");
   paintTitle(url.trim());
-  console.log("");
-  console.log("  Zu Hause:        " + url.trim() + "/player");
-  console.log("  Spielleitung:    http://127.0.0.1:" + port + "/ember");
-  console.log("  Pings liegen in data\\tunnel.log und schieben die Adressen nicht mehr weg.");
-  console.log("");
 }
 
 const bin = process.platform === "win32" ? "cloudflared.exe" : "cloudflared";

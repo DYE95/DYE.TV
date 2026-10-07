@@ -6,7 +6,6 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
-title Ember  SL http://127.0.0.1:3478/ember
 if not exist data mkdir data
 if not exist data\sl.pin (
   set /p SL_PIN=Spielleiter-PIN, einmalig, bleibt liegen:
@@ -16,6 +15,8 @@ title DYE.TV  Spielleiter http://127.0.0.1:3478/ember
 echo.
 echo  Spielleiter   http://127.0.0.1:3478/ember
 echo  Spieler       http://127.0.0.1:3478/player
+echo  PIN           data\sl.pin
+echo  Zu Hause      steht in der Titelleiste, sobald der Tunnel da ist
 echo.
 start /b node tools\tunnel.js
 :emberloop
