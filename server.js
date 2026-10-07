@@ -47,8 +47,15 @@ function presenceList() {
   return [...presence.values()];
 }
 
+function remoteUrl() {
+  try {
+    return fs.readFileSync(path.join(__dirname, "data", "public-url.txt"), "utf8").trim();
+  } catch {
+    return process.env.DYE_PUBLIC_URL || "";
+  }
+}
 function snapshot() {
-  return { ...store.publicView(store.read()), presence: presenceList(), lan: { port: PORT, addresses: addresses() } };
+  return { ...store.publicView(store.read()), presence: presenceList(), lan: { port: PORT, addresses: addresses(), remote: remoteUrl() } };
 }
 
 function emitState() {
@@ -1437,5 +1444,7 @@ server.listen(PORT, HOST, async () => {
   console.log("  Heft:            http://127.0.0.1:" + PORT + "/heft");
   if (!urls.length) console.log("  Kein LAN-Interface.");
   else for (const u of urls) console.log("  Spieler-Ansicht: http://" + u.address + ":" + PORT + "/player   (" + u.name + ")");
+  if (remoteUrl()) console.log("  Zu Hause:        " + remoteUrl() + "/player");
+  else console.log("  Zu Hause:        tunnel.bat starten, dann die ausgegebene Adresse.");
   console.log("");
 });

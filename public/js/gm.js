@@ -56,7 +56,8 @@ function pips(count, marked, kind, onClick) {
 
 function renderLan() {
   const urls = (state.lan?.addresses || []).map((a) => `http://${a.address}:${state.lan.port}/player`);
-  $("#lanChip").textContent = urls[0] ? `Tisch: ${urls[0]}` : "LAN …";
+  const remote = state.lan?.remote ? `${state.lan.remote}/player` : "";
+  $("#lanChip").textContent = remote ? `Zu Hause: ${remote}` : urls[0] ? `Tisch: ${urls[0]}` : "LAN …";
 }
 
 function renderHud() {

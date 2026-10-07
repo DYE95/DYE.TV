@@ -103,8 +103,8 @@ Abgedeckt sind die Kernlogik ohne laufenden Server:
 - **GM-Schlüssel:** Der SL-Rechner erzeugt beim ersten Presence-Ping einen `gmKey` (nur von
   localhost). Sobald der Schlüssel bekannt ist, müssen alle `as:"gm"`-Routen ihn mitsenden —
   Spieler im LAN können die SL-Routen dann nicht mehr aufrufen.
-- **SSE:** Clients hängen an `/api/events`; bei Funkstille pollt der Client `/api/state`
-  als Rückfall.
+- **Spieler zu Hause:** `tunnel.bat` neben der Glut starten. Dafür [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) installieren. Die Adresse steht in der Leiste und endet auf `/player`. Eine feste Adresse kann als `DYE_PUBLIC_URL` gesetzt werden.
+
 
 ## Regeln
 
