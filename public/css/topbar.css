@@ -44,7 +44,11 @@
 .ember-foot { position: sticky; bottom: 0; border-bottom: none; border-top: 2px solid var(--ember, #e85d04); }
 .table-layout { display: grid; grid-template-columns: 220px 1fr; gap: 16px; min-height: 0; }
 .who-on { border: 1px solid #3a2a24; padding: 10px; overflow: auto; }
-.fire-table { display: grid; grid-template-columns: 180px 1fr 180px; gap: 12px; align-items: center; }
+.fire-table { min-height: 0; }
+.fire-figure { position: relative; min-height: 520px; }
+.camp-tile.beside, .loaded-tile.beside { position: absolute; top: 18%; z-index: 6; width: 168px; }
+.camp-tile.beside { left: calc(50% - 250px); }
+.loaded-tile.beside { left: calc(50% + 82px); }
 .camp-tile, .loaded-tile { border: 1px solid #3a2a24; background: #120c0b; padding: 12px; text-align: left; color: inherit; }
 .camp-tile b, .loaded-tile b { display: block; color: #f4d6a0; font-family: Georgia, serif; }
 .camp-tile span, .loaded-tile span { color: #9a8476; font-size: 11px; }

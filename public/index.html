@@ -122,9 +122,11 @@
         <div class="table-layout">
           <aside class="who-on" id="readyList"></aside>
           <div class="fire-table">
-            <button class="camp-tile" data-go="campaign-manager" type="button"><b id="hubCampaign">Kampagne</b><span>Campaign Manager</span></button>
-            <div class="fire-figure" id="tableIndicator" data-table="gm"></div>
-            <div class="loaded-tile"><span>Geladen</span><b id="loadedStory">Die Krone ohne Flamme</b></div>
+            <div class="fire-figure">
+              <div id="tableIndicator" data-table="gm"></div>
+              <button class="camp-tile beside" data-go="campaign-manager" type="button"><b id="hubCampaign">Kampagne</b><span>Campaign Manager</span></button>
+              <div class="loaded-tile beside"><span>Geladen</span><b id="loadedStory">Die Krone ohne Flamme</b></div>
+            </div>
           </div>
         </div>
         <button class="btn primary" id="btnEnter" type="button" disabled>Rein, wenn alle ready sind</button>
