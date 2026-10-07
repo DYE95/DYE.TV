@@ -496,6 +496,7 @@ $("#btnSpur")?.addEventListener("click", () => {
   }).catch((err) => alert(err.message));
 });
 $("#btnSpurEnd")?.addEventListener("click", () => api("/api/session/spur/end", {}).catch((err) => alert(err.message)));
+$("#btnUmbra")?.addEventListener("click", () => api("/api/campaigns/import-umbra", {}).catch((err) => alert(err.message)));
 $("#btnStartSession")?.addEventListener("click", () => api("/api/session/start", { campaignId: activeCampaignId() }).catch((err) => alert(err.message)));
 $("#btnEndSession")?.addEventListener("click", () => api("/api/session/end", {}));
 $("#btnNarrate")?.addEventListener("click", () => {
@@ -511,6 +512,13 @@ $("#btnLog")?.addEventListener("click", () => {
 });
 $("#btnDigitalRoll")?.addEventListener("click", () => sendRoll("digital"));
 $("#btnTableRoll")?.addEventListener("click", () => sendRoll("table"));
+$("#btnShortRest")?.addEventListener("click", () => api("/api/session/rest", { characterId: $("#rollCharacter").value, kind: "short", spendHope: 1 }).catch((err) => alert(err.message)));
+$("#btnLongRest")?.addEventListener("click", () => api("/api/session/rest", { characterId: $("#rollCharacter").value, kind: "long" }).catch((err) => alert(err.message)));
+$("#btnFoeTurn")?.addEventListener("click", () => {
+  const tokenId = $("#rollFoe")?.value || $("#harmFoe")?.value;
+  if (!tokenId) return alert("Erst den Foe wählen.");
+  api("/api/session/foe-turn", { tokenId, characterId: $("#rollCharacter").value }).catch((err) => alert(err.message));
+});
 $("#btnHarm")?.addEventListener("click", () => {
   const tokenId = $("#harmFoe")?.value;
   if (!tokenId) return alert("Erst den Foe wählen.");

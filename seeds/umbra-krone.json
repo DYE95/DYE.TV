@@ -1,0 +1,434 @@
+{
+  "revision": 1,
+  "campaigns": [
+    {
+      "id": "cmp_krone",
+      "name": "Die Krone ohne Flamme",
+      "frame": "Age of Umbra",
+      "notes": "Age of Umbra. Die Sonne ist ein Gerücht. Die Krone, die das letzte Feuer halten sollte, ist kalt.\n\nEINLEITUNG\nDie Kohle von Hush reicht noch eine Nacht. Darüber ist die Umbra so dick, dass Fackeln nur einen Arm weit reichen. Sera trägt die Krone in einem Tuch, nicht auf dem Kopf. Bram hält die Tür. Nyx hört die Straße, bevor sie da ist. Jemand klopft nicht. Etwas scharrt am Riegel, als würde es die Wärme riechen.\n\nERZÄHLPHASE, FREI\nKein Würfel, bis die Tür aufgeht. Fragen, die den Abend tragen: Wer hat die Krone aus der Krypta geholt? Was hat die Umbra schon von euch genommen? Welche Flamme in Hush darf nicht ausgehen? Die Spieler beschreiben die letzte warme Stunde. Der SL beschreibt nur, was die Dunkelheit schon frisst: Namen auf Schildern, die Kante des Wegs, das Gesicht im Fenster gegenüber.\n\nERSTER ENCOUNTER: DER RIEGEL\nDie Tür gibt nach. Drei Ash Hounds, Difficulty 12. Sie wollen die Krone, nicht das Fleisch. Play Event „Der Riegel“. Wer fällt, liegt. Fallen alle, ist die Kohle aus: Game over, die Umbra nimmt Hush in dieser Nacht. Halten sie den Riegel, bleibt eine Kohle. Kurze Ruhe ist erlaubt. Dann die Straße.\n\nZWEITE ERZÄHLPHASE\nNur wenn jemand noch steht. Der Weg zur Krone ist eine Brücke aus schwarzem Glas. Unter ihr läuft kein Wasser, nur Stimmen derer, die das Feuer zu früh aufgegeben haben. Hier darf gelogen, gehofft und ein Handout gezeigt werden: die Inschrift in der Krone, nur für eine Figur. Kein Kampf, bis die Brücke antwortet.\n\nFINALER ENCOUNTER: DIE KALTE KRONE\nAuf der Brücke wartet der Ash Sentry, Difficulty 14, und zwei Lantern Wisps, Difficulty 13. Die Krone will einen Kopf. Setzt sie jemand auf, spendet der SL einen Fear und der Sentry handelt sofort. Gewinnen sie, brennt die Krone eine Nacht lang und Hush sieht die Straße. Verlieren alle, Game over: die Brücke spricht mit ihren Stimmen weiter, und niemand in Hush erinnert sich an die Namen.\n",
+      "gmFear": 2,
+      "fearMax": 12,
+      "createdAt": "2026-10-07T12:00:00.000Z",
+      "probeRevision": 1
+    }
+  ],
+  "characters": [
+    {
+      "id": "pc_sera",
+      "campaignId": "cmp_krone",
+      "playerPin": "0000",
+      "name": "Sera Voss",
+      "pronouns": "sie",
+      "ancestry": "Human",
+      "community": "Loreborne",
+      "class": "Seraph",
+      "subclass": "",
+      "level": 1,
+      "traits": {
+        "agility": 2,
+        "strength": 0,
+        "finesse": 0,
+        "instinct": 0,
+        "presence": 0,
+        "knowledge": 0
+      },
+      "experiences": [
+        {
+          "id": "xp_pc_sera",
+          "name": "Kohlenhüter",
+          "bonus": 2
+        }
+      ],
+      "hope": 2,
+      "hopeMax": 6,
+      "stressMarked": 0,
+      "stressMax": 6,
+      "hpMarked": 0,
+      "hpMax": 6,
+      "major": false,
+      "severe": false,
+      "evasion": 11,
+      "armorScore": 0,
+      "armorMarked": 0
+    },
+    {
+      "id": "pc_bram",
+      "campaignId": "cmp_krone",
+      "playerPin": "0000",
+      "name": "Bram Kohl",
+      "pronouns": "er",
+      "ancestry": "Dwarf",
+      "community": "Ridgeborne",
+      "class": "Guardian",
+      "subclass": "",
+      "level": 1,
+      "traits": {
+        "agility": 0,
+        "strength": 2,
+        "finesse": 0,
+        "instinct": 0,
+        "presence": 0,
+        "knowledge": 0
+      },
+      "experiences": [
+        {
+          "id": "xp_pc_bram",
+          "name": "Kohlenhüter",
+          "bonus": 2
+        }
+      ],
+      "hope": 2,
+      "hopeMax": 6,
+      "stressMarked": 0,
+      "stressMax": 6,
+      "hpMarked": 0,
+      "hpMax": 6,
+      "major": false,
+      "severe": false,
+      "evasion": 10,
+      "armorScore": 1,
+      "armorMarked": 0
+    },
+    {
+      "id": "pc_nyx",
+      "campaignId": "cmp_krone",
+      "playerPin": "0000",
+      "name": "Nyx Halm",
+      "pronouns": "sie",
+      "ancestry": "Faun",
+      "community": "Wildborne",
+      "class": "Ranger",
+      "subclass": "",
+      "level": 1,
+      "traits": {
+        "agility": 0,
+        "strength": 0,
+        "finesse": 2,
+        "instinct": 0,
+        "presence": 0,
+        "knowledge": 0
+      },
+      "experiences": [
+        {
+          "id": "xp_pc_nyx",
+          "name": "Kohlenhüter",
+          "bonus": 2
+        }
+      ],
+      "hope": 2,
+      "hopeMax": 6,
+      "stressMarked": 0,
+      "stressMax": 6,
+      "hpMarked": 0,
+      "hpMax": 6,
+      "major": false,
+      "severe": false,
+      "evasion": 10,
+      "armorScore": 0,
+      "armorMarked": 0
+    }
+  ],
+  "sessions": [
+    {
+      "id": "ses_krone",
+      "campaignId": "cmp_krone",
+      "startedAt": null,
+      "endedAt": null,
+      "narrating": true,
+      "log": [
+        {
+          "id": "log_ein",
+          "at": "2026-10-07T12:00:00.000Z",
+          "kind": "note",
+          "author": "Einleitung",
+          "text": "Die Kohle von Hush reicht noch eine Nacht. Sera trägt die Krone im Tuch. Etwas scharrt am Riegel.",
+          "meta": {}
+        },
+        {
+          "id": "log_frei",
+          "at": "2026-10-07T12:00:00.000Z",
+          "kind": "system",
+          "author": "Erzählphase",
+          "text": "Frei. Kein Würfel, bis die Tür aufgeht. Wer holte die Krone? Was nahm die Umbra schon?",
+          "meta": {}
+        }
+      ],
+      "spotlightQueue": [],
+      "activeSpotlight": null,
+      "map": {
+        "image": "/maps/umbra-road.jpg",
+        "tokens": [
+          {
+            "id": "tok_sera",
+            "kind": "pc",
+            "characterId": "pc_sera",
+            "label": "Sera",
+            "color": "#e85d04",
+            "x": 22,
+            "y": 68
+          },
+          {
+            "id": "tok_bram",
+            "kind": "pc",
+            "characterId": "pc_bram",
+            "label": "Bram",
+            "color": "#c45c26",
+            "x": 30,
+            "y": 72
+          },
+          {
+            "id": "tok_nyx",
+            "kind": "pc",
+            "characterId": "pc_nyx",
+            "label": "Nyx",
+            "color": "#e9c46a",
+            "x": 18,
+            "y": 76
+          },
+          {
+            "id": "tok_h1",
+            "kind": "foe",
+            "label": "Ash Hound",
+            "color": "#6a040f",
+            "x": 62,
+            "y": 40,
+            "difficulty": 12,
+            "stress": 0,
+            "stressMax": 3,
+            "attack": 1,
+            "thresholds": "5/11"
+          },
+          {
+            "id": "tok_h2",
+            "kind": "foe",
+            "label": "Ash Hound",
+            "color": "#6a040f",
+            "x": 70,
+            "y": 48,
+            "difficulty": 12,
+            "stress": 0,
+            "stressMax": 3,
+            "attack": 1,
+            "thresholds": "5/11"
+          },
+          {
+            "id": "tok_h3",
+            "kind": "foe",
+            "label": "Ash Hound",
+            "color": "#6a040f",
+            "x": 66,
+            "y": 56,
+            "difficulty": 12,
+            "stress": 0,
+            "stressMax": 3,
+            "attack": 1,
+            "thresholds": "5/11"
+          }
+        ]
+      },
+      "encounters": [
+        {
+          "id": "enc_riegel",
+          "name": "Der Riegel",
+          "status": "ready",
+          "map": {
+            "image": "/maps/umbra-road.jpg",
+            "tokens": [
+              {
+                "id": "tok_sera",
+                "kind": "pc",
+                "characterId": "pc_sera",
+                "label": "Sera",
+                "color": "#e85d04",
+                "x": 22,
+                "y": 68
+              },
+              {
+                "id": "tok_bram",
+                "kind": "pc",
+                "characterId": "pc_bram",
+                "label": "Bram",
+                "color": "#c45c26",
+                "x": 30,
+                "y": 72
+              },
+              {
+                "id": "tok_nyx",
+                "kind": "pc",
+                "characterId": "pc_nyx",
+                "label": "Nyx",
+                "color": "#e9c46a",
+                "x": 18,
+                "y": 76
+              },
+              {
+                "id": "tok_h1",
+                "kind": "foe",
+                "label": "Ash Hound",
+                "color": "#6a040f",
+                "x": 62,
+                "y": 40,
+                "difficulty": 12,
+                "stress": 0,
+                "stressMax": 3,
+                "attack": 1,
+                "thresholds": "5/11"
+              },
+              {
+                "id": "tok_h2",
+                "kind": "foe",
+                "label": "Ash Hound",
+                "color": "#6a040f",
+                "x": 70,
+                "y": 48,
+                "difficulty": 12,
+                "stress": 0,
+                "stressMax": 3,
+                "attack": 1,
+                "thresholds": "5/11"
+              },
+              {
+                "id": "tok_h3",
+                "kind": "foe",
+                "label": "Ash Hound",
+                "color": "#6a040f",
+                "x": 66,
+                "y": 56,
+                "difficulty": 12,
+                "stress": 0,
+                "stressMax": 3,
+                "attack": 1,
+                "thresholds": "5/11"
+              }
+            ]
+          },
+          "traps": [],
+          "zones": [
+            {
+              "id": "z_door",
+              "label": "Riegel",
+              "text": "Wer hier steht, hält die Tür.",
+              "x": 20,
+              "y": 60,
+              "w": 16,
+              "h": 20
+            }
+          ],
+          "alerts": []
+        },
+        {
+          "id": "enc_krone",
+          "name": "Die kalte Krone",
+          "status": "ready",
+          "map": {
+            "image": "/maps/frame-1.jpg",
+            "tokens": [
+              {
+                "id": "tok_sera2",
+                "kind": "pc",
+                "characterId": "pc_sera",
+                "label": "Sera",
+                "color": "#e85d04",
+                "x": 24,
+                "y": 70
+              },
+              {
+                "id": "tok_bram2",
+                "kind": "pc",
+                "characterId": "pc_bram",
+                "label": "Bram",
+                "color": "#c45c26",
+                "x": 32,
+                "y": 74
+              },
+              {
+                "id": "tok_nyx2",
+                "kind": "pc",
+                "characterId": "pc_nyx",
+                "label": "Nyx",
+                "color": "#e9c46a",
+                "x": 20,
+                "y": 78
+              },
+              {
+                "id": "tok_s",
+                "kind": "foe",
+                "label": "Ash Sentry",
+                "color": "#6a040f",
+                "x": 60,
+                "y": 36,
+                "difficulty": 14,
+                "stress": 0,
+                "stressMax": 5,
+                "attack": 2,
+                "thresholds": "5/11"
+              },
+              {
+                "id": "tok_w1",
+                "kind": "foe",
+                "label": "Lantern Wisp",
+                "color": "#6a040f",
+                "x": 74,
+                "y": 42,
+                "difficulty": 13,
+                "stress": 0,
+                "stressMax": 2,
+                "attack": 2,
+                "thresholds": "5/11"
+              },
+              {
+                "id": "tok_w2",
+                "kind": "foe",
+                "label": "Lantern Wisp",
+                "color": "#6a040f",
+                "x": 52,
+                "y": 44,
+                "difficulty": 13,
+                "stress": 0,
+                "stressMax": 2,
+                "attack": 2,
+                "thresholds": "5/11"
+              }
+            ]
+          },
+          "traps": [],
+          "zones": [
+            {
+              "id": "z_bridge",
+              "label": "Brücke",
+              "text": "Die Krone antwortet nur hier.",
+              "x": 40,
+              "y": 30,
+              "w": 30,
+              "h": 24
+            }
+          ],
+          "alerts": []
+        }
+      ],
+      "activeEncounterId": "enc_riegel",
+      "ready": {},
+      "initiative": {
+        "on": false,
+        "round": 1,
+        "index": 0,
+        "order": [],
+        "auto": true
+      },
+      "undo": [],
+      "journal": [
+        {
+          "id": "j_ins",
+          "title": "Inschrift",
+          "text": "Nur wer die Krone trägt, liest: Ein Kopf, eine Nacht, dann Asche.",
+          "secret": true,
+          "at": "2026-10-07T12:00:00.000Z"
+        }
+      ]
+    }
+  ],
+  "active": {
+    "campaignId": "cmp_krone",
+    "sessionId": "ses_krone"
+  }
+}

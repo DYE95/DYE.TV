@@ -227,6 +227,17 @@ async function handleApi(req, res, url) {
     return;
   }
 
+  if (method === "POST" && p === "/api/campaigns/import-umbra") {
+    const body = await readJson(req);
+    const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
+    const file = path.join(__dirname, "seeds", "umbra-krone.json");
+    if (!fs.existsSync(file)) return send(res, 404, { error: "Kampagne fehlt." });
+    const seed = JSON.parse(fs.readFileSync(file, "utf8"));
+    if (store.importProbe(state, seed, "Die Krone ohne Flamme")) store.write(state);
+    emitState();
+    return send(res, 200, { campaignId: state.campaigns.find((c) => c.name === "Die Krone ohne Flamme")?.id });
+  }
   if (method === "POST" && p === "/api/campaigns") {
     const body = await readJson(req);
     const state = store.read();
@@ -374,6 +385,14 @@ async function handleApi(req, res, url) {
     if (denyUnlessGm(res, state, body)) return;
     const campaignId = body.campaignId || state.active.campaignId;
     if (!campaignId) return send(res, 400, { error: "Keine Kampagne gewählt." });
+    const prepared = state.sessions.find((s) => s.campaignId === campaignId && !s.endedAt && !s.startedAt && (s.encounters || []).length);
+    if (prepared) {
+      prepared.startedAt = new Date().toISOString();
+      state.active.campaignId = campaignId;
+      state.active.sessionId = prepared.id;
+      store.write(state); emitState();
+      return send(res, 200, prepared);
+    }
     const session = store.makeSession(campaignId);
     const camp = state.campaigns.find((c) => c.id === campaignId);
     const heroes = state.characters.filter((c) => c.campaignId === campaignId);
@@ -780,6 +799,66 @@ async function handleApi(req, res, url) {
     addLog(session, { kind: "system", author: "Undo", text: entry.kind === "move" ? "Token zurück." : "Wurf zurück." });
     store.write(state); emitState();
     return send(res, 200, { ok: true });
+  }
+  if (method === "POST" && p === "/api/session/rest") {
+    const body = await readJson(req);
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Keine Session." });
+    const character = state.characters.find((c) => c.id === body.characterId);
+    if (!character) return send(res, 404, { error: "Bogen fehlt." });
+    const gm = isGm(state, body);
+    const seatOk = session.seats && session.seats[character.id] === body.seat;
+    if (!gm && !seatOk) return send(res, 403, { error: "Nur der eigene Sitz." });
+    const long = body.kind === "long";
+    character.stressMarked = 0;
+    character.armorMarked = 0;
+    let spent = 0;
+    if (!long && body.spendHope) {
+      spent = Math.min(Number(character.hope || 0), Number(character.hpMarked || 0), Number(body.spendHope) || 1);
+      character.hope -= spent;
+      character.hpMarked = Math.max(0, Number(character.hpMarked || 0) - spent);
+    }
+    if (long) character.hpMarked = 0;
+    addLog(session, { kind: "system", author: character.name, text: (long ? "Lange Ruhe." : "Kurze Ruhe.") + (spent ? " " + spent + " Hope gegen HP." : "") });
+    store.write(state); emitState();
+    return send(res, 200, character);
+  }
+  if (method === "POST" && p === "/api/session/foe-turn") {
+    const body = await readJson(req);
+    const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Keine Session." });
+    const token = (session.map?.tokens || []).find((t) => t.id === body.tokenId && t.kind === "foe");
+    const character = state.characters.find((c) => c.id === body.characterId);
+    if (!token || !character) return send(res, 400, { error: "Foe oder Bogen fehlt." });
+    const die = Math.floor(Math.random() * 12) + 1;
+    const bonus = Number(token.attack || 0);
+    const total = die + bonus;
+    const evasion = Number(character.evasion || 10);
+    const hit = total >= evasion;
+    let dmg = 0;
+    if (hit) {
+      dmg = Math.max(1, 1 + bonus);
+      if (Number(character.armorMarked || 0) < Number(character.armorScore || character.armor?.score || 0)) {
+        character.armorMarked = Number(character.armorMarked || 0) + 1;
+        dmg = Math.max(0, dmg - Number(character.armorScore || character.armor?.score || 1));
+      }
+      character.hpMarked = clamp(Number(character.hpMarked || 0) + dmg, 0, character.hpMax || 6);
+    }
+    const down = Number(character.hpMarked || 0) >= Number(character.hpMax || 6);
+    addLog(session, {
+      kind: "roll",
+      author: token.label,
+      text: token.label + " würfelt " + die + "+" + bonus + " = " + total + " gegen Evasion " + evasion + " — " + (hit ? "trifft, " + dmg + " HP" : "verfehlt") + (down ? ". " + character.name + " liegt." : ""),
+    });
+    const heroes = state.characters.filter((c) => c.campaignId === session.campaignId);
+    if (heroes.length && heroes.every((c) => Number(c.hpMarked || 0) >= Number(c.hpMax || 6))) {
+      addLog(session, { kind: "system", author: "Umbra", text: "Alle liegen. Die Kohle ist aus. Game over." });
+    }
+    store.write(state); emitState();
+    return send(res, 200, { hit, total, character });
   }
   if (method === "POST" && p === "/api/session/fear-spend") {
     const body = await readJson(req);

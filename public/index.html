@@ -114,6 +114,7 @@
           <div class="card"><div class="name">Fear</div><div class="pips" id="fearPips"></div></div>
           <button class="btn primary" id="btnNarrate" style="width:100%;margin:10px 0;">Speak the Dark</button>
           <button class="btn" id="btnStartSession" style="width:100%;margin-bottom:8px;">Session öffnen</button>
+          <button class="btn" id="btnUmbra" style="width:100%;margin-bottom:8px;">Die Krone ohne Flamme</button>
           <button class="btn ghost" id="btnEndSession" style="width:100%;">Session schließen</button>
           <h2 style="margin-top:18px;">Ereignis</h2>
           <p class="hint">Kurz ins Spiel werfen. Danach zurück an den Tisch.</p>
@@ -220,6 +221,11 @@
             </div>
             <button class="btn" id="btnTableRoll">Tischwürfel</button>
             <div id="lastRoll" class="hint"></div>
+            <div class="row">
+              <button class="btn tiny" id="btnShortRest" type="button">Kurze Ruhe</button>
+              <button class="btn tiny" id="btnLongRest" type="button">Lange Ruhe</button>
+              <button class="btn tiny" id="btnFoeTurn" type="button">Foe-Zug</button>
+            </div>
             <div class="row">
               <label>Schaden <input id="harmAmount" type="number" min="1" value="1" /></label>
               <select id="harmFoe"><option value="">Foe wählen</option></select>
