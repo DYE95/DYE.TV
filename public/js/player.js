@@ -222,14 +222,7 @@ function renderSpur(ses, pc) {
   box.classList.remove("hidden");
   const left = event.endsAt ? Math.max(0, Math.ceil((event.endsAt - Date.now()) / 1000)) : 0;
   const href = event.href + "?spur=1&back=" + encodeURIComponent("/player");
-  box.innerHTML = `<div class="name">Ereignis · ${event.title}</div><div class="meta">${event.stake || event.blurb || ""} · ${left}s · ${event.payout === "fear" ? "Fear an den Tisch" : "Hope an den Besten"}</div><a class="btn tiny" href="${href}">Spielen</a> <button class="btn tiny" id="btnSpurDone" type="button">Ich bin durch</button>`;
-  $("#btnSpurDone")?.addEventListener("click", () => {
-    const score = prompt("Zahl oder ein Wort", "") || "";
-    fetch("/api/session/spur/score", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ characterId: pc?.id, name: pc?.name || "Gast", score }),
-    });
-  });
+  box.innerHTML = `<div class="name">Ereignis · ${event.title}</div><div class="meta">${event.stake || event.blurb || ""} · ${left}s · ${event.payout === "fear" ? "Fear an den Tisch" : "Hope an den Besten"}</div><a class="btn tiny" href="${href}">Spielen</a>`;
 }
 
 $("#btnGuest")?.addEventListener("click", () => sit("", true));
@@ -280,11 +273,20 @@ async function playerRoll(table) {
   const trait = $("#traitPick")?.value || ["agility","strength","finesse","instinct","presence","knowledge"].find((t) => action.toLowerCase().includes(t));
   const expIndex = $("#expPick")?.value;
   const exp = expIndex !== "" && expIndex != null ? pc.experiences?.[Number(expIndex)] : null;
+  const ses = (state.sessions || []).find((s) => s.id === state.active?.sessionId);
+  const foes = (ses?.map?.tokens || []).filter((t) => t.kind === "foe" && t.difficulty);
+  const pick = $("#foePick");
+  if (pick && pick.options.length !== foes.length + 1) {
+    const prev = pick.value;
+    pick.innerHTML = `<option value="">nächster</option>` + foes.map((t) => `<option value="${t.id}">${t.label} · ${t.difficulty}</option>`).join("");
+    if (foes.some((t) => t.id === prev)) pick.value = prev;
+  }
   const payload = {
     characterId: pc.id,
     trait,
     traitMod: trait ? Number(pc.traits?.[trait] || 0) : 0,
     experiences: exp ? [{ name: exp.name, bonus: exp.bonus || 0 }] : [],
+    tokenId: pick?.value || "",
   };
   if (table) {
     payload.hopeDie = Number($("#hopeDie").value);

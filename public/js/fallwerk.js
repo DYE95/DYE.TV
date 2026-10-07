@@ -199,6 +199,7 @@ renderer.setAnimationLoop((now) => {
   }
   syncMeshes();
   cullFallen();
+  window.emberHold?.(bodies.length);
   renderer.render(scene, camera);
 });
 

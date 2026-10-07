@@ -293,6 +293,7 @@ export class Sim {
         this.best = next;
         writeSave(next);
         playUi(phase === "won" ? "win" : "lose");
+        window.emberReport?.(score);
     }
     kill(enemy) {
         enemy.alive = false;

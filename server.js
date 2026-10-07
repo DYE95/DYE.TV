@@ -464,7 +464,8 @@ async function handleApi(req, res, url) {
     const state = store.read();
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     const character = state.characters.find((c) => c.id === body.characterId);
-    const foe = nearestFoe(session, character);
+    const picked = body.tokenId ? (session?.map?.tokens || []).find((t) => t.id === body.tokenId && t.kind === "foe") : null;
+    const foe = picked || nearestFoe(session, character);
     const typed = body.difficulty != null && body.difficulty !== "" ? Number(body.difficulty) : 0;
     const roll = resolveActionRoll({ ...body, hopeDie: body.hopeDie || body.hope, fearDie: body.fearDie || body.fear, difficulty: typed || foe?.difficulty || 0 });
     if (foe && !typed) roll.spoken += " · " + foe.label;

@@ -409,14 +409,22 @@ async function sendRoll(source) {
   const pc = (state.characters || []).find((c) => c.id === characterId);
   const trait = $("#rollTrait").value;
   const expId = $("#rollExperience").value;
-  const foe = (activeSession()?.map?.tokens || []).find((t) => t.kind === "foe" && t.difficulty);
+  const foes = (activeSession()?.map?.tokens || []).filter((t) => t.kind === "foe" && t.difficulty);
+  const pick = $("#rollFoe");
+  if (pick) {
+    const prev = pick.value;
+    pick.innerHTML = `<option value="">nächster</option>` + foes.map((t) => `<option value="${esc(t.id)}">${esc(t.label)} · ${t.difficulty}</option>`).join("");
+    if (foes.some((t) => t.id === prev)) pick.value = prev;
+  }
+  const chosen = foes.find((t) => t.id === pick?.value) || foes[0];
   const box = $("#foeDiff");
-  if (box) box.textContent = foe ? foe.label + " schiebt " + foe.difficulty + ", solange das Feld leer ist." : "Kein Foe mit Difficulty auf der Karte.";
+  if (box) box.textContent = chosen ? chosen.label + " schiebt " + chosen.difficulty + ", solange das Feld leer ist." : "Kein Foe mit Difficulty auf der Karte.";
   const payload = {
     characterId, source, trait,
     traitMod: trait && pc ? Number(pc.traits[trait] || 0) : 0,
     experiences: expId && pc ? pc.experiences.filter((e) => e.id === expId) : [],
     mode: $("#rollMode").value,
+    tokenId: pick?.value || "",
   };
   const typed = $("#rollDifficulty")?.value;
   if (typed) payload.difficulty = Number(typed);

@@ -856,6 +856,7 @@ var Dye = (() => {
         tainted: this.tainted,
         isRecord: !this.tainted && score > this.highscore && score > 0
       };
+      window.emberReport?.(score);
     }
     spawn() {
       const speed = Math.max(80, this.speed());

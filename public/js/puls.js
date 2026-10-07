@@ -243,6 +243,7 @@ function bindLive() {
       state.poll.choiceId = id;
       state.confirm = null;
       save();
+      window.emberReport?.(option.votes);
       render();
     });
   });

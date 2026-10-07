@@ -799,6 +799,7 @@ function simulate(dt) {
       yaw: sim.yaw,
     });
     playWin();
+    window.emberReport?.(state.gems || 0);
     document.exitPointerLock?.();
     return;
   }
