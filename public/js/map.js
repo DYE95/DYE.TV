@@ -1,4 +1,4 @@
-const MapKit = { draggingId: null, lastSig: "", tool: "move", zoneStart: null };
+const MapKit = { draggingId: null, lastSig: "", tool: "move", zoneStart: null, view: { scale: 1, x: 0, y: 0 } };
 
 function gm(body) { return { as: "gm", ...body, gmKey: localStorage.getItem("ember.gmKey") || "" }; }
 
@@ -21,17 +21,109 @@ function tokenStatus(token, state) {
   if (ses?.narrating && token.kind === "pc") return "narrating";
   return seat ? "online" : "";
 }
+function worldOf(stage) {
+  let world = stage.querySelector(":scope > .map-world");
+  if (!world) {
+    world = document.createElement("div");
+    world.className = "map-world";
+    while (stage.firstChild) world.appendChild(stage.firstChild);
+    stage.appendChild(world);
+    bindView(stage);
+  }
+  return world;
+}
+function applyView(stage) {
+  const world = stage.querySelector(":scope > .map-world");
+  if (!world) return;
+  const v = MapKit.view;
+  world.style.transform = `translate(${v.x}px, ${v.y}px) scale(${v.scale})`;
+}
+function pct(el, clientX, clientY) {
+  const box = el.getBoundingClientRect();
+  return {
+    x: box.width ? ((clientX - box.left) / box.width) * 100 : 0,
+    y: box.height ? ((clientY - box.top) / box.height) * 100 : 0,
+  };
+}
+function bindView(stage) {
+  if (stage.dataset.view === "1") return;
+  stage.dataset.view = "1";
+  let hud = stage.querySelector(".map-zoom");
+  if (!hud) {
+    hud = document.createElement("div");
+    hud.className = "map-zoom";
+    hud.innerHTML = `<button type="button" data-z="in">+</button><button type="button" data-z="out">−</button><button type="button" data-z="reset">1:1</button>`;
+    stage.appendChild(hud);
+    hud.addEventListener("click", (ev) => {
+      const b = ev.target.closest("button");
+      if (!b) return;
+      const box = stage.getBoundingClientRect();
+      const next = b.dataset.z === "in" ? MapKit.view.scale * 1.2 : b.dataset.z === "out" ? MapKit.view.scale / 1.2 : 1;
+      if (b.dataset.z === "reset") { MapKit.view.x = 0; MapKit.view.y = 0; MapKit.view.scale = 1; applyView(stage); return; }
+      zoomAt(stage, box.left + box.width / 2, box.top + box.height / 2, next);
+    });
+  }
+  stage.addEventListener("wheel", (ev) => {
+    ev.preventDefault();
+    const next = MapKit.view.scale * (ev.deltaY < 0 ? 1.12 : 0.9);
+    zoomAt(stage, ev.clientX, ev.clientY, next);
+  }, { passive: false });
+  stage.addEventListener("pointerdown", (ev) => {
+    if (ev.target.closest(".map-zoom, .token, .door")) return;
+    const pan = ev.button === 1 || ev.button === 2 || ev.altKey || (ev.button === 0 && MapKit.tool === "move");
+    if (!pan) return;
+    if (ev.button === 0 && MapKit.tool === "move" && ev.target.closest(".token")) return;
+    ev.preventDefault();
+    const start = { x: ev.clientX, y: ev.clientY, vx: MapKit.view.x, vy: MapKit.view.y };
+    const move = (e) => {
+      MapKit.view.x = start.vx + (e.clientX - start.x);
+      MapKit.view.y = start.vy + (e.clientY - start.y);
+      applyView(stage);
+    };
+    const up = () => {
+      stage.removeEventListener("pointermove", move);
+      stage.removeEventListener("pointerup", up);
+    };
+    stage.addEventListener("pointermove", move);
+    stage.addEventListener("pointerup", up);
+  });
+  stage.addEventListener("contextmenu", (ev) => ev.preventDefault());
+}
+function zoomAt(stage, clientX, clientY, next) {
+  const box = stage.getBoundingClientRect();
+  const v = MapKit.view;
+  const px = clientX - box.left;
+  const py = clientY - box.top;
+  const wx = (px - v.x) / v.scale;
+  const wy = (py - v.y) / v.scale;
+  v.scale = Math.max(1, Math.min(3.5, next));
+  v.x = px - wx * v.scale;
+  v.y = py - wy * v.scale;
+  applyView(stage);
+}
+function showTokenCard(stage, token) {
+  let card = stage.querySelector(".map-card");
+  if (!card) {
+    card = document.createElement("div");
+    card.className = "map-card";
+    stage.appendChild(card);
+  }
+  card.innerHTML = `<b>${token.label || "Token"}</b><span>${token.kind || "figur"} · ${Math.round(token.x || 0)}, ${Math.round(token.y || 0)}</span>`;
+  card.classList.add("on");
+}
 function renderMap(stage, state, opts = {}) {
   if (!stage) return;
+  const world = worldOf(stage);
   const ses = (state.sessions || []).find((s) => s.id === state.active?.sessionId);
   const map = ses?.map || { image: "", tokens: [] };
-  if (map.image) stage.style.backgroundImage = `url("${map.image}")`;
+  world.style.backgroundImage = map.image ? `url("${map.image}")` : "";
+  stage.style.backgroundImage = "none";
   let fog = stage.querySelector("canvas.fow");
   if (!fog) {
     fog = document.createElement("canvas");
     fog.className = "fow";
     fog.style.pointerEvents = "none";
-    stage.prepend(fog);
+    world.prepend(fog);
   }
   const tokens = map.tokens || [];
   const live = new Set(tokens.map((t) => t.id));
@@ -43,7 +135,7 @@ function renderMap(stage, state, opts = {}) {
       el.type = "button";
       el.dataset.id = token.id;
       el.addEventListener("pointerdown", (ev) => startDrag(ev, el, token, opts));
-      stage.appendChild(el);
+      world.appendChild(el);
     }
     const turn = (ses?.initiative?.on && (ses.initiative.order || [])[ses.initiative.index]) || null;
     const onTurn = turn && (turn.tokenId === token.id || (turn.characterId && turn.characterId === token.characterId));
@@ -75,7 +167,7 @@ function drawPing(stage, ses) {
   el.style.left = ping.x + "%";
   el.style.top = ping.y + "%";
   el.textContent = ping.name;
-  stage.appendChild(el);
+  worldOf(stage).appendChild(el);
   const left = Math.max(200, 4000 - (Date.now() - ping.at));
   setTimeout(() => el.remove(), left);
 }
@@ -164,7 +256,7 @@ function drawOverlays(stage, ses, opts) {
     el.style.left = z.x + "%"; el.style.top = z.y + "%";
     el.style.width = z.w + "%"; el.style.height = z.h + "%";
     el.innerHTML = `<span>${z.label}</span>`;
-    stage.appendChild(el);
+    worldOf(stage).appendChild(el);
   });
   const map = ses?.map || {};
   (map.walls || []).forEach((w) => {
@@ -174,7 +266,7 @@ function drawOverlays(stage, ses, opts) {
     el.style.top = w.y1 + "%";
     el.style.width = Math.abs(w.x2 - w.x1) + "%";
     el.style.height = Math.max(2, Math.abs(w.y2 - w.y1)) + "%";
-    stage.appendChild(el);
+    worldOf(stage).appendChild(el);
   });
   (map.doors || []).forEach((d) => {
     const el = document.createElement("button");
@@ -184,7 +276,7 @@ function drawOverlays(stage, ses, opts) {
     el.style.top = d.y + "%";
     el.textContent = d.open ? "auf" : "zu";
     if (opts.actor === "gm") el.addEventListener("click", () => fetch("/api/session/map/door", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(gm({ id: d.id })) }));
-    stage.appendChild(el);
+    worldOf(stage).appendChild(el);
   });
   (enc.traps || []).forEach((t) => {
     if (!gm && !t.sprung) return;
@@ -192,7 +284,7 @@ function drawOverlays(stage, ses, opts) {
     el.className = "trap-mark" + (t.sprung ? " sprung" : "");
     el.style.left = t.x + "%"; el.style.top = t.y + "%";
     el.textContent = t.sprung ? "!" : "▴";
-    stage.appendChild(el);
+    worldOf(stage).appendChild(el);
   });
 }
 function bindFieldTools(stage, opts) {
@@ -201,9 +293,9 @@ function bindFieldTools(stage, opts) {
   stage.addEventListener("pointerdown", async (ev) => {
     if (ev.target.closest(".token")) return;
     if (opts.actor !== "gm") return;
-    const box = stage.getBoundingClientRect();
-    const x = ((ev.clientX - box.left) / box.width) * 100;
-    const y = ((ev.clientY - box.top) / box.height) * 100;
+    const point = pct(worldOf(stage), ev.clientX, ev.clientY);
+    const x = point.x;
+    const y = point.y;
     if (MapKit.tool === "brush") {
       await fetch("/api/session/map/brush", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(gm({ x, y, r: 9 })) });
     } else if (MapKit.tool === "trap") {
@@ -250,11 +342,14 @@ function startDrag(ev, el, token, opts) {
   ev.preventDefault();
   try { el.setPointerCapture(ev.pointerId); } catch {}
   MapKit.draggingId = token.id;
-  const stage = el.parentElement;
+  const stage = el.closest(".stage");
+  const world = el.parentElement;
+  let moved = false;
   const move = (e) => {
-    const box = stage.getBoundingClientRect();
-    const x = Math.max(2, Math.min(98, ((e.clientX - box.left) / box.width) * 100));
-    const y = Math.max(4, Math.min(96, ((e.clientY - box.top) / box.height) * 100));
+    moved = true;
+    const point = pct(world, e.clientX, e.clientY);
+    const x = Math.max(2, Math.min(98, point.x));
+    const y = Math.max(4, Math.min(96, point.y));
     el.style.left = x + "%"; el.style.top = y + "%";
     el.dataset.x = String(x); el.dataset.y = String(y);
   };
@@ -263,6 +358,7 @@ function startDrag(ev, el, token, opts) {
     el.removeEventListener("pointerup", up);
     el.removeEventListener("pointercancel", up);
     MapKit.draggingId = null;
+    if (!moved) { showTokenCard(stage, token); return; }
     const x = Number(el.dataset.x), y = Number(el.dataset.y);
     if (!Number.isFinite(x)) return;
     const res = await fetch("/api/session/map/move", {
