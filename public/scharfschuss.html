@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Scharfschuss</title>
+  <link rel="icon" href="/img/ember-icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/css/ember.css?v=7" />
+  <link rel="stylesheet" href="/css/scharfschuss.css?v=1" />
+</head>
+<body class="ss-body">
+  <header class="ss-bar">
+    <a class="btn tiny ghost" href="/">Home</a>
+    <div>
+      <strong>Scharfschuss</strong>
+      <span class="hint">DYE macht Dinge · Talverteidigung</span>
+    </div>
+    <div class="grow"></div>
+    <span class="hint" id="ssWave">Welle 1/10</span>
+    <span class="ss-chip" id="ssLives">Leben 15</span>
+    <span class="ss-chip brass" id="ssGold">Gold 170</span>
+    <span class="ss-chip" id="ssKills">0</span>
+    <button class="btn tiny ghost" type="button" id="ssSpeed">1×</button>
+    <button class="btn tiny ghost" type="button" id="ssPause" disabled>Pause</button>
+    <button class="btn tiny ghost" type="button" id="ssMute">Ton</button>
+  </header>
+  <div class="ss-stage-wrap">
+    <div class="ss-stage">
+      <canvas id="ssCanvas" aria-label="Schlachtfeld"></canvas>
+      <p class="ss-notice hidden" id="ssNotice" role="status"></p>
+      <p class="ss-pause hidden" id="ssPauseLabel">Pause</p>
+      <button class="btn primary ss-start hidden" type="button" id="ssStart">Welle starten</button>
+      <div class="ss-veil hidden" id="ssEnd">
+        <div class="ss-card">
+          <p class="hint" id="ssEndKicker">Spiel vorbei</p>
+          <h2 id="ssEndTitle">Stellung gefallen</h2>
+          <p class="hint" id="ssEndText"></p>
+          <p id="ssEndStats"></p>
+          <button class="btn primary" type="button" id="ssRestart">Neu starten</button>
+          <a class="btn" href="/">Zur Übersicht</a>
+        </div>
+      </div>
+      <section class="ss-brief" id="ssBrief">
+        <p class="hint">Talverteidigung</p>
+        <h1>Scharfschuss</h1>
+        <p>Stelle Geschütze neben den Weg. Jeder Abschuss bringt Gold. Zehn Wellen, dann ist das Tor gehalten.</p>
+        <ul>
+          <li><b>MG</b> — nah, schnell, günstig</li>
+          <li><b>Scharfschütze</b> — weit, hart, langsam</li>
+          <li><b>Mörser</b> — Fläche, tote Zone vorn</li>
+        </ul>
+        <button class="btn primary" type="button" id="ssPlay">Stellung beziehen</button>
+      </section>
+    </div>
+  </div>
+  <aside class="ss-dock">
+    <p class="hint">Geschütze</p>
+    <div class="ss-towers" id="ssTowers"></div>
+    <p class="hint" id="ssWaveText"></p>
+    <section id="ssFocus"></section>
+  </aside>
+  <script type="module" src="/js/scharf/ui.js?v=1"></script>
+</body>
+</html>
