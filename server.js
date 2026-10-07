@@ -1434,8 +1434,8 @@ server.listen(PORT, HOST, async () => {
   const urls = addresses();
   console.log("");
   console.log("  Ember brennt.");
+  console.log("  Spielleitung:    http://127.0.0.1:" + PORT + "/ember");
   console.log("  Home:            http://127.0.0.1:" + PORT + "/");
-  console.log("  Die Glut:        http://127.0.0.1:" + PORT + "/ember");
   console.log("  Fallwerk:        http://127.0.0.1:" + PORT + "/fallwerk");
   console.log("  Pastellpfad:     http://127.0.0.1:" + PORT + "/pastellpfad");
   console.log("  Scharfschuss:    http://127.0.0.1:" + PORT + "/scharfschuss");
@@ -1445,6 +1445,21 @@ server.listen(PORT, HOST, async () => {
   if (!urls.length) console.log("  Kein LAN-Interface.");
   else for (const u of urls) console.log("  Spieler-Ansicht: http://" + u.address + ":" + PORT + "/player   (" + u.name + ")");
   if (remoteUrl()) console.log("  Zu Hause:        " + remoteUrl() + "/player");
-  else console.log("  Zu Hause:        tunnel.bat starten, dann die ausgegebene Adresse.");
+  else console.log("  Zu Hause:        wartet auf den Tunnel. Pings liegen in data/tunnel.log.");
   console.log("");
+  const paintTitle = () => {
+    const remote = remoteUrl();
+    process.title = "Ember  SL http://127.0.0.1:" + PORT + "/ember" + (remote ? "  |  Zu Hause " + remote + "/player" : "  |  Zu Hause wartet");
+  };
+  paintTitle();
+  let seen = remoteUrl();
+  setInterval(() => {
+    paintTitle();
+    const remote = remoteUrl();
+    if (remote && remote !== seen) {
+      seen = remote;
+      console.log("  Zu Hause:        " + remote + "/player");
+      console.log("  Spielleitung:    http://127.0.0.1:" + PORT + "/ember");
+    }
+  }, 2000);
 });

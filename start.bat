@@ -6,9 +6,17 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
-echo Ein Fenster. Glut und Tunnel. Offen lassen.
-echo Lokal: http://127.0.0.1:3478/
-echo Zu Hause steht unten, sobald cloudflared eine Adresse schreibt.
+title Ember  SL http://127.0.0.1:3478/ember
+echo.
+echo  ------------------------------------------------
+echo   SPIELLEITUNG   http://127.0.0.1:3478/ember
+echo   HOME           http://127.0.0.1:3478/
+echo   SPIELER        http://127.0.0.1:3478/player
+echo   ZU HAUSE       kommt einmal, sobald der Tunnel steht
+echo   Pings          data\tunnel.log  (nicht hier)
+echo  ------------------------------------------------
+echo  Fenster offen lassen. Die Titelleiste behaelt die Adressen.
+echo.
 start /b node tools\tunnel.js
 :emberloop
 node server.js

@@ -20,7 +20,7 @@ Wer die `.bat` nicht kennt, liest zuerst `docs/ERSTSTART.md` und öffnet `erstst
 
 | Datei        | Was sie tut                                                        |
 | ------------ | ------------------------------------------------------------------ |
-| `Ember.bat`  | Prüft Node, startet den Server minimiert und öffnet den Browser     |
+| `Ember.bat`  | Prüft Node, startet den Server minimiert und öffnet die Spielleitung (`/ember`) |
 | `start.bat`  | Startet den Server und hält das Fenster offen (Neustart-Schleife)   |
 | `test.bat`   | Syntax-Check von `server.js` + komplette Testsuite                  |
 
@@ -32,6 +32,8 @@ npm test         # Alle Tests
 ```
 
 Umgebungsvariablen: `EMBER_PORT` (Standard `3478`), `EMBER_HOST` (Standard `0.0.0.0`).
+
+Die Adressen stehen im Fenster und in der Titelleiste. Cloudflare-Pings gehen nach `data/tunnel.log` und schieben sie nicht mehr weg. Die Spielleitung ist `http://127.0.0.1:3478/ember`, nicht die Tunnel-Adresse.
 
 ## Die Seiten
 
