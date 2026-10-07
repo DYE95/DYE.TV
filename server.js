@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const { URL } = require("url");
 const store = require("./lib/store");
-const { resolveActionRoll } = require("./lib/dice");
+const { resolveActionRoll, applyPools } = require("./lib/dice");
 const { addresses } = require("./lib/lan");
 const { id } = require("./lib/ids");
 const catalog = require("./lib/catalog");
@@ -419,23 +419,26 @@ async function handleApi(req, res, url) {
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     const character = state.characters.find((c) => c.id === body.characterId);
     const roll = resolveActionRoll({ ...body, hopeDie: body.hopeDie || body.hope, fearDie: body.fearDie || body.fear, difficulty: body.difficulty || tableDifficulty(session, character) });
+    const camp = session ? state.campaigns.find((c) => c.id === session.campaignId) : null;
     if (session && character) {
       remember(session, {
         kind: "roll",
         characterId: character.id,
         hope: character.hope,
-        gmFear: state.campaigns.find((c) => c.id === session.campaignId)?.gmFear || 0,
+        gmFear: camp?.gmFear || 0,
         campaignId: session.campaignId,
       });
     }
-    if (character) {
-      character.hope = clamp((character.hope || 0) + roll.hopeDelta, 0, character.hopeMax || 6);
-    }
-    if (session && roll.fearDelta > 0) {
-      const camp = state.campaigns.find((c) => c.id === session.campaignId);
-      if (camp) camp.gmFear = clamp((camp.gmFear || 0) + roll.fearDelta, 0, camp.fearMax || 12);
-    }
-    if (session) addLog(session, { kind: "roll", author: character ? character.name : "Tisch", text: roll.spoken, meta: roll });
+    const pools = applyPools({
+      hope: character ? character.hope : 0,
+      hopeMax: character ? character.hopeMax : 6,
+      fear: camp ? camp.gmFear : 0,
+      fearMax: camp ? camp.fearMax : 12,
+    }, roll);
+    if (character) character.hope = pools.hope;
+    if (camp) camp.gmFear = pools.fear;
+    if (session && pools.clockTick) session.sceneClock = (session.sceneClock || 0) + pools.clockTick;
+    if (session) addLog(session, { kind: "roll", author: character ? character.name : "Tisch", text: roll.spoken, meta: { ...roll, unpaid: pools.unpaid, clockTick: pools.clockTick } });
     if (session && character && initiative.completeIfActor(session, character.id)) {
       addLog(session, { kind: "system", author: "Initiative", text: initiative.spoken(session) });
     }
