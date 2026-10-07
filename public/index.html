@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ember</title>
+  <title>DYE.TV: Spielleiter, Start</title>
   <link rel="stylesheet" href="/css/ember.css?v=15" />
   <link rel="stylesheet" href="/css/table-indicator.css?v=1" />
-  <link rel="stylesheet" href="/css/topbar.css?v=9" />
+  <link rel="stylesheet" href="/css/topbar.css?v=10" />
   <link rel="stylesheet" href="/css/float.css?v=1" />
   <link rel="stylesheet" href="/css/start.css?v=11" />
   <script>
@@ -30,11 +30,11 @@
       var btn = ev.target.closest("[data-go]");
       if (btn) {
         emberGo(btn.getAttribute("data-go"));
-        var focus = btn.getAttribute("data-focus");
-        if (focus) setTimeout(function () {
-          var el = document.getElementById(focus);
-          if (el) el.scrollIntoView({ block: "center" });
-        }, 40);
+        var names = { menu: "Start", session: "Am Tisch", encounter: "Karte", "campaign-manager": "Kampagne", "character-manager": "Charakter", chats: "Chats", tunnel: "Tunnel" };
+        var go = btn.getAttribute("data-go");
+        document.title = "DYE.TV: Spielleiter, " + (names[go] || go);
+        var foot = document.getElementById("footPage");
+        if (foot) foot.textContent = names[go] || go;
       }
       if (ev.target.closest("#btnLeave")) emberLeave();
       if (ev.target.closest("#btnBack")) emberBack();
@@ -81,17 +81,14 @@
             <h1 class="start-title">Ember</h1>
             <p class="tagline">Die Glut am Rand der Umbra</p>
             <div class="start-menu">
-              <button class="start-item" data-go="session"><b>Entfache die Glut</b><span>Tisch, Ready, dann rein</span></button>
-              <button class="start-item" data-go="encounter" data-focus="mapStage"><b>Karte</b><span>Tokens, Umbra, Play Event</span></button>
-              <button class="start-item" data-go="campaign-manager"><b>Kampagne</b><span>Was brennt, und der Editor</span></button>
-              <button class="start-item" data-go="character-manager"><b>Charakter</b><span>Bogen, Editor, Fotos</span></button>
-              <p class="start-label">Am Rand</p>
-              <button class="start-item tool" data-go="encounter" data-focus="handoutWho"><b>Handouts</b><span>Zettel an den Tisch</span></button>
-              <button class="start-item tool" data-go="tunnel"><b>Tunnel</b><span>Adresse zu Hause</span></button>
-              <a class="start-item tool" href="/solo"><b>Solo</b><span>Bots und Dungeon</span></a>
-              <a class="start-item tool" href="/karten"><b>Karten</b><span>Marker speichern</span></a>
-              <button class="start-item tool" data-go="chats"><b>Chats</b><span>Fäden aus dem Projekt</span></button>
-              <button class="start-item start-item-danger" id="btnLeave"><b>Verlöschen</b><span>Fenster schließen</span></button>
+              <button class="start-item" id="btnIgnite" data-go="session"><b>Ignite the Ember</b><span>The fire knows who sits.</span></button>
+              <button class="start-item start-item-danger" id="btnLeave"><b>Extinguish the Ember</b><span>Close the window. The pin stays.</span></button>
+            </div>
+            <div class="start-menu gm-only hidden" id="gmDrawer">
+              <button class="start-item tool" data-go="encounter"><b>Map</b><span>Tokens and Umbra</span></button>
+              <button class="start-item tool" data-go="campaign-manager"><b>Campaign</b><span>Editor</span></button>
+              <button class="start-item tool" data-go="character-manager"><b>Character</b><span>Sheets</span></button>
+              <button class="start-item tool" data-go="tunnel"><b>Tunnel</b><span>Home address</span></button>
             </div>
           </div>
         </div>
@@ -124,16 +121,16 @@
     </section>
     <section class="view" id="view-session">
       <div class="hub" id="sessionHub">
-        <header class="hub-banner">
-          <div>
-            <h2>Am Tisch</h2>
-            <p class="hint" id="hubCampaign">Noch keine Kampagne.</p>
+        <div class="table-layout">
+          <aside class="who-on" id="readyList"></aside>
+          <div class="fire-table">
+            <button class="camp-tile" data-go="campaign-manager" type="button"><b id="hubCampaign">Kampagne</b><span>Campaign Manager</span></button>
+            <div class="fire-figure" id="tableIndicator" data-table="gm"></div>
+            <div class="loaded-tile"><span>Geladen</span><b id="loadedStory">Die Krone ohne Flamme</b></div>
           </div>
-          <label>Kampagne <select id="campaignPick"><option value="">—</option></select></label>
-        </header>
-        <div class="stage field" id="hubMap" style="min-height:420px;margin:8px 0;"></div>
-        <div class="hub-ready" id="readyList"></div>
+        </div>
         <button class="btn primary" id="btnEnter" type="button" disabled>Rein, wenn alle ready sind</button>
+        <div class="duel hidden" id="seatDuel"><p>Zwei wollen denselben Stuhl.</p><button class="btn" id="btnDuel" type="button">Duell</button><p id="duelOut"></p></div>
       </div>
       <div class="workspace hidden" id="sessionLive">
         <aside class="panel">
@@ -497,11 +494,16 @@
     .gear-panel { position:fixed; top:52px; right:16px; z-index:40; width:min(320px,92vw); padding:14px; background:#141c27; border:1px solid #3d5166; text-align:left; }
     .gear-panel label, .gear-panel .btn, .gear-panel a.btn { display:block; width:100%; margin-top:8px; }
   </style>
+  <footer class="ember-topbar ember-foot">
+    <div class="brand">DYE.TV: Spielleiter, <span id="footPage">Start</span></div>
+    <div class="grow"></div>
+    <button class="icon-btn" id="btnGearFoot" type="button" title="Einstellungen" aria-label="Einstellungen"><img src="/img/icon-gear.svg" alt="" width="18" height="18" /></button>
+  </footer>
   <script src="/js/table-indicator.js?v=1"></script>
   <script src="/js/map.js?v=11"></script>
   <script src="/js/token.js?v=4"></script>
   <script src="/js/float-panels.js?v=1"></script>
-  <script src="/js/gm.js?v=16"></script>
+  <script src="/js/gm.js?v=17"></script>
   <script>
     document.getElementById("btnEnter")?.addEventListener("click", () => {
       document.getElementById("sessionHub")?.classList.add("hidden");
@@ -528,6 +530,15 @@
         log.textContent = "Keine Verbindung.";
       }
     });
+    document.getElementById("btnGearFoot")?.addEventListener("click", () => document.getElementById("btnGear").click());
+    document.getElementById("btnIgnite")?.addEventListener("click", () => {
+      if (!localStorage.getItem("ember.gmKey")) {
+        const pin = prompt("Spielleiter-PIN. Bleibt in diesem Browser.");
+        if (pin) localStorage.setItem("ember.gmKey", pin.trim());
+      }
+      document.getElementById("gmDrawer")?.classList.remove("hidden");
+    });
+    if (localStorage.getItem("ember.gmKey")) document.getElementById("gmDrawer")?.classList.remove("hidden");
     document.getElementById("btnRestart").addEventListener("click", async () => {
       if (!confirm("Ember neu starten? Die Seite verliert kurz die Verbindung.")) return;
       document.getElementById("gearLog").textContent = "Neustart … gleich neu laden.";

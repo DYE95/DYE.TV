@@ -281,7 +281,8 @@ function renderSession() {
   const seated = charsOf(activeCampaignId()).filter((c) => Number.isInteger(c.tableSeat) || (state.presence || []).some((p) => p.characterId === c.id && p.status !== "offline"));
   const ready = ses?.ready || {};
   if (readyList) {
-    readyList.innerHTML = seated.map((c) => `<div class="card"><div class="name">${c.name}</div><div class="meta">${ready[c.id] ? "ready" : "wartet"}</div></div>`).join("") || "<p class='hint'>Noch niemand sitzt.</p>";
+    readyList.innerHTML = "<p class='hint'>Wer ist da</p>" + (seated.map((c) => `<div class="card seat-claim" data-id="${c.id}"><div class="name">${c.name}</div><div class="meta">${ready[c.id] ? "bereit" : "wartet"}</div></div>`).join("") || "<p class='hint'>Noch niemand sitzt.</p>");
+    readyList.querySelectorAll(".seat-claim").forEach((card) => card.addEventListener("click", () => claimSeat(card.dataset.id, card.querySelector(".name").textContent)));
   }
   const allReady = seated.length > 0 && seated.every((c) => ready[c.id]);
   const enter = $("#btnEnter");
@@ -753,3 +754,30 @@ $("#btnCopyTunnel")?.addEventListener("click", async () => {
     if (note) note.textContent = text;
   }
 });
+
+const seats = {};
+function claimSeat(id, name) {
+  const taken = Object.entries(seats).find(([who, seat]) => seat === "fire" && who !== id);
+  seats[id] = "fire";
+  const tag = document.querySelector(".fire-figure");
+  if (tag && !tag.querySelector(".name-tag")) {
+    const el = document.createElement("div");
+    el.className = "name-tag";
+    el.textContent = name;
+    tag.appendChild(el);
+  }
+  if (taken) {
+    document.getElementById("seatDuel")?.classList.remove("hidden");
+    const out = document.getElementById("duelOut");
+    document.getElementById("btnDuel").onclick = () => {
+      const a = name, b = taken[1] && taken[0];
+      let left = 0;
+      const stop = setTimeout(() => {
+        const win = left % 2 ? a : b;
+        if (out) out.textContent = win + " ist die Hauptfigur. Der andere ist Sidekick. Pause, wenn ihr wollt.";
+      }, 4000);
+      if (out) out.textContent = "Klickt, wer schneller ist.";
+      document.getElementById("btnDuel").onclick = () => { left += 1; clearTimeout(stop); if (out) out.textContent = name + " hält den Stuhl. Hauptfigur heute."; };
+    };
+  }
+}
