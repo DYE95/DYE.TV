@@ -154,7 +154,8 @@ function renderMap(stage, state, opts = {}) {
   });
   drawFog(fog, stage, map, opts);
   drawPing(stage, ses);
-  drawOverlays(stage, ses, opts);
+
+  drawRanges(world, stage, ses, state, opts);
   bindFieldTools(stage, opts);
 }
 function drawPing(stage, ses) {
@@ -386,4 +387,105 @@ function startStateFeed(apply) {
   const es = new EventSource("/api/events");
   es.addEventListener("message", (ev) => { last = Date.now(); try { apply(JSON.parse(ev.data)); } catch {} });
   setInterval(() => { if (Date.now() - last > 4000) pull(); }, 2500);
+}
+
+const RANGE_CELL = 100 / 24;
+const RANGE_BANDS = [
+  { name: "Melee", feet: 5, cells: 1, fill: "rgba(232,93,4,.28)", stroke: "#e85d04" },
+  { name: "Very Close", feet: 10, cells: 2, fill: "rgba(244,162,97,.22)", stroke: "#f4a261" },
+  { name: "Close", feet: 30, cells: 6, fill: "rgba(233,196,106,.16)", stroke: "#e9c46a" },
+  { name: "Far", feet: 100, cells: 20, fill: "rgba(42,157,143,.12)", stroke: "#2a9d8f" },
+];
+function cellCenter(pct) {
+  const i = Math.max(0, Math.min(23, Math.floor(pct / RANGE_CELL)));
+  return (i + 0.5) * RANGE_CELL;
+}
+function cellDist(a, b) {
+  return Math.hypot(a.x - b.x, a.y - b.y) / RANGE_CELL;
+}
+function bandFor(cells) {
+  return RANGE_BANDS.find((b) => cells <= b.cells + 0.55) || null;
+}
+function activeActor(ses, state) {
+  const turn = ses?.initiative?.on && ses.initiative.order?.length ? ses.initiative.order[ses.initiative.index] : null;
+  if (!turn) return null;
+  const token = (ses.map?.tokens || []).find((t) => t.id === turn.tokenId || (turn.characterId && t.characterId === turn.characterId));
+  if (!token || token.kind === "foe") return null;
+  return { turn, token };
+}
+function drawRanges(world, stage, ses, state, opts) {
+  world.querySelectorAll(".range-layer").forEach((n) => n.remove());
+  const actor = activeActor(ses, state);
+  MapKit.intent = Boolean(actor && opts.actor === "player" && opts.characterId && actor.token.characterId === opts.characterId);
+  if (!actor) return;
+  const cx = cellCenter(actor.token.x);
+  const cy = cellCenter(actor.token.y);
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("class", "range-layer");
+  svg.setAttribute("viewBox", "0 0 100 100");
+  svg.setAttribute("preserveAspectRatio", "none");
+  const grid = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  let d = "";
+  for (let i = 0; i <= 24; i += 1) d += `M ${i * RANGE_CELL} 0 V 100 M 0 ${i * RANGE_CELL} H 100 `;
+  grid.setAttribute("d", d);
+  grid.setAttribute("class", "range-grid");
+  svg.appendChild(grid);
+  [...RANGE_BANDS].reverse().forEach((band) => {
+    const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    const r = (band.cells + 0.5) * RANGE_CELL;
+    c.setAttribute("cx", String(cx));
+    c.setAttribute("cy", String(cy));
+    c.setAttribute("r", String(r));
+    c.setAttribute("fill", band.fill);
+    c.setAttribute("stroke", band.stroke);
+    c.setAttribute("stroke-width", "0.35");
+    svg.appendChild(c);
+  });
+  world.appendChild(svg);
+  let legend = stage.querySelector(".range-legend");
+  if (!legend) {
+    legend = document.createElement("div");
+    legend.className = "range-legend";
+    stage.appendChild(legend);
+  }
+  legend.innerHTML = RANGE_BANDS.map((b) => `<i style="background:${b.stroke}"></i>${b.name} ${b.feet} Fuß`).join(" · ");
+  if (!stage.dataset.intent) {
+    stage.dataset.intent = "1";
+    stage.addEventListener("click", (ev) => onIntent(ev, stage));
+  }
+  stage._intent = { actor, opts, state };
+}
+async function onIntent(ev) {
+  const stage = ev.currentTarget;
+  const pack = stage._intent;
+  if (!pack || !MapKit.intent || MapKit.draggingId) return;
+  if (ev.target.closest(".map-zoom, .door")) return;
+  const world = worldOf(stage);
+  const point = pct(world, ev.clientX, ev.clientY);
+  const actor = pack.actor.token;
+  const foeEl = ev.target.closest(".token.foe");
+  const foe = foeEl && (pack.state.sessions || []).flatMap((s) => s.map?.tokens || []).find((t) => t.id === foeEl.dataset.id);
+  const target = foe || { x: cellCenter(point.x), y: cellCenter(point.y) };
+  const cells = cellDist(actor, target);
+  const band = bandFor(cells);
+  if (foe && !band) return;
+  if (!foe && cells > 6.55) return;
+  if (foe && cells > 6.55) {
+    const step = 6 / cells;
+    await postMove(actor, actor.x + (foe.x - actor.x) * step, actor.y + (foe.y - actor.y) * step, pack.opts);
+  } else if (!foe) {
+    await postMove(actor, target.x, target.y, pack.opts);
+    return;
+  }
+  const trait = "agility";
+  await fetch("/api/roll", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ characterId: pack.opts.characterId, tokenId: foe.id, trait, action: "Angriff " + (band ? band.name : "Far"), seat: localStorage.getItem("ember.seat") || "" }),
+  });
+}
+async function postMove(token, x, y, opts) {
+  await fetch("/api/session/map/move", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id: token.id, x, y, rev: token.rev || 0, as: "player", characterId: opts.characterId, gmKey: "" }),
+  });
 }
