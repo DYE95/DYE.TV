@@ -227,6 +227,7 @@ function renderEncounter() {
     ).join("") || "<p class='hint'>Die Dunkelheit hält noch still.</p>";
   }
   renderMap($("#mapStage"), state, { viewer: "gm", actor: "gm", canMove: () => true });
+  renderMap($("#hubMap"), state, { viewer: "gm", actor: "gm", canMove: () => true });
   if ($("#btnFow")) $("#btnFow").textContent = ses?.map?.fow?.on ? "Umbra: AN" : "Umbra: AUS";
   const tone = { ready: "liegt im Dunkeln bereit", live: "läuft — der Boden hat nachgegeben", ended: "ist verloschen" };
   if ($("#sessionEncName")) $("#sessionEncName").textContent = enc ? enc.name : "Kein Event bereit";
