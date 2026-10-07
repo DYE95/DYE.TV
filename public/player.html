@@ -85,8 +85,9 @@
     .player-shell.seated { display: grid; grid-template-rows: auto minmax(180px, 1fr) auto auto; }
     #mapStage { min-height: 0; }
     #sheet { max-height: 28dvh; overflow: auto; }
-    .play-dock { padding: 8px 12px 12px; background: #120c0b; border-top: 1px solid #3a2a24; }
-    .role-menu { position: absolute; top: 52px; right: 12px; z-index: 8; width: min(280px, 92vw); background: #161010; border: 1px solid #3a2a24; padding: 8px; }
+    .play-dock { padding: 10px 12px 14px; background: #120c0b; border-top: 1px solid #3a2a24; display: grid; gap: 8px; }
+    .play-dock .btn, .play-dock select, .play-dock input { min-height: 40px; }
+    .role-menu { position: absolute; top: 52px; right: 12px; z-index: 8; width: min(280px, 92vw); background: #161010; border: 1px solid #3a2a24; border-radius: 10px; padding: 8px; }
     .role-menu .card { width: 100%; text-align: left; margin-top: 6px; }
     @media (min-width: 960px) {
       .player-shell.seated {
@@ -111,6 +112,6 @@
       .player-shell.seated #playVideoBox { grid-column: 2; }
     }
   </style>
-  <script src="/js/player.js?v=18"></script>
+  <script src="/js/player.js?v=19"></script>
 </body>
 </html>

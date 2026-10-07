@@ -36,6 +36,10 @@
   overflow: hidden;
 }
 .desk-tile {
+  border-radius: 12px;
+  transition: border-color .15s ease, transform .15s ease;
+}
+.desk-tile:hover { border-color: #7ea0c4; }
   position: absolute;
   display: flex;
   flex-direction: column;
