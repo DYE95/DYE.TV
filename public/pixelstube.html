@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Pixelstube</title>
+  <link rel="icon" href="/img/ember-icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/css/ember.css?v=7" />
+  <link rel="stylesheet" href="/css/pixelstube.css?v=1" />
+</head>
+<body class="px-body">
+  <header class="px-bar">
+    <a class="btn tiny ghost" href="/">Home</a>
+    <div>
+      <strong>Pixelstube</strong>
+      <span class="hint">Retro-Pixelstudio</span>
+    </div>
+    <div class="grow"></div>
+    <div class="px-tools" role="group" aria-label="Exportgröße">
+      <button class="btn tiny" type="button" data-scale="1">1×</button>
+      <button class="btn tiny on" type="button" data-scale="8">8×</button>
+      <button class="btn tiny" type="button" data-scale="16">16×</button>
+    </div>
+    <button class="btn primary" type="button" id="btnPng">PNG</button>
+  </header>
+  <div class="px-sub">
+    <div class="px-tools" role="group" aria-label="Leinwandgröße">
+      <button class="btn tiny" type="button" data-size="16">16</button>
+      <button class="btn tiny" type="button" data-size="24">24</button>
+      <button class="btn tiny on" type="button" data-size="32">32</button>
+      <button class="btn tiny" type="button" data-size="48">48</button>
+      <button class="btn tiny" type="button" data-size="64">64</button>
+    </div>
+    <div class="grow"></div>
+    <button class="btn tiny" type="button" id="btnZoomOut" aria-label="Verkleinern">−</button>
+    <span class="hint" id="zoomRead">12×</span>
+    <button class="btn tiny" type="button" id="btnZoomIn" aria-label="Vergrößern">+</button>
+    <button class="btn tiny on" type="button" id="btnFit">Passen</button>
+    <button class="btn tiny on" type="button" id="btnGrid">Raster</button>
+  </div>
+  <div class="px-stage" id="stage">
+    <div class="px-center">
+      <div class="px-frame" id="frame">
+        <div class="px-checker" id="checker">
+          <canvas id="paint" aria-label="Zeichenfläche"></canvas>
+          <div class="px-grid" id="grid"></div>
+          <div class="px-preview hidden" id="preview"></div>
+          <div class="px-empty" id="empty"><span>Ziehen, um Pixel zu setzen</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="hint px-status px-sub" id="status">32×32 · Stift</p>
+  <footer class="px-foot">
+    <span class="px-chip" id="chip"></span>
+    <label class="sr" for="palette">Palette</label>
+    <select id="palette" aria-label="Palette"></select>
+    <div class="px-swatches" id="swatches" role="radiogroup" aria-label="Farben"></div>
+  </footer>
+  <nav class="px-dock" aria-label="Werkzeuge">
+    <div class="px-tools">
+      <button class="btn tiny on" type="button" data-tool="pencil" title="Stift (B)">Stift</button>
+      <button class="btn tiny" type="button" data-tool="eraser" title="Radierer (E)">Radierer</button>
+      <button class="btn tiny" type="button" data-tool="fill" title="Füllen (F)">Füllen</button>
+      <button class="btn tiny" type="button" data-tool="picker" title="Pipette (I)">Pipette</button>
+      <button class="btn tiny" type="button" data-tool="pan" title="Schieben (H)">Schieben</button>
+    </div>
+    <div class="px-tools" role="group" aria-label="Pinselgröße">
+      <button class="btn tiny on" type="button" data-brush="1">1</button>
+      <button class="btn tiny" type="button" data-brush="2">2</button>
+      <button class="btn tiny" type="button" data-brush="3">3</button>
+    </div>
+    <div class="px-tools">
+      <button class="btn tiny" type="button" id="btnUndo" title="Rückgängig">Undo</button>
+      <button class="btn tiny" type="button" id="btnRedo" title="Wiederholen">Redo</button>
+      <button class="btn tiny" type="button" id="btnClear">Leeren</button>
+    </div>
+  </nav>
+  <style>.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}</style>
+  <script src="/js/pixelstube.js?v=1"></script>
+</body>
+</html>

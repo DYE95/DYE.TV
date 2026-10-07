@@ -37,6 +37,7 @@ Umgebungsvariablen: `EMBER_PORT` (Standard `3478`), `EMBER_HOST` (Standard `0.0.
 | `/`            | SL-Tisch: Session, Action Rolls, Events, Karte, Initiative, Log   |
 | `/player`      | Spieler-Ansicht (im LAN): Bogen, Würfe, Spotlight, Karte          |
 | `/token`       | Pixel-Token-Atelier                                              |
+| `/pixelstube`  | Pixelstube: Raster, Palette, Stift, Füllen, PNG                 |
 | `/solo`        | Solo-Modus: Übungsbots, Dungeon, Level-Ups, Subklassen            |
 | `/karten`      | Karten-Werkzeug (Marker-Karten speichern/laden)                   |
 | `/bibliothek`  | Regel-PDFs aus `docs/bibliothek/`                                 |
