@@ -79,11 +79,28 @@
               <button class="start-item" data-go="campaign-manager"><b>Kampagne</b><span>was brennt und Editor</span></button>
               <button class="start-item" data-go="character-manager"><b>Charakter</b><span>Bogen, Editor, Fotos</span></button>
               <button class="start-item" data-go="chats"><b>Chats</b><span>Fäden aus dem Projekt</span></button>
+              <button class="start-item" data-go="encounter"><b>Handouts</b><span>Zettel an den Tisch oder einen Namen</span></button>
+              <button class="start-item" data-go="tunnel"><b>Tunnel</b><span>Adresse zu Hause, Pings bleiben im Log</span></button>
+              <a class="start-item" href="/solo"><b>Solo</b><span>Bots, Dungeon, Level</span></a>
+              <button class="start-item" data-go="encounter"><b>Karte</b><span>Tischkarte, Tokens, Umbra</span></button>
+              <a class="start-item" href="/karten"><b>Karten</b><span>Marker-Karten laden und speichern</span></a>
               <button class="start-item start-item-danger" id="btnLeave"><b>Verlöschen</b><span>Ember schließen</span></button>
             </div>
           </div>
         </div>
         <div class="start-art" role="img" aria-label="Lagerfeuer am Rand der Umbra"></div>
+      </div>
+    </section>
+
+    
+    <section class="view" id="view-tunnel">
+      <div class="panel" style="margin:24px auto;max-width:720px;">
+        <h2>Tunnel</h2>
+        <p class="hint">Die Adresse zu Hause. Spieler hängen <b>/player</b> an. Die Spielleitung bleibt <b>http://127.0.0.1:3478/ember</b> auf diesem Rechner.</p>
+        <p class="name" id="tunnelUrl">warten …</p>
+        <p class="hint">Pings schreibt cloudflared nach data/tunnel.log, nicht ins Fenster.</p>
+        <audio id="emberAnsage" controls src="/audio/ember-ansage.mp3" style="width:100%;margin-top:12px;"></audio>
+        <button class="btn" data-go="menu" type="button">Zurück</button>
       </div>
     </section>
 
@@ -473,7 +490,7 @@
   <script src="/js/map.js?v=9"></script>
   <script src="/js/token.js?v=4"></script>
   <script src="/js/float-panels.js?v=1"></script>
-  <script src="/js/gm.js?v=13"></script>
+  <script src="/js/gm.js?v=14"></script>
   <script>
     document.getElementById("btnEnter")?.addEventListener("click", () => {
       document.getElementById("sessionHub")?.classList.add("hidden");
