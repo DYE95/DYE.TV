@@ -1392,7 +1392,14 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === "/karten" || url.pathname === "/karten/") {
       return serveFile(res, path.join(PUBLIC, "karten.html"), req);
     }
-    if (url.pathname.startsWith("/docs/bibliothek/")) {
+    if (method === "GET" && url.pathname === "/api/sl-pin") {
+    const remote = req.socket.remoteAddress || "";
+    if (!remote.endsWith("127.0.0.1") && remote !== "::1") return send(res, 403, { error: "Nur dieser Rechner." });
+    const pinPath = path.join(ROOT, "data", "sl.pin");
+    const pin = fs.existsSync(pinPath) ? fs.readFileSync(pinPath, "utf8").trim() : "";
+    return send(res, 200, { pin });
+  }
+  if (url.pathname.startsWith("/docs/bibliothek/")) {
       const rel = decodeURIComponent(url.pathname.slice("/docs/bibliothek/".length));
       const file = safeJoin(LIBRARY, rel);
       if (!file) { res.writeHead(403); return res.end(); }

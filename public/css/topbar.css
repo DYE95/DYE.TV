@@ -50,3 +50,7 @@
 .camp-tile span, .loaded-tile span { color: #9a8476; font-size: 11px; }
 .fire-figure { min-height: 420px; }
 .duel { margin-top: 8px; border: 1px solid #c45c26; padding: 8px; }
+
+.ember-topbar .icon-btn img { width: 18px; height: 18px; object-fit: contain; flex: none; }
+.app { min-height: 100vh; display: flex; flex-direction: column; }
+.app > .view { flex: 1; }

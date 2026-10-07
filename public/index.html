@@ -30,6 +30,9 @@
       var btn = ev.target.closest("[data-go]");
       if (btn) {
         emberGo(btn.getAttribute("data-go"));
+        var names = { menu: "Start", session: "Am Tisch", encounter: "Karte", tunnel: "Tunnel", chats: "Chats", "campaign-manager": "Kampagne", "character-manager": "Charakter" };
+        document.title = "DYE.TV: Spielleiter, " + (names[btn.getAttribute("data-go")] || "Start");
+        document.querySelectorAll(".brand").forEach(function (el) { el.textContent = document.title; });
         var names = { menu: "Start", session: "Am Tisch", encounter: "Karte", "campaign-manager": "Kampagne", "character-manager": "Charakter", chats: "Chats", tunnel: "Tunnel" };
         var go = btn.getAttribute("data-go");
         document.title = "DYE.TV: Spielleiter, " + (names[go] || go);
@@ -49,7 +52,7 @@
   </aside>
   <div class="app">
     <header class="ember-topbar">
-      <div class="brand">Ember · Age of Umbra</div>
+      <div class="brand">DYE.TV: Spielleiter, Start</div>
       <div class="grow"></div>
       <div class="chip" id="lanChip">LAN …</div>
       <button class="btn tiny" id="btnRoles" type="button">Rollen</button>
@@ -81,7 +84,7 @@
             <h1 class="start-title">Ember</h1>
             <p class="tagline">Die Glut am Rand der Umbra</p>
             <div class="start-menu">
-              <button class="start-item" id="btnIgnite" data-go="session"><b>Ignite the Ember</b><span>The fire knows who sits.</span></button>
+              <button class="start-item" id="btnIgnite" data-go="session"><b>Ignite the Ember</b><span>The editors keep the fire. The table only sits.</span></button>
               <button class="start-item start-item-danger" id="btnLeave"><b>Extinguish the Ember</b><span>Close the window. The pin stays.</span></button>
             </div>
             <div class="start-menu gm-only hidden" id="gmDrawer">
