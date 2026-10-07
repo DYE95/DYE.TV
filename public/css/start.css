@@ -142,3 +142,10 @@ body:has(.app) { overflow: hidden; }
 .start-item { min-height: 42px; }
 .start-item b { font-size: 15px; }
 .start-item span { font-size: 12px; letter-spacing: .01em; }
+
+.start-item {
+  border-radius: 10px;
+  transition: border-color .15s ease, background .15s ease;
+}
+.start-item:hover { border-color: #c45c26; }
+.start-title { letter-spacing: .03em; font-weight: 500; }

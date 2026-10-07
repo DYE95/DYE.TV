@@ -253,3 +253,13 @@ select, input, textarea { background: #1b1411; color: #f3e6d8; border: 1px solid
 .range-grid { fill: none; stroke: rgba(244,214,160,.28); stroke-width: .12; }
 .range-legend { position: absolute; left: 10px; top: 10px; z-index: 6; color: #f8e6d0; font-size: 11px; background: rgba(12,9,8,.72); padding: 4px 8px; }
 .range-legend i { display: inline-block; width: 8px; height: 8px; margin: 0 4px 0 8px; }
+
+button, .btn, .icon-btn, select, input, textarea { font: inherit; }
+.btn, .icon-btn, select, input, textarea { border-radius: 8px; }
+.btn:focus-visible, .icon-btn:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--hope);
+  outline-offset: 2px;
+}
+.card { border-radius: 10px; }
+.log-item { padding: 7px 0; border-bottom: 1px solid rgba(58, 42, 36, .55); }
+.topbar { min-height: 52px; }
