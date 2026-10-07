@@ -199,9 +199,21 @@ renderer.setAnimationLoop((now) => {
   }
   syncMeshes();
   cullFallen();
-  window.emberHold?.(bodies.length);
   renderer.render(scene, camera);
 });
+
+function standing() {
+  return bodies.filter((entry) => entry.body.isValid() && entry.body.translation().y > -1).length;
+}
+window.emberFinish = () => {
+  const n = standing();
+  const status = document.getElementById("fwStatus");
+  if (status) {
+    status.classList.remove("hidden");
+    status.textContent = "Runde zu. " + n + " stehen noch.";
+  }
+  return n;
+};
 
 function applyCamera() {
   offset.setFromSpherical(spherical);

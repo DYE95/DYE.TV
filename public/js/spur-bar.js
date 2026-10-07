@@ -29,6 +29,14 @@
     }).catch(() => {});
   }
 
+  function finishScore() {
+    if (typeof window.emberFinish === "function") {
+      const n = window.emberFinish();
+      if (n != null && n !== "") last = Number(n);
+    }
+    return last == null ? 0 : last;
+  }
+
   window.emberHold = (n) => {
     const value = Number(n);
     if (Number.isFinite(value)) last = value;
@@ -44,7 +52,7 @@
     const data = await res.json().catch(() => ({}));
     const event = (data.sessions || []).find((s) => s.id === data.active?.sessionId)?.spur;
     if (!event) {
-      label.textContent = "Ereignis ist vorbei.";
+      label.textContent = sent ? "Gemeldet." : "Ereignis ist vorbei.";
       if (!left) {
         left = true;
         setTimeout(() => { location.href = back; }, 700);
@@ -53,13 +61,10 @@
     }
     const secs = event.endsAt ? Math.max(0, Math.ceil((event.endsAt - Date.now()) / 1000)) : 0;
     label.textContent = event.title + " · " + secs + "s" + (last == null ? "" : " · " + last);
-    if (secs <= 0) post(last);
+    if (secs <= 0) post(finishScore());
   }
 
-  leave.addEventListener("click", async () => {
-    await post(last);
-    location.href = back;
-  });
+  leave.addEventListener("click", () => { location.href = back; });
   tick();
   setInterval(tick, 1000);
 })();

@@ -856,10 +856,13 @@ function frame() {
     state.pz = sim.z;
     state.yaw = sim.yaw;
     emit();
+    window.emberHold?.(state.gems || 0);
   }
   renderer.render(scene, camera);
   requestAnimationFrame(frame);
 }
+
+window.emberFinish = () => state.gems || 0;
 
 function resize() {
   const w = stage.clientWidth || window.innerWidth;

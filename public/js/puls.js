@@ -243,7 +243,6 @@ function bindLive() {
       state.poll.choiceId = id;
       state.confirm = null;
       save();
-      window.emberReport?.(option.votes);
       render();
     });
   });
@@ -296,3 +295,16 @@ function freshPoll() {
 }
 
 render();
+
+window.emberFinish = () => {
+  const voted = Boolean(state.poll && state.poll.choiceId);
+  const stage = document.getElementById("stage");
+  if (stage && !document.getElementById("pulsEnd")) {
+    const line = document.createElement("p");
+    line.id = "pulsEnd";
+    line.className = "hint";
+    line.textContent = voted ? "Runde zu. Stimme liegt." : "Runde zu. Keine Stimme.";
+    stage.prepend(line);
+  }
+  return voted ? 1 : 0;
+};
