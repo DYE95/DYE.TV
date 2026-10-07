@@ -19,9 +19,11 @@
 }
 .start-card {
   width: min(380px, 100%);
+  max-height: calc(100dvh - 88px);
   margin: 0;
   padding: 22px 18px 18px;
   text-align: center;
+  overflow: auto;
   background: linear-gradient(180deg, #161010, #100c0b);
   border: 1px solid var(--line, #3a2a24);
 }
@@ -61,9 +63,19 @@
   border: 1px solid var(--line, #3a2a24);
   color: inherit;
   text-align: left;
+  text-decoration: none;
   cursor: pointer;
   font: inherit;
 }
+.start-label {
+  margin: 8px 0 0;
+  color: var(--mute, #9a8476);
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  font-size: 10px;
+  text-align: left;
+}
+.start-item.tool { padding: 7px 12px; }
 .start-item:hover { border-color: var(--ember, #e85d04); }
 .start-item b {
   font-family: var(--serif, Georgia, serif);
