@@ -27,7 +27,7 @@ test("CSS und Skripte kommen als Datei, nicht als 500", async () => {
       try { await get(port, "/api/state"); up = true; } catch { await new Promise((r) => setTimeout(r, 100)); }
     }
     assert.equal(up, true, "Server ist nicht hochgekommen");
-    for (const urlPath of ["/css/ember.css", "/css/home-desk.css", "/js/gm.js", "/js/home-desk.js", "/pixelstube"]) {
+    for (const urlPath of ["/css/ember.css", "/css/home-desk.css", "/js/gm.js", "/js/home-desk.js", "/pixelstube", "/api/sl-pin"]) {
       const res = await get(port, urlPath);
       assert.equal(res.status, 200, urlPath + " " + res.body.slice(0, 80));
       assert.equal(res.body.includes("method is not defined"), false, urlPath);
