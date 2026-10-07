@@ -9,3 +9,6 @@ Lokales Pen-and-Paper-Werkzeug (Daggerheart / Age of Umbra). Ein Node-Prozess, k
 - Spieler-Sitz: normales `/player` nutzt `localStorage` (Handy bleibt sitzen). `/player?as=<characterId>&tab=1` nutzt nur `sessionStorage`, damit mehrere Bögen im selben Browser nebeneinander sitzen können.
 - SL-Routen mit `as: "gm"` brauchen `gmKey`. Nicht vom Spieler-Tab aus aufrufen.
 - Nichts in die Cloud schieben. Releases sind lokale Windows-Starts plus GitHub-Tag, kein Hosting.
+
+- Ein Arbeitsgang hakt genau einen Kasten in `docs/FOKUS.md` ab. Der nächste bleibt offen. Nicht zwei auf einmal.
+- Ein Agenten-Gespräch hält höchstens 20 Nachrichten. Danach neu anfangen, mit dem offenen Kasten aus `docs/FOKUS.md`.
