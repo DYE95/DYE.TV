@@ -141,6 +141,14 @@ function renderCharacters() {
     b.className = `card${c.id === selectedCharacterId ? " active" : ""}`;
     b.innerHTML = `<div class="name">${c.name}</div><div class="meta">${c.class || "—"} · PIN ${c.playerPin}</div>`;
     b.addEventListener("click", () => { selectedCharacterId = c.id; fillCharacterForm(c); renderCharacters(); renderCharacterSheet(); });
+    const tab = document.createElement("a");
+    tab.className = "btn tiny";
+    tab.href = "/player?as=" + encodeURIComponent(c.id) + "&tab=1";
+    tab.target = "_blank";
+    tab.rel = "noopener";
+    tab.textContent = "Tab";
+    tab.addEventListener("click", (ev) => ev.stopPropagation());
+    b.appendChild(tab);
     list.appendChild(b);
   });
   const current = charsOf(activeCampaignId()).find((c) => c.id === selectedCharacterId) || charsOf(activeCampaignId())[0];
@@ -304,6 +312,13 @@ function renderSession() {
       const el = document.createElement("div");
       el.className = "card";
       el.innerHTML = `<div class="name">${c.name}</div><div class="status"><span class="dot ${code}"></span>${statusLabel(code)}</div>`;
+      const tab = document.createElement("a");
+      tab.className = "btn tiny";
+      tab.href = "/player?as=" + encodeURIComponent(c.id) + "&tab=1";
+      tab.target = "_blank";
+      tab.rel = "noopener";
+      tab.textContent = "Tab";
+      el.appendChild(tab);
       players.appendChild(el);
     });
   }

@@ -1,22 +1,51 @@
 const $ = (sel) => document.querySelector(sel);
 let state = { characters: [], sessions: [], active: {}, media: [] };
-let meId = localStorage.getItem("ember.characterId") || "";
-let guest = localStorage.getItem("ember.guest") === "1" || location.search.includes("gast=1");
+const seatParams = new URLSearchParams(location.search);
+const askedId = seatParams.get("as") || seatParams.get("bogen") || "";
+const tabSeat = seatParams.get("tab") === "1" || Boolean(askedId) || sessionStorage.getItem("ember.tab") === "1";
+if (tabSeat) sessionStorage.setItem("ember.tab", "1");
+const seatBox = tabSeat ? sessionStorage : localStorage;
+let meId = askedId || seatBox.getItem("ember.characterId") || "";
+let guest = seatParams.get("gast") === "1" || seatBox.getItem("ember.guest") === "1";
 
+function tabToken() {
+  let token = sessionStorage.getItem("ember.tabToken");
+  if (!token) {
+    token = Math.random().toString(16).slice(2, 10);
+    sessionStorage.setItem("ember.tabToken", token);
+  }
+  return token;
+}
+function playerHref(id, asGuest) {
+  const q = new URLSearchParams();
+  q.set("tab", "1");
+  if (asGuest) q.set("gast", "1");
+  else if (id) q.set("as", id);
+  return "/player?" + q.toString();
+}
 function me() { return (state.characters || []).find((c) => c.id === meId); }
 
 function sit(id, asGuest) {
   meId = id || "";
   guest = Boolean(asGuest);
-  if (meId) localStorage.setItem("ember.characterId", meId);
-  else localStorage.removeItem("ember.characterId");
-  localStorage.setItem("ember.guest", guest ? "1" : "0");
+  if (meId) seatBox.setItem("ember.characterId", meId);
+  else seatBox.removeItem("ember.characterId");
+  seatBox.setItem("ember.guest", guest ? "1" : "0");
+  if (tabSeat) {
+    const url = new URL(location.href);
+    url.searchParams.set("tab", "1");
+    if (meId) url.searchParams.set("as", meId);
+    else url.searchParams.delete("as");
+    if (guest && !meId) url.searchParams.set("gast", "1");
+    else url.searchParams.delete("gast");
+    history.replaceState(null, "", url.pathname + url.search);
+  }
   if (meId) {
     fetch("/api/session/sit", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ characterId: meId }),
     }).then((r) => r.json()).then((data) => {
-      if (data.seat) localStorage.setItem("ember.seat", data.seat);
+      if (data.seat) seatBox.setItem("ember.seat", data.seat);
     }).catch(() => {});
   }
   render();
@@ -68,7 +97,7 @@ function renderRoles() {
   const menu = $("#roleMenu");
   if (!menu) return;
   const chars = state.characters || [];
-  menu.innerHTML = "<p class='hint'>Rolle am Tisch</p>" + chars.map((c) => `<button class="card" data-role="${c.id}"><div class="name">${c.name}</div><div class="meta">${c.class || "Spieler"}</div></button>`).join("") + `<button class="card" data-role="guest"><div class="name">Gast</div><div class="meta">Karte, kein Bogen</div></button><a class="btn" href="/">Spielleitung</a>`;
+  menu.innerHTML = "<p class='hint'>Rolle in diesem Tab. Tab öffnet denselben Bogen daneben, ohne diesen Sitz zu übernehmen.</p>" + chars.map((c) => `<button class="card" data-role="${c.id}"><div class="name">${c.name}</div><div class="meta">${c.class || "Spieler"}</div></button><a class="btn tiny" data-tab="${c.id}" href="${playerHref(c.id)}" target="_blank" rel="noopener">Tab</a>`).join("") + `<button class="card" data-role="guest"><div class="name">Gast</div><div class="meta">Karte, kein Bogen</div></button><a class="btn tiny" data-tab="guest" href="${playerHref("", true)}" target="_blank" rel="noopener">Gast-Tab</a><a class="btn" href="/">Spielleitung</a>`;
   menu.querySelectorAll("[data-role]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const role = btn.getAttribute("data-role");
@@ -94,6 +123,14 @@ function renderGate() {
     b.innerHTML = `<div class="name">${c.name}</div><div class="meta">${c.class || "—"} · Hope ${c.hope}</div>`;
     b.addEventListener("click", () => sit(c.id, false));
     list.appendChild(b);
+    const tab = document.createElement("a");
+    tab.className = "btn tiny";
+    tab.href = playerHref(c.id);
+    tab.target = "_blank";
+    tab.rel = "noopener";
+    tab.textContent = "Neuer Tab";
+    tab.addEventListener("click", (ev) => ev.stopPropagation());
+    list.appendChild(tab);
   });
 }
 
@@ -176,7 +213,7 @@ function render() {
       b.className = "pip" + (i <= val ? " on" : "");
       b.addEventListener("click", () => fetch("/api/characters/" + pc.id, {
         method: "PATCH", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(Object.assign(key === "hope" ? { hope: i === val ? i - 1 : i } : key === "stress" ? { stressMarked: i === val ? i - 1 : i } : { hpMarked: i === val ? i - 1 : i }, { seat: localStorage.getItem("ember.seat") || "" })),
+        body: JSON.stringify(Object.assign(key === "hope" ? { hope: i === val ? i - 1 : i } : key === "stress" ? { stressMarked: i === val ? i - 1 : i } : { hpMarked: i === val ? i - 1 : i }, { seat: seatBox.getItem("ember.seat") || "" })),
       }));
       row.appendChild(b);
     }
@@ -351,7 +388,7 @@ setInterval(() => {
   fetch("/api/presence", {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      key: pc ? "seat_" + pc.id : "guest",
+      key: (pc ? "seat_" + pc.id : "guest") + (tabSeat ? "_" + tabToken() : ""),
       role: "player",
       name: pc ? pc.name : "Gast",
       characterId: pc ? pc.id : null,

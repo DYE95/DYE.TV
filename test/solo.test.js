@@ -5,7 +5,8 @@ const solo = require("../lib/solo");
 test("Bots sind wählbar", () => {
   const bots = solo.list();
   assert.ok(bots.length >= 3);
-  assert.equal(solo.find("wisp").name, "Lantern Wisp");
+  assert.equal(solo.find("hound").name, "Ash Hound");
+  assert.equal(solo.find("wisp").name, "Ash Hound");
 });
 
 test("Bot-Zug nennt Treffer oder Fehlschlag", () => {
