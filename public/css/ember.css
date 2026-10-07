@@ -144,7 +144,8 @@ input, select, textarea { width: 100%; background: #0c0908; border: 1px solid va
 body.narrating { background: radial-gradient(900px 500px at 50% 0%, rgba(140,36,28,.28), transparent 62%), #1c1210; }
 body.narrating .hud { border-color: var(--ember); }
 
-.player-shell { height: 100%; display: flex; flex-direction: column; }
+.house-body:has(.player-shell) { display: block; }
+.player-shell { width: 100%; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
 .player-shell .stage { height: 38vh; min-height: 180px; }
 .player-shell .actions { position: sticky; bottom: 0; background: #120c0b; }
 .mark-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; }
