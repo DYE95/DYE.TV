@@ -40,6 +40,7 @@ Umgebungsvariablen: `EMBER_PORT` (Standard `3478`), `EMBER_HOST` (Standard `0.0.
 | `/`            | Technik-Tisch: Glut, Spieler, Bibliothek, Einstellungen        |
 | `/ember`       | SL-Tisch: Session, Action Rolls, Events, Karte, Initiative      |
 | `/player`      | Spieler-Ansicht: Namen antippen, Bogen, Würfe, Spotlight        |
+| `/player?as=ID&tab=1` | Derselbe Bogen in einem eigenen Tab, ohne die anderen Tabs zu übernehmen |
 | `/token`       | Pixel-Token-Atelier                                              |
 | `/pixelstube`  | Pixelstube: Raster, Palette, Stift, Füllen, PNG                 |
 | `/solo`        | Solo-Modus: Übungsbots, Dungeon, Level-Ups, Subklassen            |
@@ -54,6 +55,7 @@ Umgebungsvariablen: `EMBER_PORT` (Standard `3478`), `EMBER_HOST` (Standard `0.0.
 | `/home`        | Ältere Home-Ansicht                                              |
 
 Die Spieler-URLs zeigt der Server beim Start an (z. B. `http://192.168.0.151:3478/player`).
+Am SL-Rechner öffnet **Tab** neben einem Bogen `/player?as=<id>&tab=1`. Der Sitz liegt dann nur in diesem Tab (`sessionStorage`), nicht im gemeinsamen `localStorage`. Ein normales `/player` merkt sich den Bogen weiter fürs Handy.
 Spieler verbinden sich über das WLAN — der SL-Rechner muss Port 3478 in der
 Windows-Firewall erlauben (beim ersten Start bestätigen).
 
