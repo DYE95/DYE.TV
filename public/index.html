@@ -493,10 +493,20 @@
     .gear-panel label, .gear-panel .btn, .gear-panel a.btn { display:block; width:100%; margin-top:8px; }
   </style>
   <footer class="ember-topbar ember-foot">
-    <div class="brand">DYE.TV: Spielleiter, <span id="footPage">Start</span></div>
-    <div class="grow"></div>
-    <button class="icon-btn" id="btnGearFoot" type="button" title="Einstellungen" aria-label="Einstellungen"><img src="/img/icon-gear.svg" alt="" width="18" height="18" /></button>
-  </footer>
+      <div class="brand">DYE.TV: Spielleiter, Start</div>
+      <div class="grow"></div>
+      <div class="chip">LAN …</div>
+      <button class="btn tiny" type="button" onclick="document.getElementById('btnRoles').click()">Rollen</button>
+      <button class="icon-btn" type="button" title="Zurück" onclick="document.getElementById('btnBack').click()">
+        <img src="/img/icon-back.svg" alt="" width="18" height="18" />
+      </button>
+      <a class="icon-btn" href="/home" title="Home" aria-label="Home">
+        <img src="/img/icon-home.svg" alt="" width="18" height="18" />
+      </a>
+      <button class="icon-btn" type="button" title="Einstellungen" onclick="document.getElementById('btnGear').click()">
+        <img src="/img/icon-gear.svg" alt="" width="18" height="18" />
+      </button>
+    </footer>
   <script src="/js/table-indicator.js?v=1"></script>
   <script src="/js/map.js?v=11"></script>
   <script src="/js/token.js?v=4"></script>
