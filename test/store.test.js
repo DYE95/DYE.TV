@@ -1,6 +1,35 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const spur = require("../lib/spur");
 const store = require("../lib/store");
+
+test("settle zahlt Hope an den Besten und schließt das Ereignis", () => {
+  const state = {
+    campaigns: [{ id: "c", gmFear: 0, fearMax: 12 }],
+    characters: [
+      { id: "a", campaignId: "c", name: "Lykos", hope: 2, hopeMax: 6 },
+      { id: "b", campaignId: "c", name: "Neris", hope: 2, hopeMax: 6 },
+    ],
+  };
+  const session = {
+    campaignId: "c",
+    spur: { title: "Parcours", payout: "hope", endsAt: Date.now() - 1000, scores: [{ characterId: "a", name: "Lykos", score: "9" }, { characterId: "b", name: "Neris", score: "4" }] },
+  };
+  const line = spur.settle(state, session);
+  assert.match(line, /Hope an Lykos/);
+  assert.equal(state.characters[0].hope, 3);
+  assert.equal(state.characters[1].hope, 2);
+  assert.equal(session.spur, null);
+});
+
+test("adressiertes Handout ist im öffentlichen Blick versiegelt", () => {
+  const view = store.publicView({
+    settings: {},
+    sessions: [{ handouts: [{ id: "h", title: "Seite", text: "nur Ivo", toId: "ivo", toName: "Ivo" }] }],
+  });
+  assert.equal(view.sessions[0].handouts[0].sealed, true);
+  assert.equal(view.sessions[0].handouts[0].text, undefined);
+});
 
 test("defaultFow hat alle Felder und ist aus", () => {
   const fow = store.defaultFow();

@@ -175,9 +175,15 @@ function render() {
   });
   const hands = $("#handouts");
   if (hands) {
-    const list = sesTurn?.handouts || [];
+    const list = (state._handouts || sesTurn?.handouts || []).filter((h) => !h.sealed && (!h.toId || h.toId === pc.id));
     hands.classList.toggle("hidden", !list.length);
-    hands.innerHTML = list.map((h) => `<div class="card"><div class="name">${h.title}</div><div class="meta">${h.text}</div></div>`).join("");
+    hands.innerHTML = list.map((h) => `<div class="card"><div class="name">${h.toName ? h.toName + " · " : ""}${h.title}</div><div class="meta">${h.text}</div></div>`).join("");
+    fetch("/api/session/handouts?characterId=" + encodeURIComponent(pc.id)).then((r) => r.json()).then((data) => {
+      state._handouts = data.handouts || [];
+      const mine = state._handouts.filter((h) => !h.toId || h.toId === pc.id);
+      hands.classList.toggle("hidden", !mine.length);
+      hands.innerHTML = mine.map((h) => `<div class="card"><div class="name">${h.toName ? h.toName + " · " : ""}${h.title}</div><div class="meta">${h.text || ""}</div></div>`).join("");
+    }).catch(() => {});
   }
   const playLog = $("#playLog");
   if (playLog) {
@@ -214,8 +220,9 @@ function renderSpur(ses, pc) {
     return;
   }
   box.classList.remove("hidden");
+  const left = event.endsAt ? Math.max(0, Math.ceil((event.endsAt - Date.now()) / 1000)) : 0;
   const href = event.href + "?spur=1&back=" + encodeURIComponent("/player");
-  box.innerHTML = `<div class="name">Ereignis · ${event.title}</div><div class="meta">${event.stake || event.blurb || ""}</div><a class="btn tiny" href="${href}">Spielen</a> <button class="btn tiny" id="btnSpurDone" type="button">Ich bin durch</button>`;
+  box.innerHTML = `<div class="name">Ereignis · ${event.title}</div><div class="meta">${event.stake || event.blurb || ""} · ${left}s · ${event.payout === "fear" ? "Fear an den Tisch" : "Hope an den Besten"}</div><a class="btn tiny" href="${href}">Spielen</a> <button class="btn tiny" id="btnSpurDone" type="button">Ich bin durch</button>`;
   $("#btnSpurDone")?.addEventListener("click", () => {
     const score = prompt("Zahl oder ein Wort", "") || "";
     fetch("/api/session/spur/score", {
@@ -278,7 +285,6 @@ async function playerRoll(table) {
     trait,
     traitMod: trait ? Number(pc.traits?.[trait] || 0) : 0,
     experiences: exp ? [{ name: exp.name, bonus: exp.bonus || 0 }] : [],
-    difficulty: 0,
   };
   if (table) {
     payload.hopeDie = Number($("#hopeDie").value);

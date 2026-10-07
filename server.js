@@ -60,15 +60,23 @@ function emitState() {
 
 function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
 
-function tableDifficulty(session, character) {
-  if (!session) return 0;
-  if (session.tableDifficulty) return Number(session.tableDifficulty);
+function nearestFoe(session, character) {
+  if (!session) return null;
   const foes = (session.map?.tokens || []).filter((t) => t.kind === "foe" && t.difficulty);
-  if (!foes.length) return 0;
+  if (!foes.length) return null;
   const mine = (session.map.tokens || []).find((t) => t.characterId === character?.id);
-  if (!mine) return foes[0].difficulty;
+  if (!mine) return foes[0];
   foes.sort((a, b) => Math.hypot(a.x - mine.x, a.y - mine.y) - Math.hypot(b.x - mine.x, b.y - mine.y));
-  return foes[0].difficulty;
+  return foes[0];
+}
+function tableDifficulty(session, character) {
+  return nearestFoe(session, character)?.difficulty || 0;
+}
+function closeSpur(state, session) {
+  const line = spur.settle(state, session);
+  if (!line) return false;
+  addLog(session, { kind: "system", author: "Ereignis", text: line });
+  return true;
 }
 function addLog(session, entry) {
   session.log.push({
@@ -201,7 +209,12 @@ async function handleApi(req, res, url) {
     }
     return send(res, 200, rows);
   }
-  if (method === "GET" && p === "/api/state") return send(res, 200, snapshot());
+  if (method === "GET" && p === "/api/state") {
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (closeSpur(state, session)) { store.write(state); emitState(); }
+    return send(res, 200, snapshot());
+  }
   if (method === "GET" && p === "/api/events") {
     res.writeHead(200, {
       "Content-Type": "text/event-stream",
@@ -451,7 +464,10 @@ async function handleApi(req, res, url) {
     const state = store.read();
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     const character = state.characters.find((c) => c.id === body.characterId);
-    const roll = resolveActionRoll({ ...body, hopeDie: body.hopeDie || body.hope, fearDie: body.fearDie || body.fear, difficulty: body.difficulty || tableDifficulty(session, character) });
+    const foe = nearestFoe(session, character);
+    const typed = body.difficulty != null && body.difficulty !== "" ? Number(body.difficulty) : 0;
+    const roll = resolveActionRoll({ ...body, hopeDie: body.hopeDie || body.hope, fearDie: body.fearDie || body.fear, difficulty: typed || foe?.difficulty || 0 });
+    if (foe && !typed) roll.spoken += " · " + foe.label;
     const camp = session ? state.campaigns.find((c) => c.id === session.campaignId) : null;
     if (session && character) {
       remember(session, {
@@ -490,7 +506,9 @@ async function handleApi(req, res, url) {
     };
     presence.set(key, row);
     const state = store.read();
-    if (recordGmKey(state, body, req.socket.remoteAddress || "")) {
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    const settled = closeSpur(state, session);
+    if (recordGmKey(state, body, req.socket.remoteAddress || "") || settled) {
       store.write(state);
     }
     const changed = !prev || prev.status !== row.status;
@@ -779,9 +797,17 @@ async function handleApi(req, res, url) {
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
     if (!session.handouts) session.handouts = [];
-    session.handouts.unshift({ id: id("hand"), title: body.title || "Zettel", text: body.text || "", at: new Date().toISOString() });
+    const to = body.toId ? state.characters.find((c) => c.id === body.toId) : null;
+    session.handouts.unshift({
+      id: id("hand"),
+      title: body.title || "Zettel",
+      text: body.text || "",
+      toId: to ? to.id : null,
+      toName: to ? to.name : "",
+      at: new Date().toISOString(),
+    });
     session.handouts = session.handouts.slice(0, 12);
-    addLog(session, { kind: "note", author: "Handout", text: body.title || "Zettel" });
+    addLog(session, { kind: "note", author: "Handout", text: (to ? to.name + ": " : "") + (body.title || "Zettel") });
     store.write(state); emitState();
     return send(res, 200, session.handouts[0]);
   }
@@ -1138,6 +1164,14 @@ async function handleApi(req, res, url) {
     return send(res, 200, { ok: true });
   }
 
+  if (method === "GET" && p === "/api/session/handouts") {
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    const rows = session?.handouts || [];
+    if (isGm(state, { as: "gm", gmKey: url.searchParams.get("gmKey") || "" })) return send(res, 200, { handouts: rows });
+    const who = url.searchParams.get("characterId") || "";
+    return send(res, 200, { handouts: rows.filter((h) => !h.toId || h.toId === who) });
+  }
   if (method === "GET" && p === "/api/spur") return send(res, 200, { games: spur.list() });
   if (method === "GET" && p === "/api/session/journal") {
     const state = store.read();
@@ -1160,6 +1194,9 @@ async function handleApi(req, res, url) {
       blurb: game.blurb,
       href: game.href,
       stake: body.stake || "",
+      payout: body.payout === "fear" ? "fear" : "hope",
+      seconds: Math.max(15, Number(body.seconds) || 45),
+      endsAt: Date.now() + Math.max(15, Number(body.seconds) || 45) * 1000,
       at: new Date().toISOString(),
       scores: [],
     };
@@ -1189,9 +1226,11 @@ async function handleApi(req, res, url) {
     };
     session.spur.scores = (session.spur.scores || []).filter((s) => s.characterId !== row.characterId);
     session.spur.scores.push(row);
-    addLog(session, { kind: "note", author: row.name, text: session.spur.title + ": " + (row.score || row.note || "durch") });
+    const line = spur.settle(state, session);
+    if (line) addLog(session, { kind: "system", author: "Ereignis", text: line });
+    else addLog(session, { kind: "note", author: row.name, text: session.spur.title + ": " + (row.score || row.note || "durch") });
     store.write(state); emitState();
-    return send(res, 200, session.spur);
+    return send(res, 200, session.spur || { ended: true, result: line });
   }
   if (method === "POST" && p === "/api/session/spur/end") {
     const body = await readJson(req);
@@ -1199,11 +1238,10 @@ async function handleApi(req, res, url) {
     if (denyUnlessGm(res, state, body)) return;
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
-    const title = session.spur?.title || "Ereignis";
-    session.spur = null;
-    addLog(session, { kind: "system", author: "Ereignis", text: title + " ist vorbei." });
+    if (session.spur) session.spur.endsAt = Date.now() - 1;
+    const line = closeSpur(state, session);
     store.write(state); emitState();
-    return send(res, 200, { ok: true });
+    return send(res, 200, { ok: true, result: line || "" });
   }
 
   return send(res, 404, { error: "Unbekannte Route." });

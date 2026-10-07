@@ -127,6 +127,13 @@
             </select>
           </label>
           <label>Einsatz <input id="spurStake" placeholder="Wer hält, kriegt Hope" /></label>
+          <label>Auszahlung
+            <select id="spurPayout">
+              <option value="hope">Hope an den Besten</option>
+              <option value="fear">Fear an den Tisch</option>
+            </select>
+          </label>
+          <label>Sekunden <input id="spurSeconds" type="number" min="15" value="45" /></label>
           <label class="row"><input id="spurKeep" type="checkbox" /> in die Kampagne legen</label>
           <div class="row">
             <button class="btn primary" id="btnSpur" type="button">Werfen</button>
@@ -181,7 +188,8 @@
               </select>
             </label>
             <label>Experience <select id="rollExperience"><option value="">—</option></select></label>
-            <label>Difficulty <input id="rollDifficulty" type="number" value="15" /></label>
+            <label>Difficulty <input id="rollDifficulty" type="number" placeholder="vom Foe" /></label>
+            <p class="hint" id="foeDiff">Leer: der nächste Foe schiebt seine Difficulty.</p>
             <label>Modus
               <select id="rollMode">
                 <option value="none">normal</option>

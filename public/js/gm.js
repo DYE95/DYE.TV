@@ -409,12 +409,17 @@ async function sendRoll(source) {
   const pc = (state.characters || []).find((c) => c.id === characterId);
   const trait = $("#rollTrait").value;
   const expId = $("#rollExperience").value;
+  const foe = (activeSession()?.map?.tokens || []).find((t) => t.kind === "foe" && t.difficulty);
+  const box = $("#foeDiff");
+  if (box) box.textContent = foe ? foe.label + " schiebt " + foe.difficulty + ", solange das Feld leer ist." : "Kein Foe mit Difficulty auf der Karte.";
   const payload = {
-    characterId, source, difficulty: Number($("#rollDifficulty").value || 0) || tableFoeDifficulty(), trait,
+    characterId, source, trait,
     traitMod: trait && pc ? Number(pc.traits[trait] || 0) : 0,
     experiences: expId && pc ? pc.experiences.filter((e) => e.id === expId) : [],
     mode: $("#rollMode").value,
   };
+  const typed = $("#rollDifficulty")?.value;
+  if (typed) payload.difficulty = Number(typed);
   if (source === "table") {
     payload.hopeDie = Number($("#tableHope").value);
     payload.fearDie = Number($("#tableFear").value);
@@ -460,7 +465,13 @@ function renderSpur(ses) {
 $("#btnSpur")?.addEventListener("click", () => {
   const game = $("#spurGame")?.value;
   const stake = $("#spurStake")?.value || "";
-  api("/api/session/spur", { game, stake, keep: Boolean($("#spurKeep")?.checked) }).catch((err) => alert(err.message));
+  api("/api/session/spur", {
+    game,
+    stake,
+    payout: $("#spurPayout")?.value || "hope",
+    seconds: Number($("#spurSeconds")?.value || 45),
+    keep: Boolean($("#spurKeep")?.checked),
+  }).catch((err) => alert(err.message));
 });
 $("#btnSpurEnd")?.addEventListener("click", () => api("/api/session/spur/end", {}).catch((err) => alert(err.message)));
 $("#btnStartSession")?.addEventListener("click", () => api("/api/session/start", { campaignId: activeCampaignId() }).catch((err) => alert(err.message)));
@@ -509,7 +520,9 @@ $("#btnHandout")?.addEventListener("click", () => {
   const title = prompt("Handout?", "Die Kiste");
   if (!title) return;
   const text = prompt("Text?", "") || "";
-  api("/api/session/handout", { as: "gm", title, text });
+  const who = prompt("Für wen? Name, leer = der ganze Tisch", "") || "";
+  const pc = charsOf(activeCampaignId()).find((c) => c.name.toLowerCase() === who.toLowerCase());
+  api("/api/session/handout", { as: "gm", title, text, toId: pc ? pc.id : "" });
 });
 async function loadCompendium() {
   const q = $("#compQ")?.value || "";
