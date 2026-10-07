@@ -77,12 +77,18 @@ function applyChrome() {
   desk.style.fontSize = px;
   desk.style.setProperty("--grid", state.grid + "px");
   document.body.classList.toggle("locked", Boolean(state.locked));
-  document.getElementById("fontSize").value = state.fontSize;
-  document.getElementById("tileW").value = state.tileW;
-  document.getElementById("tileH").value = state.tileH;
-  document.getElementById("grid").value = state.grid;
-  document.getElementById("lockDesk").checked = Boolean(state.locked);
-  document.getElementById("layoutReadout").textContent =
+  const font = document.getElementById("fontSize");
+  const tileW = document.getElementById("tileW");
+  const tileH = document.getElementById("tileH");
+  const grid = document.getElementById("grid");
+  const lock = document.getElementById("lockDesk");
+  const readout = document.getElementById("layoutReadout");
+  if (font) font.value = state.fontSize;
+  if (tileW) tileW.value = state.tileW;
+  if (tileH) tileH.value = state.tileH;
+  if (grid) grid.value = state.grid;
+  if (lock) lock.checked = Boolean(state.locked);
+  if (readout) readout.textContent =
     state.fontSize + "px · Kachel " + state.tileW + "×" + state.tileH + " · Raster " + state.grid +
     (state.locked ? " · fest" : "");
 }

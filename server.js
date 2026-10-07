@@ -207,7 +207,7 @@ async function handleApi(req, res, url) {
   if (method === "GET" && p === "/api/sl-pin") {
     const remote = req.socket.remoteAddress || "";
     if (!remote.endsWith("127.0.0.1") && remote !== "::1") return send(res, 403, { error: "Nur dieser Rechner." });
-    const pinPath = path.join(ROOT, "data", "sl.pin");
+    const pinPath = path.join(__dirname, "data", "sl.pin");
     const pin = fs.existsSync(pinPath) ? fs.readFileSync(pinPath, "utf8").trim() : "";
     return send(res, 200, { pin });
   }
@@ -1439,7 +1439,7 @@ if (url.pathname.startsWith("/docs/bibliothek/")) {
 server.listen(PORT, HOST, async () => {
   await spark.ignite({ label: "Ember zündet" });
   try {
-    const pinPath = path.join(ROOT, "data", "sl.pin");
+    const pinPath = path.join(__dirname, "data", "sl.pin");
     if (fs.existsSync(pinPath)) {
       const pin = fs.readFileSync(pinPath, "utf8").trim();
       const state = store.read();
