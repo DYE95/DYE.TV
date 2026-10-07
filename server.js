@@ -1140,6 +1140,9 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === "/runner" || url.pathname === "/runner/") {
       return serveFile(res, path.join(PUBLIC, "runner.html"), req);
     }
+    if (url.pathname === "/fallwerk" || url.pathname === "/fallwerk/") {
+      return serveFile(res, path.join(PUBLIC, "fallwerk.html"), req);
+    }
     const rel = url.pathname.replace(/^\/+/, "");
     const file = safeJoin(PUBLIC, rel);
     if (!file) { res.writeHead(403); return res.end(); }
@@ -1157,6 +1160,7 @@ server.listen(PORT, HOST, async () => {
   console.log("  Ember brennt.");
   console.log("  Home:            http://127.0.0.1:" + PORT + "/");
   console.log("  Die Glut:        http://127.0.0.1:" + PORT + "/ember");
+  console.log("  Fallwerk:        http://127.0.0.1:" + PORT + "/fallwerk");
   if (!urls.length) console.log("  Kein LAN-Interface.");
   else for (const u of urls) console.log("  Spieler-Ansicht: http://" + u.address + ":" + PORT + "/player   (" + u.name + ")");
   console.log("");

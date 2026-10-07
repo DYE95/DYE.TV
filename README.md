@@ -41,6 +41,7 @@ Umgebungsvariablen: `EMBER_PORT` (Standard `3478`), `EMBER_HOST` (Standard `0.0.
 | `/karten`      | Karten-Werkzeug (Marker-Karten speichern/laden)                   |
 | `/bibliothek`  | Regel-PDFs aus `docs/bibliothek/`                                 |
 | `/runner`      | Dye-Runner (kleines Browserspiel)                                 |
+| `/fallwerk`    | Fallwerk: 3D-Physik, Kugeln, Kisten, Zylinder                     |
 | `/home`        | Ältere Home-Ansicht                                              |
 
 Die Spieler-URLs zeigt der Server beim Start an (z. B. `http://192.168.0.151:3478/player`).

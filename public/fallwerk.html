@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Fallwerk</title>
+  <link rel="icon" href="/img/ember-icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/css/ember.css?v=7" />
+  <link rel="stylesheet" href="/css/fallwerk.css?v=1" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "/vendor/three.module.min.js",
+      "@dimforge/rapier3d-compat": "/vendor/rapier.es.js"
+    }
+  }
+  </script>
+</head>
+<body class="fw-body">
+  <header class="fw-bar">
+    <a class="btn tiny ghost" href="/">Home</a>
+    <div>
+      <strong>Fallwerk</strong>
+      <span class="hint">DYE macht Dinge · Physik</span>
+    </div>
+    <div class="grow"></div>
+    <span class="hint"><b id="fwCount">0</b> Körper</span>
+  </header>
+  <div class="fw-stage" id="fwStage">
+    <p class="fw-status" id="fwStatus">Physik wird geladen</p>
+    <p class="fw-empty hidden" id="fwEmpty">Leer. Form wählen oder den Boden antippen.</p>
+  </div>
+  <div class="fw-tools">
+    <div class="fw-shapes">
+      <button class="btn on" type="button" id="btnSphere" data-shape="sphere">Kugel</button>
+      <button class="btn" type="button" id="btnBox" data-shape="box">Kiste</button>
+      <button class="btn" type="button" id="btnCylinder" data-shape="cylinder">Zylinder</button>
+      <button class="btn" type="button" id="btnStack">Stapel</button>
+      <button class="btn" type="button" id="btnClear">Leeren</button>
+    </div>
+    <div class="fw-sliders">
+      <label>Schwerkraft <b id="gravRead">9.8</b>
+        <input id="grav" type="range" min="0" max="24" step="0.1" value="9.8" aria-label="Schwerkraft" />
+      </label>
+      <label>Rückprall <b id="restRead">18%</b>
+        <input id="rest" type="range" min="0" max="1" step="0.01" value="0.18" aria-label="Rückprall" />
+      </label>
+    </div>
+    <div class="fw-foot">
+      <p class="hint">Ziehen bewegt. Boden tippen legt ab. Tasten 1, 2 und 3.</p>
+      <button class="btn tiny ghost" type="button" id="btnReset">Standard</button>
+    </div>
+  </div>
+  <script type="module" src="/js/fallwerk.js?v=1"></script>
+</body>
+</html>
