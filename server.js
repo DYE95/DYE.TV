@@ -1431,15 +1431,24 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, HOST, async () => {
   await spark.ignite({ label: "Ember zündet" });
-  const urls = addresses();
+  try {
+    const pinPath = path.join(ROOT, "data", "sl.pin");
+    if (fs.existsSync(pinPath)) {
+      const pin = fs.readFileSync(pinPath, "utf8").trim();
+      const state = store.read();
+      if (pin && state.settings && !state.settings.gmKey) {
+        state.settings.gmKey = pin;
+        store.write(state);
+      }
+    }
+  } catch {}
   console.log("");
-  console.log("  Spielleitung:  http://127.0.0.1:" + PORT + "/ember");
-  console.log("  Spieler:       http://127.0.0.1:" + PORT + "/player");
-  console.log("  Zu Hause:      " + (remoteUrl() ? remoteUrl() + "/player" : "wartet, Titel zeigt sie sobald der Tunnel steht"));
+  console.log("  Spielleiter   http://127.0.0.1:" + PORT + "/ember");
+  console.log("  Spieler       http://127.0.0.1:" + PORT + "/player");
   console.log("");
   const paintTitle = () => {
     const remote = remoteUrl();
-    process.title = "Ember  SL http://127.0.0.1:" + PORT + "/ember" + (remote ? "  |  Zu Hause " + remote + "/player" : "  |  Zu Hause wartet");
+    process.title = "DYE.TV  Spielleiter http://127.0.0.1:" + PORT + "/ember" + (remote ? "  |  Spieler " + remote + "/player" : "  |  Spieler http://127.0.0.1:" + PORT + "/player");
   };
   paintTitle();
   let seen = remoteUrl();
@@ -1448,7 +1457,6 @@ server.listen(PORT, HOST, async () => {
     const remote = remoteUrl();
     if (remote && remote !== seen) {
       seen = remote;
-      console.log("  Zu Hause:      " + remote + "/player");
     }
   }, 2000);
 });
