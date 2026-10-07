@@ -11,7 +11,10 @@ ist der Server, die Daten liegen in `data/ember.json`.
 - Ein Browser (Edge/Chrome wird von `Ember.bat` automatisch geöffnet)
 - Keine `npm install`-Schritte nötig — das Projekt hat **null Abhängigkeiten**
 
-## Schnellstart
+## Erststart
+
+Wer die `.bat` nicht kennt, liest zuerst `docs/ERSTSTART.md` und öffnet `erststart.bat` im Editor. Erst danach der Doppelklick. Die Datei wartet auf eine Taste und startet nur den lokalen Server.
+
 
 ### Windows (Doppelklick)
 
