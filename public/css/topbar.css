@@ -46,9 +46,9 @@
 .who-on { border: 1px solid #3a2a24; padding: 10px; overflow: auto; }
 .fire-table { min-height: 0; }
 .fire-figure { position: relative; min-height: 520px; }
-.camp-tile.beside, .loaded-tile.beside { position: absolute; top: 18%; z-index: 6; width: 168px; }
-.camp-tile.beside { left: calc(50% - 250px); }
-.loaded-tile.beside { left: calc(50% + 82px); }
+.camp-tile.beside, .loaded-tile.beside { position: absolute; top: 30%; z-index: 6; width: 156px; }
+.camp-tile.beside { left: calc(50% - 196px); }
+.loaded-tile.beside { left: calc(50% + 40px); }
 .camp-tile, .loaded-tile { border: 1px solid #3a2a24; background: #120c0b; padding: 12px; text-align: left; color: inherit; }
 .camp-tile b, .loaded-tile b { display: block; color: #f4d6a0; font-family: Georgia, serif; }
 .camp-tile span, .loaded-tile span { color: #9a8476; font-size: 11px; }
@@ -58,3 +58,8 @@
 .ember-topbar .icon-btn img { width: 18px; height: 18px; object-fit: contain; flex: none; }
 .app { min-height: 100vh; display: flex; flex-direction: column; }
 .app > .view { flex: 1; }
+
+.ember-topbar, .ember-foot { min-height: 48px; box-sizing: border-box; }
+.ember-foot { background: #0d0908; }
+.camp-tile.beside, .loaded-tile.beside { border-radius: 8px; box-shadow: 0 8px 20px rgba(0,0,0,.35); }
+.camp-tile span, .loaded-tile span { letter-spacing: .08em; text-transform: uppercase; }
