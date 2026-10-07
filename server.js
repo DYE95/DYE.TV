@@ -241,6 +241,18 @@ async function handleApi(req, res, url) {
     return;
   }
 
+
+  if (method === "POST" && p === "/api/campaigns/import-schwelle") {
+    const body = await readJson(req);
+    const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
+    const file = path.join(__dirname, "seeds", "asche-schwelle.json");
+    if (!fs.existsSync(file)) return send(res, 404, { error: "Kampagne fehlt." });
+    const seed = JSON.parse(fs.readFileSync(file, "utf8"));
+    if (store.importProbe(state, seed, "Asche unter der Schwelle")) store.write(state);
+    emitState();
+    return send(res, 200, { campaignId: state.campaigns.find((c) => c.name === "Asche unter der Schwelle")?.id });
+  }
   if (method === "POST" && p === "/api/campaigns/import-umbra") {
     const body = await readJson(req);
     const state = store.read();
