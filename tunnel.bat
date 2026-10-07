@@ -1,6 +1,6 @@
 @echo off
 cd /d "%~dp0"
-echo Tunnel zur Glut. Dieses Fenster offen lassen.
-echo Der Spieler oeffnet die Adresse mit /player am Ende.
+echo start.bat oeffnet Glut und Tunnel schon zusammen.
+echo Diese Datei nur, wenn der Server schon laeuft.
 node tools\tunnel.js
 pause

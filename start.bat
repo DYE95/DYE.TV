@@ -6,9 +6,11 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
+echo Ein Fenster. Glut und Tunnel. Offen lassen.
+echo Lokal: http://127.0.0.1:3478/
+echo Zu Hause steht unten, sobald cloudflared eine Adresse schreibt.
+start /b node tools\tunnel.js
 :emberloop
-echo Ember startet. Fenster offen lassen.
-echo Im Browser: http://127.0.0.1:3478/
 node server.js
 if errorlevel 42 (
   echo Neustart nach Update ...
