@@ -34,8 +34,8 @@ function currentEncounter() {
 }
 
 async function api(url, body, method = "POST") {
-  const payload = body && body.as === "gm" ? { ...body, gmKey: localStorage.getItem("ember.gmKey") || "" } : body;
-  const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: payload ? JSON.stringify(payload) : undefined });
+  const payload = { ...(body || {}), as: "gm", gmKey: localStorage.getItem("ember.gmKey") || "" };
+  const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || "Fehler");
   return data;
@@ -337,10 +337,22 @@ function renderSession() {
   }
   const journal = $("#journalList");
   if (journal) {
-    journal.innerHTML = [...(ses?.journal || [])].reverse().map((j) =>
-      `<div class="card"><div class="name">${esc(j.title)}${j.secret ? " · geheim" : ""}</div><div class="meta">${esc(j.text)}</div></div>`
+    const notes = state._journal || ses?.journal || [];
+    journal.innerHTML = [...notes].reverse().map((j) =>
+      `<div class="card"><div class="name">${esc(j.title || "Notiz")}${j.secret ? " · geheim" : ""}</div><div class="meta">${esc(j.text || (j.secret ? "nur am SL-Tisch" : ""))}</div></div>`
     ).join("") || "<p class='hint'>Noch keine Notizen.</p>";
+    const key = localStorage.getItem("ember.gmKey") || "";
+    if (key && ses) {
+      fetch("/api/session/journal?gmKey=" + encodeURIComponent(key)).then((r) => r.json()).then((data) => {
+        if (!data.journal) return;
+        state._journal = data.journal;
+        journal.innerHTML = [...data.journal].reverse().map((j) =>
+          `<div class="card"><div class="name">${esc(j.title)}${j.secret ? " · geheim" : ""}</div><div class="meta">${esc(j.text)}</div></div>`
+        ).join("") || "<p class='hint'>Noch keine Notizen.</p>";
+      }).catch(() => {});
+    }
   }
+  renderSpur(ses);
   const sel = $("#rollCharacter");
   if (sel) {
     const current = sel.value;
@@ -430,6 +442,27 @@ function render() {
   }
 }
 
+function renderSpur(ses) {
+  const box = $("#spurLive");
+  if (!box) return;
+  const event = ses?.spur;
+  const prepared = campaignById(activeCampaignId())?.spurs || [];
+  const live = event
+    ? `<div class="name">${esc(event.title)}</div><div class="meta">${esc(event.stake || event.blurb || "")}</div><div class="meta">${esc((event.scores || []).map((s) => s.name + (s.score ? " " + s.score : "")).join(", ") || "noch keine Meldung")}</div>`
+    : "<p class='hint'>Keins am Tisch. Werfen, dann spielen alle kurz.</p>";
+  const saved = prepared.map((s) => `<button class="btn tiny" type="button" data-spur="${esc(s.game)}" data-stake="${esc(s.stake || "")}">${esc(s.title)}</button>`).join(" ");
+  box.innerHTML = live + (saved ? `<div class="meta" style="margin-top:8px;">In der Kampagne</div>${saved}` : "");
+  box.querySelectorAll("[data-spur]").forEach((btn) => {
+    btn.addEventListener("click", () => api("/api/session/spur", { game: btn.dataset.spur, stake: btn.dataset.stake, title: btn.textContent }).catch((err) => alert(err.message)));
+  });
+}
+
+$("#btnSpur")?.addEventListener("click", () => {
+  const game = $("#spurGame")?.value;
+  const stake = $("#spurStake")?.value || "";
+  api("/api/session/spur", { game, stake, keep: Boolean($("#spurKeep")?.checked) }).catch((err) => alert(err.message));
+});
+$("#btnSpurEnd")?.addEventListener("click", () => api("/api/session/spur/end", {}).catch((err) => alert(err.message)));
 $("#btnStartSession")?.addEventListener("click", () => api("/api/session/start", { campaignId: activeCampaignId() }).catch((err) => alert(err.message)));
 $("#btnEndSession")?.addEventListener("click", () => api("/api/session/end", {}));
 $("#btnNarrate")?.addEventListener("click", () => {

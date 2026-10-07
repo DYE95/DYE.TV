@@ -95,6 +95,8 @@ input, select, textarea { width: 100%; background: #0c0908; border: 1px solid va
 .pip.on, .pip.fear.on { background: #9b2226; }
 .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .stat { border: 1px solid var(--line); padding: 8px; text-align: center; }
+.spur-banner { margin: 8px 12px; padding: 10px 12px; border: 1px solid var(--ember); background: #2a120c; }
+.spur-banner a { color: var(--gold); }
 .stat b { display: block; font-family: var(--serif); color: var(--gold); font-size: 20px; }
 .photos img { max-width: 120px; margin: 4px; }
 .hidden { display: none !important; }

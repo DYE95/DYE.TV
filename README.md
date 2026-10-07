@@ -34,18 +34,19 @@ Umgebungsvariablen: `EMBER_PORT` (Standard `3478`), `EMBER_HOST` (Standard `0.0.
 
 | Pfad          | Zweck                                                            |
 | ------------- | ---------------------------------------------------------------- |
-| `/`            | SL-Tisch: Session, Action Rolls, Events, Karte, Initiative, Log   |
-| `/player`      | Spieler-Ansicht (im LAN): Bogen, Würfe, Spotlight, Karte          |
+| `/`            | Technik-Tisch: Glut, Spieler, Bibliothek, Einstellungen        |
+| `/ember`       | SL-Tisch: Session, Action Rolls, Events, Karte, Initiative      |
+| `/player`      | Spieler-Ansicht: Namen antippen, Bogen, Würfe, Spotlight        |
 | `/token`       | Pixel-Token-Atelier                                              |
 | `/pixelstube`  | Pixelstube: Raster, Palette, Stift, Füllen, PNG                 |
 | `/solo`        | Solo-Modus: Übungsbots, Dungeon, Level-Ups, Subklassen            |
 | `/karten`      | Karten-Werkzeug (Marker-Karten speichern/laden)                   |
 | `/bibliothek`  | Regel-PDFs aus `docs/bibliothek/`                                 |
-| `/runner`      | Dye-Runner (kleines Browserspiel)                                 |
-| `/fallwerk`    | Fallwerk: 3D-Physik, Kugeln, Kisten, Zylinder                     |
-| `/pastellpfad` | Pastellpfad: First-Person-Labyrinth, Kristalle, Minikarte         |
-| `/scharfschuss`| Scharfschuss: Turmverteidigung, Wellen, Gold für Abschüsse        |
-| `/puls`        | Puls: Live-Umfrage, eine Stimme pro Person, animierte Balken      |
+| `/runner`      | Ereignis: Dye-Runner, vom SL in die Runde geworfen               |
+| `/fallwerk`    | Ereignis: 3D-Physik                                              |
+| `/pastellpfad` | Ereignis: First-Person-Labyrinth                                 |
+| `/scharfschuss`| Ereignis: Turmverteidigung                                       |
+| `/puls`        | Ereignis: Live-Umfrage                                           |
 | `/heft`        | Heft: Notizen mit Markdown, Suche und lokaler Speicherung         |
 | `/home`        | Ältere Home-Ansicht                                              |
 

@@ -25,12 +25,13 @@
     <div class="scroll" id="gate">
       <div class="menu-card" style="width:min(640px,94%);margin:24px auto;text-align:left;">
         <h1>An den Tisch</h1>
-        <p class="hint">Sitz antippen, dann den Charakter. Leer heißt nicht verbunden.</p>
+        <p class="hint">Namen antippen. Kein Code. Gast sieht nur Karte und Video.</p>
         <div id="tablePlayer" data-table="player"></div>
         <div class="list" id="seatList"></div>
         <button class="btn" id="btnGuest" style="width:100%;margin-top:12px;">Als Gast (Karte + Video)</button>
       </div>
     </div>
+    <div class="spur-banner hidden" id="spurBanner"></div>
     <div class="stage hidden" id="mapStage"></div>
     <div class="play-dock hidden" id="playActions">
       <div class="row">
@@ -53,6 +54,7 @@
             <option value="knowledge">Knowledge</option>
           </select>
         </label>
+        <label>Experience <select id="expPick"><option value="">—</option></select></label>
         <button class="btn primary" id="btnRoll">Würfeln</button>
       </div>
       <p class="hint" id="rollOut"></p>

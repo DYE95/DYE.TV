@@ -140,6 +140,7 @@ function render() {
     });
   }
   renderClips();
+  renderSpur(sesTurn, pc);
   if (!pc) {
     $("#sheet").innerHTML = "<p class='hint'>Gast: Karte und Video. Bogen über „Anderen Bogen“.</p>";
     return;
@@ -147,9 +148,11 @@ function render() {
   const fmt = (n) => { const v = Number(n || 0); return (v >= 0 ? "+" : "") + v; };
   const traits = ["agility","strength","finesse","instinct","presence","knowledge"]
     .map((t) => `<div class="stat"><span>${t}</span><b>${fmt(pc.traits?.[t])}</b></div>`).join("");
+  const exp = (pc.experiences || []).map((e) => e.name + " +" + (e.bonus || 0)).join(" · ") || "keine";
   $("#sheet").innerHTML = `
-    <p class="hint">${pc.class || ""} · Lv ${pc.level}</p>
+    <p class="hint">${pc.class || "ohne Klasse"} · Lv ${pc.level} · Evasion ${pc.evasion || 10} · Armor ${pc.armorMarked || 0}/${pc.armorScore || 0}</p>
     <h1 style="font-size:24px;margin:0 0 10px;">${pc.name}</h1>
+    <p class="hint">Experiences: ${exp}</p>
     <div class="stat-grid">${traits}</div>
     <div class="mark-row" data-mark="hope"></div>
     <div class="mark-row" data-mark="stress"></div>
@@ -189,9 +192,37 @@ function render() {
     ...(pc.experiences || []).map((e) => `Experience · ${e.name}`),
     "Frage stellen", "Help an Ally"];
   const pick = $("#actionPick");
-  const prev = pick.value;
-  pick.innerHTML = actions.map((a) => `<option>${a}</option>`).join("");
-  if (actions.includes(prev)) pick.value = prev;
+  const prev = pick?.value;
+  if (pick) {
+    pick.innerHTML = actions.map((a) => `<option>${a}</option>`).join("");
+    if (actions.includes(prev)) pick.value = prev;
+  }
+  const expPick = $("#expPick");
+  if (expPick) {
+    const prevExp = expPick.value;
+    expPick.innerHTML = `<option value="">—</option>` + (pc.experiences || []).map((e, i) => `<option value="${i}">${e.name} +${e.bonus || 0}</option>`).join("");
+    if (prevExp) expPick.value = prevExp;
+  }
+}
+
+function renderSpur(ses, pc) {
+  const box = $("#spurBanner");
+  if (!box) return;
+  const event = ses?.spur;
+  if (!event) {
+    box.classList.add("hidden");
+    return;
+  }
+  box.classList.remove("hidden");
+  const href = event.href + "?spur=1&back=" + encodeURIComponent("/player");
+  box.innerHTML = `<div class="name">Ereignis · ${event.title}</div><div class="meta">${event.stake || event.blurb || ""}</div><a class="btn tiny" href="${href}">Spielen</a> <button class="btn tiny" id="btnSpurDone" type="button">Ich bin durch</button>`;
+  $("#btnSpurDone")?.addEventListener("click", () => {
+    const score = prompt("Zahl oder ein Wort", "") || "";
+    fetch("/api/session/spur/score", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ characterId: pc?.id, name: pc?.name || "Gast", score }),
+    });
+  });
 }
 
 $("#btnGuest")?.addEventListener("click", () => sit("", true));
@@ -240,7 +271,15 @@ async function playerRoll(table) {
   if (!pc) return;
   const action = $("#actionPick").value || "";
   const trait = $("#traitPick")?.value || ["agility","strength","finesse","instinct","presence","knowledge"].find((t) => action.toLowerCase().includes(t));
-  const payload = { characterId: pc.id, trait, traitMod: trait ? Number(pc.traits?.[trait] || 0) : 0, difficulty: 0 };
+  const expIndex = $("#expPick")?.value;
+  const exp = expIndex !== "" && expIndex != null ? pc.experiences?.[Number(expIndex)] : null;
+  const payload = {
+    characterId: pc.id,
+    trait,
+    traitMod: trait ? Number(pc.traits?.[trait] || 0) : 0,
+    experiences: exp ? [{ name: exp.name, bonus: exp.bonus || 0 }] : [],
+    difficulty: 0,
+  };
   if (table) {
     payload.hopeDie = Number($("#hopeDie").value);
     payload.fearDie = Number($("#fearDie").value);

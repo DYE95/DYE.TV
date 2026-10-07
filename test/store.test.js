@@ -48,6 +48,36 @@ test("importProbe legt eine Probe nur einmal an und klaut keine offene Session",
   assert.equal(state.campaigns.find((c) => c.name === "Asche über der Lichtung").probeRevision, 4);
 });
 
+test("publicView streicht Schlüssel und geheimen Text", () => {
+  const view = store.publicView({
+    settings: { gmKey: "geheim", houseName: "Ember" },
+    sessions: [{ journal: [{ id: "n1", title: "Wahrheit", text: "leer", secret: true }, { id: "n2", title: "Offen", text: "sichtbar" }] }],
+  });
+  assert.equal(view.settings.gmKey, undefined);
+  assert.equal(view.settings.houseName, "Ember");
+  assert.equal(view.sessions[0].journal[0].text, undefined);
+  assert.equal(view.sessions[0].journal[0].secret, true);
+  assert.equal(view.sessions[0].journal[1].text, "sichtbar");
+});
+
+test("dedupeProbes behält eine Probe und wirft Kopien weg", () => {
+  const state = {
+    campaigns: [
+      { id: "a", name: "Die zweite Glut", probeRevision: 1 },
+      { id: "b", name: "Die zweite Glut", probeRevision: 2 },
+      { id: "live", name: "Weg zum Olymp" },
+    ],
+    characters: [{ id: "pc", campaignId: "a" }, { id: "keep", campaignId: "b" }],
+    sessions: [{ id: "s", campaignId: "a" }],
+    active: { campaignId: "a", sessionId: "s" },
+  };
+  assert.equal(store.dedupeProbes(state), true);
+  assert.equal(state.campaigns.filter((c) => c.name === "Die zweite Glut").length, 1);
+  assert.equal(state.campaigns.find((c) => c.name === "Die zweite Glut").id, "b");
+  assert.equal(state.characters.length, 1);
+  assert.equal(state.active.campaignId, "b");
+});
+
 test("makeCharacter setzt Standardwerte und eine vierstellige PIN", () => {
   const c = store.makeCharacter({ name: "Sable", campaignId: "camp1" });
   assert.equal(c.name, "Sable");

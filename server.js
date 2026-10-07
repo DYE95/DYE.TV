@@ -13,7 +13,8 @@ const spark = require("./lib/spark");
 const initiative = require("./lib/initiative");
 const compendium = require("./lib/compendium");
 const solo = require("./lib/solo");
-const { isGm, recordGmKey } = require("./lib/auth");
+const spur = require("./lib/spur");
+const { isGm, recordGmKey, isLocalAddress } = require("./lib/auth");
 
 const PORT = Number(process.env.EMBER_PORT || 3478);
 const HOST = process.env.EMBER_HOST || "0.0.0.0";
@@ -47,7 +48,7 @@ function presenceList() {
 }
 
 function snapshot() {
-  return { ...store.read(), presence: presenceList(), lan: { port: PORT, addresses: addresses() } };
+  return { ...store.publicView(store.read()), presence: presenceList(), lan: { port: PORT, addresses: addresses() } };
 }
 
 function emitState() {
@@ -176,6 +177,14 @@ function checkTriggers(session, enc, token) {
   enc.alerts = (enc.alerts || []).slice(0, 12);
 }
 
+function denyUnlessGm(res, state, body) {
+  if (isGm(state, body)) return false;
+  send(res, 403, { error: "Nur der SL." });
+  return true;
+}
+
+const PLAYER_FIELDS = ["hope", "stressMarked", "hpMarked", "armorMarked", "notes"];
+
 async function handleApi(req, res, url) {
   const method = req.method;
   const p = url.pathname;
@@ -208,6 +217,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && p === "/api/campaigns") {
     const body = await readJson(req);
     const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
     const campaign = store.makeCampaign(body.name);
     if (body.frame) campaign.frame = body.frame;
     if (body.notes) campaign.notes = body.notes;
@@ -218,8 +228,10 @@ async function handleApi(req, res, url) {
   }
   const patchCamp = p.match(/^\/api\/campaigns\/([^/]+)$/);
   if (method === "PATCH" && patchCamp) {
+    const body = await readJson(req);
     const state = store.read();
-    const campaign = store.patchById(state.campaigns, patchCamp[1], await readJson(req));
+    if (denyUnlessGm(res, state, body)) return;
+    const campaign = store.patchById(state.campaigns, patchCamp[1], body);
     if (!campaign) return send(res, 404, { error: "Kampagne fehlt." });
     store.write(state); emitState();
     return send(res, 200, campaign);
@@ -228,6 +240,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && fearCamp) {
     const body = await readJson(req);
     const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
     const campaign = state.campaigns.find((c) => c.id === fearCamp[1]);
     if (!campaign) return send(res, 404, { error: "Kampagne fehlt." });
     campaign.gmFear = clamp(Number(body.gmFear), 0, campaign.fearMax || 12);
@@ -237,6 +250,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && p === "/api/active-campaign") {
     const body = await readJson(req);
     const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
     state.active.campaignId = body.campaignId || null;
     store.write(state); emitState();
     return send(res, 200, state.active);
@@ -244,6 +258,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && p === "/api/characters") {
     const body = await readJson(req);
     const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
     const character = store.makeCharacter({ ...body, campaignId: body.campaignId || state.active.campaignId });
     state.characters.push(character);
     store.write(state); emitState();
@@ -253,7 +268,13 @@ async function handleApi(req, res, url) {
   if (method === "PATCH" && patchChar) {
     const body = await readJson(req);
     delete body.id;
+    delete body.as;
+    delete body.gmKey;
     const state = store.read();
+    const gm = isGm(state, body);
+    if (!gm && Object.keys(body).some((key) => key !== "as" && key !== "gmKey" && !PLAYER_FIELDS.includes(key))) {
+      return send(res, 403, { error: "Nur der SL ändert den Bogen." });
+    }
     const character = store.patchById(state.characters, patchChar[1], body);
     if (!character) return send(res, 404, { error: "Charakter fehlt." });
     character.hope = clamp(Number(character.hope || 0), 0, character.hopeMax || 6);
@@ -266,6 +287,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && photoChar) {
     const body = await readJson(req);
     const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
     const character = state.characters.find((c) => c.id === photoChar[1]);
     if (!character) return send(res, 404, { error: "Charakter fehlt." });
     fs.mkdirSync(UPLOADS, { recursive: true });
@@ -286,6 +308,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && portChar) {
     const body = await readJson(req);
     const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
     const character = state.characters.find((c) => c.id === portChar[1]);
     if (!character) return send(res, 404, { error: "Charakter fehlt." });
     fs.mkdirSync(UPLOADS, { recursive: true });
@@ -300,6 +323,9 @@ async function handleApi(req, res, url) {
   if (method === "POST" && p === "/api/settings") {
     const body = await readJson(req);
     const state = store.read();
+    if (!isGm(state, body) && !isLocalAddress(req.socket.remoteAddress || "")) return send(res, 403, { error: "Nur der SL." });
+    delete body.as;
+    delete body.gmKey;
     state.settings = { ...(state.settings || {}), ...body };
     store.write(state); emitState();
     return send(res, 200, state.settings);
@@ -308,6 +334,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && p === "/api/media") {
     const body = await readJson(req);
     const state = store.read();
+    if (!isGm(state, body) && !isLocalAddress(req.socket.remoteAddress || "")) return send(res, 403, { error: "Nur der SL." });
     if (!state.media) state.media = [];
     fs.mkdirSync(UPLOADS, { recursive: true });
     const ext = body.ext === "webm" ? "webm" : "mp4";
@@ -327,6 +354,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && p === "/api/session/start") {
     const body = await readJson(req);
     const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
     const campaignId = body.campaignId || state.active.campaignId;
     if (!campaignId) return send(res, 400, { error: "Keine Kampagne gewählt." });
     const session = store.makeSession(campaignId);
@@ -347,7 +375,9 @@ async function handleApi(req, res, url) {
     return send(res, 200, session);
   }
   if (method === "POST" && p === "/api/session/end") {
+    const body = await readJson(req);
     const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (session) session.endedAt = new Date().toISOString();
     state.active.sessionId = null;
@@ -357,6 +387,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && p === "/api/session/narrate") {
     const body = await readJson(req);
     const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine offene Session." });
     session.narrating = body.narrating == null ? !session.narrating : Boolean(body.narrating);
@@ -370,6 +401,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && p === "/api/session/log") {
     const body = await readJson(req);
     const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine offene Session." });
     addLog(session, { kind: body.kind || "note", author: body.author || "SL", text: body.text || "" });
@@ -399,6 +431,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && resolveSpot) {
     const body = await readJson(req);
     const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
     const item = session.spotlightQueue.find((q) => q.id === resolveSpot[1]);
@@ -469,7 +502,9 @@ async function handleApi(req, res, url) {
   }
 
   if (method === "POST" && p === "/api/quickstart/sablewood") {
+    const body = await readJson(req);
     const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
     const exists = state.campaigns.find((c) => c.name === "Sablewood Messengers");
     if (exists) {
       state.active.campaignId = exists.id;
@@ -776,6 +811,7 @@ async function handleApi(req, res, url) {
     }
     const character = state.characters.find((c) => c.id === body.characterId);
     if (!character) return send(res, 404, { error: "Bogen fehlt." });
+    if (!isGm(state, body)) return send(res, 403, { error: "Nur der SL." });
     character.hpMarked = clamp(Number(character.hpMarked || 0) + amount, 0, character.hpMax || 6);
     addLog(session, { kind: "note", author: "Schaden", text: character.name + " +" + amount + " HP (" + character.hpMarked + "/" + character.hpMax + ")" });
     store.write(state); emitState();
@@ -1080,6 +1116,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && p === "/api/characters/feature") {
     const body = await readJson(req);
     const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
     const character = state.characters.find((c) => c.id === body.characterId);
     if (!character) return send(res, 404, { error: "Bogen fehlt." });
     character.features = character.features || [];
@@ -1097,6 +1134,74 @@ async function handleApi(req, res, url) {
     session.ready[body.characterId] = Boolean(body.ready);
     const pc = state.characters.find((c) => c.id === body.characterId);
     addLog(session, { kind: "system", author: pc ? pc.name : "Spieler", text: body.ready ? "ready" : "nicht ready" });
+    store.write(state); emitState();
+    return send(res, 200, { ok: true });
+  }
+
+  if (method === "GET" && p === "/api/spur") return send(res, 200, { games: spur.list() });
+  if (method === "GET" && p === "/api/session/journal") {
+    const state = store.read();
+    if (!isGm(state, { as: "gm", gmKey: url.searchParams.get("gmKey") || "" })) return send(res, 403, { error: "Nur der SL." });
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    return send(res, 200, { journal: session?.journal || [] });
+  }
+  if (method === "POST" && p === "/api/session/spur") {
+    const body = await readJson(req);
+    const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Keine offene Session." });
+    const game = spur.get(body.game);
+    if (!game) return send(res, 400, { error: "Ereignis fehlt." });
+    const event = {
+      id: id("spur"),
+      game: game.id,
+      title: body.title || game.title,
+      blurb: game.blurb,
+      href: game.href,
+      stake: body.stake || "",
+      at: new Date().toISOString(),
+      scores: [],
+    };
+    session.spur = event;
+    const camp = state.campaigns.find((c) => c.id === session.campaignId);
+    if (body.keep && camp) {
+      camp.spurs = camp.spurs || [];
+      camp.spurs.unshift({ id: event.id, game: event.game, title: event.title, stake: event.stake });
+      camp.spurs = camp.spurs.slice(0, 12);
+    }
+    addLog(session, { kind: "system", author: "Ereignis", text: event.title + (event.stake ? " — " + event.stake : "") });
+    store.write(state); emitState();
+    return send(res, 200, event);
+  }
+  if (method === "POST" && p === "/api/session/spur/score") {
+    const body = await readJson(req);
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session || !session.spur) return send(res, 400, { error: "Kein Ereignis." });
+    const pc = state.characters.find((c) => c.id === body.characterId);
+    const row = {
+      characterId: body.characterId || null,
+      name: pc ? pc.name : (body.name || "Jemand"),
+      score: body.score || "",
+      note: body.note || "",
+      at: new Date().toISOString(),
+    };
+    session.spur.scores = (session.spur.scores || []).filter((s) => s.characterId !== row.characterId);
+    session.spur.scores.push(row);
+    addLog(session, { kind: "note", author: row.name, text: session.spur.title + ": " + (row.score || row.note || "durch") });
+    store.write(state); emitState();
+    return send(res, 200, session.spur);
+  }
+  if (method === "POST" && p === "/api/session/spur/end") {
+    const body = await readJson(req);
+    const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Keine Session." });
+    const title = session.spur?.title || "Ereignis";
+    session.spur = null;
+    addLog(session, { kind: "system", author: "Ereignis", text: title + " ist vorbei." });
     store.write(state); emitState();
     return send(res, 200, { ok: true });
   }

@@ -115,6 +115,24 @@
           <button class="btn primary" id="btnNarrate" style="width:100%;margin:10px 0;">Speak the Dark</button>
           <button class="btn" id="btnStartSession" style="width:100%;margin-bottom:8px;">Session öffnen</button>
           <button class="btn ghost" id="btnEndSession" style="width:100%;">Session schließen</button>
+          <h2 style="margin-top:18px;">Ereignis</h2>
+          <p class="hint">Kurz ins Spiel werfen. Danach zurück an den Tisch.</p>
+          <label>Spiel
+            <select id="spurGame">
+              <option value="runner">Leitungsparcours</option>
+              <option value="fallwerk">Fallwerk</option>
+              <option value="pastell">Pastellpfad</option>
+              <option value="scharf">Scharfschuss</option>
+              <option value="puls">Puls</option>
+            </select>
+          </label>
+          <label>Einsatz <input id="spurStake" placeholder="Wer hält, kriegt Hope" /></label>
+          <label class="row"><input id="spurKeep" type="checkbox" /> in die Kampagne legen</label>
+          <div class="row">
+            <button class="btn primary" id="btnSpur" type="button">Werfen</button>
+            <button class="btn ghost" id="btnSpurEnd" type="button">Weg</button>
+          </div>
+          <div id="spurLive" class="card" style="margin-top:8px;"></div>
           <h2 style="margin-top:18px;">Am Tisch</h2>
           <div id="tableLive" data-table="gm"></div>
           <div class="list" id="sessionPlayers"></div>
