@@ -8,14 +8,7 @@ if errorlevel 1 (
 )
 title Ember  SL http://127.0.0.1:3478/ember
 echo.
-echo  ------------------------------------------------
-echo   SPIELLEITUNG   http://127.0.0.1:3478/ember
-echo   HOME           http://127.0.0.1:3478/
-echo   SPIELER        http://127.0.0.1:3478/player
-echo   ZU HAUSE       kommt einmal, sobald der Tunnel steht
-echo   Pings          data\tunnel.log  (nicht hier)
-echo  ------------------------------------------------
-echo  Fenster offen lassen. Die Titelleiste behaelt die Adressen.
+echo  Adressen stehen in der Titelleiste. Pings: data\tunnel.log
 echo.
 start /b node tools\tunnel.js
 :emberloop

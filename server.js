@@ -1433,19 +1433,9 @@ server.listen(PORT, HOST, async () => {
   await spark.ignite({ label: "Ember zündet" });
   const urls = addresses();
   console.log("");
-  console.log("  Ember brennt.");
-  console.log("  Spielleitung:    http://127.0.0.1:" + PORT + "/ember");
-  console.log("  Home:            http://127.0.0.1:" + PORT + "/");
-  console.log("  Fallwerk:        http://127.0.0.1:" + PORT + "/fallwerk");
-  console.log("  Pastellpfad:     http://127.0.0.1:" + PORT + "/pastellpfad");
-  console.log("  Scharfschuss:    http://127.0.0.1:" + PORT + "/scharfschuss");
-  console.log("  Pixelstube:      http://127.0.0.1:" + PORT + "/pixelstube");
-  console.log("  Puls:            http://127.0.0.1:" + PORT + "/puls");
-  console.log("  Heft:            http://127.0.0.1:" + PORT + "/heft");
-  if (!urls.length) console.log("  Kein LAN-Interface.");
-  else for (const u of urls) console.log("  Spieler-Ansicht: http://" + u.address + ":" + PORT + "/player   (" + u.name + ")");
-  if (remoteUrl()) console.log("  Zu Hause:        " + remoteUrl() + "/player");
-  else console.log("  Zu Hause:        wartet auf den Tunnel. Pings liegen in data/tunnel.log.");
+  console.log("  Spielleitung:  http://127.0.0.1:" + PORT + "/ember");
+  console.log("  Spieler:       http://127.0.0.1:" + PORT + "/player");
+  console.log("  Zu Hause:      " + (remoteUrl() ? remoteUrl() + "/player" : "wartet, Titel zeigt sie sobald der Tunnel steht"));
   console.log("");
   const paintTitle = () => {
     const remote = remoteUrl();
@@ -1458,8 +1448,7 @@ server.listen(PORT, HOST, async () => {
     const remote = remoteUrl();
     if (remote && remote !== seen) {
       seen = remote;
-      console.log("  Zu Hause:        " + remote + "/player");
-      console.log("  Spielleitung:    http://127.0.0.1:" + PORT + "/ember");
+      console.log("  Zu Hause:      " + remote + "/player");
     }
   }, 2000);
 });

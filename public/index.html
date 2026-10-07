@@ -131,7 +131,7 @@
           </div>
           <label>Kampagne <select id="campaignPick"><option value="">—</option></select></label>
         </header>
-        <div class="hub-table" id="tableIndicator" data-table="gm"></div>
+        <div class="stage field" id="hubMap" style="min-height:420px;margin:8px 0;"></div>
         <div class="hub-ready" id="readyList"></div>
         <button class="btn primary" id="btnEnter" type="button" disabled>Rein, wenn alle ready sind</button>
       </div>
@@ -501,7 +501,7 @@
   <script src="/js/map.js?v=11"></script>
   <script src="/js/token.js?v=4"></script>
   <script src="/js/float-panels.js?v=1"></script>
-  <script src="/js/gm.js?v=15"></script>
+  <script src="/js/gm.js?v=16"></script>
   <script>
     document.getElementById("btnEnter")?.addEventListener("click", () => {
       document.getElementById("sessionHub")?.classList.add("hidden");
