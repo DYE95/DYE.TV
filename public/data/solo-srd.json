@@ -1,0 +1,202 @@
+{
+  "classes": [
+    {
+      "name": "Bard",
+      "domains": [
+        "Codex",
+        "Grace"
+      ],
+      "evasion": 10,
+      "hp": 5,
+      "stress": 6,
+      "hopeFeature": "Rally",
+      "subclasses": [
+        "Wordsmith",
+        "Troubadour"
+      ]
+    },
+    {
+      "name": "Druid",
+      "domains": [
+        "Arcana",
+        "Sage"
+      ],
+      "evasion": 10,
+      "hp": 6,
+      "stress": 6,
+      "hopeFeature": "Beastform",
+      "subclasses": [
+        "Warden of the Elements",
+        "Warden of Renewal"
+      ]
+    },
+    {
+      "name": "Guardian",
+      "domains": [
+        "Blade",
+        "Valor"
+      ],
+      "evasion": 9,
+      "hp": 7,
+      "stress": 6,
+      "hopeFeature": "Unstoppable",
+      "subclasses": [
+        "Stalwart",
+        "Vengeance"
+      ]
+    },
+    {
+      "name": "Ranger",
+      "domains": [
+        "Bone",
+        "Sage"
+      ],
+      "evasion": 12,
+      "hp": 6,
+      "stress": 6,
+      "hopeFeature": "Hold Them Off",
+      "subclasses": [
+        "Beastbound",
+        "Wayfinder"
+      ]
+    },
+    {
+      "name": "Rogue",
+      "domains": [
+        "Grace",
+        "Midnight"
+      ],
+      "evasion": 12,
+      "hp": 6,
+      "stress": 6,
+      "hopeFeature": "Rogue's Dodge",
+      "subclasses": [
+        "Nightwalker",
+        "Syndicate"
+      ]
+    },
+    {
+      "name": "Seraph",
+      "domains": [
+        "Splendor",
+        "Valor"
+      ],
+      "evasion": 9,
+      "hp": 5,
+      "stress": 7,
+      "hopeFeature": "Healing Hands",
+      "subclasses": [
+        "Divine Wielder",
+        "Winged Sentinel"
+      ]
+    },
+    {
+      "name": "Sorcerer",
+      "domains": [
+        "Arcana",
+        "Midnight"
+      ],
+      "evasion": 10,
+      "hp": 6,
+      "stress": 6,
+      "hopeFeature": "Volatile Magic",
+      "subclasses": [
+        "Elemental Origin",
+        "Primal Origin"
+      ]
+    },
+    {
+      "name": "Warrior",
+      "domains": [
+        "Blade",
+        "Bone"
+      ],
+      "evasion": 11,
+      "hp": 6,
+      "stress": 5,
+      "hopeFeature": "Battle Focus",
+      "subclasses": [
+        "Call of the Brave",
+        "Call of the Slayer"
+      ]
+    },
+    {
+      "name": "Wizard",
+      "domains": [
+        "Codex",
+        "Splendor"
+      ],
+      "evasion": 10,
+      "hp": 5,
+      "stress": 5,
+      "hopeFeature": "Arcane Recovery",
+      "subclasses": [
+        "School of Knowledge",
+        "School of War"
+      ]
+    }
+  ],
+  "domains": [
+    "Arcana",
+    "Blade",
+    "Bone",
+    "Codex",
+    "Grace",
+    "Midnight",
+    "Sage",
+    "Splendor",
+    "Valor"
+  ],
+  "adversaries": [
+    {
+      "name": "Thistlefolk Ambusher",
+      "tier": 1,
+      "role": "Skulk",
+      "difficulty": 12,
+      "hp": 4,
+      "stress": 3
+    },
+    {
+      "name": "Barnacle",
+      "tier": 1,
+      "role": "Bruiser",
+      "difficulty": 11,
+      "hp": 6,
+      "stress": 3
+    },
+    {
+      "name": "Fallen Warlord",
+      "tier": 4,
+      "role": "Solo",
+      "difficulty": 18,
+      "hp": 12,
+      "stress": 6
+    }
+  ],
+  "party": [
+    {
+      "id": "tank",
+      "name": "Kael",
+      "role": "Tank",
+      "routine": "sch\u00fctzt den Sitz"
+    },
+    {
+      "id": "brawler",
+      "name": "Bram",
+      "role": "Brawler",
+      "routine": "geht auf den n\u00e4chsten Foe"
+    },
+    {
+      "id": "healer",
+      "name": "Nix",
+      "role": "Healer",
+      "routine": "nimmt Stress vom Sitz"
+    },
+    {
+      "id": "caster",
+      "name": "Mira",
+      "role": "Caster",
+      "routine": "wirft auf die Gruppe"
+    }
+  ]
+}
