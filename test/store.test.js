@@ -27,6 +27,27 @@ test("makeEncounter startet bereit mit leeren Fallen und Zonen", () => {
   assert.deepEqual(enc.alerts, []);
 });
 
+test("importProbe legt eine Probe nur einmal an und klaut keine offene Session", () => {
+  const seed = {
+    revision: 4,
+    campaigns: [{ id: "cmp_probe", name: "Asche über der Lichtung" }],
+    characters: [{ id: "pc_probe", campaignId: "cmp_probe", name: "Mira" }],
+    sessions: [{ id: "ses_probe", campaignId: "cmp_probe" }],
+    active: { campaignId: "cmp_probe", sessionId: "ses_probe" },
+  };
+  const state = {
+    campaigns: [{ id: "cmp_live", name: "Weg zum Olymp" }],
+    characters: [],
+    sessions: [{ id: "ses_live", campaignId: "cmp_live", endedAt: null }],
+    active: { campaignId: "cmp_live", sessionId: "ses_live" },
+  };
+  assert.equal(store.importProbe(state, seed, "Asche über der Lichtung"), true);
+  assert.equal(store.importProbe(state, seed, "Asche über der Lichtung"), false);
+  assert.equal(state.campaigns.filter((c) => c.name === "Asche über der Lichtung").length, 1);
+  assert.equal(state.active.sessionId, "ses_live");
+  assert.equal(state.campaigns.find((c) => c.name === "Asche über der Lichtung").probeRevision, 4);
+});
+
 test("makeCharacter setzt Standardwerte und eine vierstellige PIN", () => {
   const c = store.makeCharacter({ name: "Sable", campaignId: "camp1" });
   assert.equal(c.name, "Sable");
