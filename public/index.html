@@ -134,7 +134,19 @@
             </select>
           </label>
           <label>Sekunden <input id="spurSeconds" type="number" min="15" value="45" /></label>
-          <label class="row"><input id="spurKeep" type="checkbox" /> in die Kampagne legen</label>
+          <div id="pulsAsk" class="hidden">
+            <label>Frage <input id="spurQuestion" value="Was trägt die Kiste?" /></label>
+            <label>A <input id="spurA" value="Asche" /></label>
+            <label>B <input id="spurB" value="Gold" /></label>
+            <label>C <input id="spurC" value="Nichts" /></label>
+            <label>Richtig
+              <select id="spurRight">
+                <option value="a">A</option>
+                <option value="b">B</option>
+                <option value="c">C</option>
+              </select>
+            </label>
+          </div>
           <div class="row">
             <button class="btn primary" id="btnSpur" type="button">Werfen</button>
             <button class="btn ghost" id="btnSpurEnd" type="button">Weg</button>

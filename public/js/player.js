@@ -222,7 +222,7 @@ function renderSpur(ses, pc) {
   box.classList.remove("hidden");
   const left = event.endsAt ? Math.max(0, Math.ceil((event.endsAt - Date.now()) / 1000)) : 0;
   const href = event.href + "?spur=1&back=" + encodeURIComponent("/player");
-  box.innerHTML = `<div class="name">Ereignis · ${event.title}</div><div class="meta">${event.stake || event.blurb || ""} · ${left}s · ${event.payout === "fear" ? "Fear an den Tisch" : "Hope an den Besten"}</div><a class="btn tiny" href="${href}">Spielen</a>`;
+  box.innerHTML = `<div class="name">Ereignis · ${event.title}</div><div class="meta">${event.ask?.question || event.stake || event.blurb || ""} · ${left}s · ${event.payout === "fear" ? "Fear an den Tisch" : "Hope an den Besten"}</div><a class="btn tiny" href="${href}">Spielen</a>`;
 }
 
 $("#btnGuest")?.addEventListener("click", () => sit("", true));

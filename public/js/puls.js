@@ -296,6 +296,7 @@ function freshPoll() {
 
 render();
 
+const spurMode = new URLSearchParams(location.search).get("spur") === "1";
 window.emberFinish = () => {
   const voted = Boolean(state.poll && state.poll.choiceId);
   const stage = document.getElementById("stage");
@@ -306,5 +307,20 @@ window.emberFinish = () => {
     line.textContent = voted ? "Runde zu. Stimme liegt." : "Runde zu. Keine Stimme.";
     stage.prepend(line);
   }
+  window.emberChoice = state.poll && state.poll.choiceId || "";
   return voted ? 1 : 0;
 };
+
+if (spurMode) {
+  fetch("/api/state").then((r) => r.json()).then((data) => {
+    const event = (data.sessions || []).find((s) => s.id === data.active?.sessionId)?.spur;
+    const ask = event && event.ask;
+    if (!ask) return;
+    state.poll = {
+      question: ask.question,
+      choiceId: null,
+      options: (ask.options || []).map((option) => ({ id: option.id, label: option.label, votes: 0 })),
+    };
+    render();
+  }).catch(() => {});
+}

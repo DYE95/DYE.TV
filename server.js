@@ -1198,6 +1198,14 @@ async function handleApi(req, res, url) {
       payout: body.payout === "fear" ? "fear" : "hope",
       seconds: Math.max(15, Number(body.seconds) || 45),
       endsAt: Date.now() + Math.max(15, Number(body.seconds) || 45) * 1000,
+      ask: game.id === "puls" ? {
+        question: body.question || "Was trägt die Kiste?",
+        options: [
+          { id: "a", label: body.a || "Asche", right: (body.right || "a") === "a" },
+          { id: "b", label: body.b || "Gold", right: body.right === "b" },
+          { id: "c", label: body.c || "Nichts", right: body.right === "c" },
+        ],
+      } : null,
       at: new Date().toISOString(),
       scores: [],
     };
@@ -1208,7 +1216,7 @@ async function handleApi(req, res, url) {
       camp.spurs.unshift({ id: event.id, game: event.game, title: event.title, stake: event.stake });
       camp.spurs = camp.spurs.slice(0, 12);
     }
-    addLog(session, { kind: "system", author: "Ereignis", text: event.title + (event.stake ? " — " + event.stake : "") });
+    addLog(session, { kind: "system", author: "Ereignis", text: event.title + (event.ask ? " — " + event.ask.question : "") + (event.stake ? " — " + event.stake : "") });
     store.write(state); emitState();
     return send(res, 200, event);
   }
@@ -1218,11 +1226,12 @@ async function handleApi(req, res, url) {
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session || !session.spur) return send(res, 400, { error: "Kein Ereignis." });
     const pc = state.characters.find((c) => c.id === body.characterId);
+    const graded = session.spur.game === "puls" ? spur.grade(session.spur.ask, body.choice) : null;
     const row = {
       characterId: body.characterId || null,
       name: pc ? pc.name : (body.name || "Jemand"),
-      score: body.score || "",
-      note: body.note || "",
+      score: graded ? String(graded.score) : (body.score || ""),
+      note: graded ? graded.label : (body.note || ""),
       at: new Date().toISOString(),
     };
     session.spur.scores = (session.spur.scores || []).filter((s) => s.characterId !== row.characterId);

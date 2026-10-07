@@ -3,6 +3,13 @@ const assert = require("node:assert/strict");
 const spur = require("../lib/spur");
 const store = require("../lib/store");
 
+test("grade zählt nur die richtige Stimme", () => {
+  const ask = { options: [{ id: "a", label: "Asche", right: true }, { id: "b", label: "Gold", right: false }] };
+  assert.equal(spur.grade(ask, "a").score, 1);
+  assert.equal(spur.grade(ask, "b").score, 0);
+  assert.equal(spur.grade(ask, "").label, "keine Stimme");
+});
+
 test("settle zahlt Hope an den Besten und schließt das Ereignis", () => {
   const state = {
     campaigns: [{ id: "c", gmFear: 0, fearMax: 12 }],

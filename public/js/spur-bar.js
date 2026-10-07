@@ -25,7 +25,7 @@
     await fetch("/api/session/spur/score", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ characterId, score: String(score), note: document.title }),
+      body: JSON.stringify({ characterId, score: String(score), choice: window.emberChoice || "", note: document.title }),
     }).catch(() => {});
   }
 

@@ -205,15 +205,36 @@ renderer.setAnimationLoop((now) => {
 function standing() {
   return bodies.filter((entry) => entry.body.isValid() && entry.body.translation().y > -1).length;
 }
+let collapsed = false;
+function collapse() {
+  if (collapsed) return;
+  collapsed = true;
+  for (const entry of bodies) {
+    if (!entry.body.isValid()) continue;
+    entry.body.wakeUp();
+    const t = entry.body.translation();
+    entry.body.applyImpulse({ x: (t.x > 0 ? 1.6 : -1.6), y: 0.8, z: (t.z > 0 ? 1.4 : -1.4) }, true);
+  }
+  const status = document.getElementById("fwStatus");
+  if (status) {
+    status.classList.remove("hidden");
+    status.textContent = "Einsturz.";
+  }
+}
 window.emberFinish = () => {
+  collapse();
   const n = standing();
   const status = document.getElementById("fwStatus");
   if (status) {
     status.classList.remove("hidden");
-    status.textContent = "Runde zu. " + n + " stehen noch.";
+    status.textContent = "Runde zu. " + n + " haben den Einsturz überstanden.";
   }
   return n;
 };
+if (new URLSearchParams(location.search).get("spur") === "1") {
+  seed();
+  setTimeout(collapse, 8000);
+}
 
 function applyCamera() {
   offset.setFromSpherical(spherical);

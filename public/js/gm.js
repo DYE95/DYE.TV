@@ -461,7 +461,7 @@ function renderSpur(ses) {
   const event = ses?.spur;
   const prepared = campaignById(activeCampaignId())?.spurs || [];
   const live = event
-    ? `<div class="name">${esc(event.title)}</div><div class="meta">${esc(event.stake || event.blurb || "")}</div><div class="meta">${esc((event.scores || []).map((s) => s.name + (s.score ? " " + s.score : "")).join(", ") || "noch keine Meldung")}</div>`
+    ? `<div class="name">${esc(event.title)}</div><div class="meta">${esc(event.ask?.question || event.stake || event.blurb || "")}</div><div class="meta">${esc((event.scores || []).map((s) => s.name + (s.score ? " " + s.score : "")).join(", ") || "noch keine Meldung")}</div>`
     : "<p class='hint'>Keins am Tisch. Werfen, dann spielen alle kurz.</p>";
   const saved = prepared.map((s) => `<button class="btn tiny" type="button" data-spur="${esc(s.game)}" data-stake="${esc(s.stake || "")}">${esc(s.title)}</button>`).join(" ");
   box.innerHTML = live + (saved ? `<div class="meta" style="margin-top:8px;">In der Kampagne</div>${saved}` : "");
@@ -470,6 +470,9 @@ function renderSpur(ses) {
   });
 }
 
+$("#spurGame")?.addEventListener("change", () => {
+  $("#pulsAsk")?.classList.toggle("hidden", $("#spurGame")?.value !== "puls");
+});
 $("#btnSpur")?.addEventListener("click", () => {
   const game = $("#spurGame")?.value;
   const stake = $("#spurStake")?.value || "";
@@ -479,6 +482,11 @@ $("#btnSpur")?.addEventListener("click", () => {
     payout: $("#spurPayout")?.value || "hope",
     seconds: Number($("#spurSeconds")?.value || 45),
     keep: Boolean($("#spurKeep")?.checked),
+    question: $("#spurQuestion")?.value || "",
+    a: $("#spurA")?.value || "",
+    b: $("#spurB")?.value || "",
+    c: $("#spurC")?.value || "",
+    right: $("#spurRight")?.value || "a",
   }).catch((err) => alert(err.message));
 });
 $("#btnSpurEnd")?.addEventListener("click", () => api("/api/session/spur/end", {}).catch((err) => alert(err.message)));
