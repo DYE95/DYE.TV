@@ -129,3 +129,30 @@ test("makeCharacter setzt Standardwerte und eine vierstellige PIN", () => {
   assert.equal(c.hopeMax, 6);
   assert.match(c.playerPin, /^\d{4}$/);
 });
+
+test("öffentlicher Blick leert fremde Notizen, der SL-Blick behält sie", () => {
+  const state = {
+    settings: { gmKey: "k" },
+    characters: [{ id: "pc", notes: "heimlich", sheetPhotos: [{ file: "a.jpg" }] }],
+    campaigns: [{ id: "c", notes: "nur der SL" }],
+    sessions: [],
+  };
+  const open = store.publicView(state);
+  assert.equal(open.characters[0].notes, "");
+  assert.deepEqual(open.characters[0].sheetPhotos, []);
+  assert.equal(open.campaigns[0].notes, "");
+  assert.equal(open.redacted, true);
+  const full = store.publicView(state, true);
+  assert.equal(full.characters[0].notes, "heimlich");
+  assert.equal(full.campaigns[0].notes, "nur der SL");
+  assert.equal(full.settings.gmKey, undefined);
+});
+
+test("enqueue schreibt hintereinander, nichts geht verloren", async () => {
+  let n = 0;
+  await Promise.all([
+    store.enqueue(async () => { const v = n; await new Promise((r) => setTimeout(r, 20)); n = v + 1; }),
+    store.enqueue(async () => { const v = n; await new Promise((r) => setTimeout(r, 10)); n = v + 1; }),
+  ]);
+  assert.equal(n, 2);
+});

@@ -41,11 +41,16 @@ function sit(id, asGuest) {
     history.replaceState(null, "", url.pathname + url.search);
   }
   if (meId) {
+    const gmKey = localStorage.getItem("ember.gmKey") || "";
+    let pin = seatBox.getItem("ember.sheetPin") || "";
+    if (!gmKey && !pin) pin = window.prompt("Bogen-PIN") || "";
+    if (pin) seatBox.setItem("ember.sheetPin", pin);
     fetch("/api/session/sit", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ characterId: meId }),
+      body: JSON.stringify({ characterId: meId, pin, as: gmKey ? "gm" : "player", gmKey }),
     }).then((r) => r.json()).then((data) => {
       if (data.seat) seatBox.setItem("ember.seat", data.seat);
+      else if (data.error) window.alert(data.error);
     }).catch(() => {});
   }
   render();
@@ -360,11 +365,8 @@ async function playerRoll(table) {
     traitMod: trait ? Number(pc.traits?.[trait] || 0) : 0,
     experiences: exp ? [{ name: exp.name, bonus: exp.bonus || 0 }] : [],
     tokenId: pick?.value || "",
+    seat: seatBox.getItem("ember.seat") || "",
   };
-  if (table) {
-    payload.hopeDie = Number($("#hopeDie").value);
-    payload.fearDie = Number($("#fearDie").value);
-  }
   const res = await fetch("/api/roll", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
   const data = await res.json();
   if ($("#rollOut")) $("#rollOut").textContent = data.roll?.spoken || data.error || "";

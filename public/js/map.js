@@ -380,12 +380,23 @@ function startDrag(ev, el, token, opts) {
 function statusLabel(code) {
   return ({ online: "am Tisch", queued: "Want Spotlight", spotlight: "im Spotlight", rolling: "würfelt", narrating: "lauscht" })[code] || "fort";
 }
+function stateUrl() {
+  const key = localStorage.getItem("ember.gmKey") || "";
+  return key ? "/api/state?gmKey=" + encodeURIComponent(key) : "/api/state";
+}
+function sheetSeat() {
+  return sessionStorage.getItem("ember.seat") || localStorage.getItem("ember.seat") || "";
+}
 function startStateFeed(apply) {
   let last = 0;
-  const pull = () => fetch("/api/state").then((r) => r.json()).then((s) => { last = Date.now(); apply(s); }).catch(() => {});
+  const pull = () => fetch(stateUrl()).then((r) => r.json()).then((s) => { last = Date.now(); apply(s); }).catch(() => {});
   pull();
   const es = new EventSource("/api/events");
-  es.addEventListener("message", (ev) => { last = Date.now(); try { apply(JSON.parse(ev.data)); } catch {} });
+  es.addEventListener("message", (ev) => {
+    last = Date.now();
+    if (localStorage.getItem("ember.gmKey")) { pull(); return; }
+    try { apply(JSON.parse(ev.data)); } catch {}
+  });
   setInterval(() => { if (Date.now() - last > 4000) pull(); }, 2500);
 }
 
@@ -480,7 +491,7 @@ async function onIntent(ev) {
   const trait = "agility";
   await fetch("/api/roll", {
     method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ characterId: pack.opts.characterId, tokenId: foe.id, trait, action: "Angriff " + (band ? band.name : "Far"), seat: localStorage.getItem("ember.seat") || "" }),
+    body: JSON.stringify({ characterId: pack.opts.characterId, tokenId: foe.id, trait, action: "Angriff " + (band ? band.name : "Far"), seat: sheetSeat() }),
   });
 }
 async function postMove(token, x, y, opts) {

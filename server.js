@@ -7,7 +7,7 @@ const { URL } = require("url");
 const store = require("./lib/store");
 const { resolveActionRoll, applyPools } = require("./lib/dice");
 const { addresses } = require("./lib/lan");
-const { id } = require("./lib/ids");
+const { id, pin } = require("./lib/ids");
 const catalog = require("./lib/catalog");
 const spark = require("./lib/spark");
 const initiative = require("./lib/initiative");
@@ -54,8 +54,8 @@ function remoteUrl() {
     return process.env.DYE_PUBLIC_URL || "";
   }
 }
-function snapshot() {
-  return { ...store.publicView(store.read()), presence: presenceList(), lan: { port: PORT, addresses: addresses(), remote: remoteUrl() } };
+function snapshot(state, full) {
+  return { ...store.publicView(state || store.read(), full), presence: presenceList(), lan: { port: PORT, addresses: addresses(), remote: remoteUrl() } };
 }
 
 function emitState() {
@@ -108,17 +108,36 @@ function send(res, status, body) {
   res.end(JSON.stringify(body));
 }
 
-function readBody(req) {
+const JSON_MAX = 1024 * 1024;
+const UPLOAD_MAX = 32 * 1024 * 1024;
+
+function bodyLimit(pathname) {
+  if (pathname === "/api/media" || pathname.endsWith("/photos") || pathname.endsWith("/portrait")) return UPLOAD_MAX;
+  return JSON_MAX;
+}
+
+function readBody(req, max) {
   return new Promise((resolve, reject) => {
     const chunks = [];
-    req.on("data", (c) => chunks.push(c));
+    let size = 0;
+    req.on("data", (c) => {
+      size += c.length;
+      if (size > max) {
+        const err = new Error("Zu gross.");
+        err.tooBig = true;
+        reject(err);
+        req.destroy();
+        return;
+      }
+      chunks.push(c);
+    });
     req.on("end", () => resolve(Buffer.concat(chunks)));
     req.on("error", reject);
   });
 }
 
-async function readJson(req) {
-  const raw = await readBody(req);
+async function readJson(req, max) {
+  const raw = await readBody(req, max || JSON_MAX);
   if (!raw.length) return {};
   try {
     return JSON.parse(raw.toString("utf8"));
@@ -224,6 +243,7 @@ async function handleApi(req, res, url) {
     const pin = String(body.pin || "").trim();
     if (!name || pin.length < 4) return send(res, 400, { error: "Name und PIN, mindestens 4 Zeichen." });
     const state = store.read();
+    if (!isLocalAddress(req.socket.remoteAddress || "") && !isGm(state, body)) return send(res, 403, { error: "Nur dieser Rechner." });
     state.profiles = state.profiles || [];
     if (state.profiles.some((row) => row.name.toLowerCase() === name.toLowerCase())) return send(res, 409, { error: "Name ist schon vergeben." });
     const profile = { id: id("prf"), name, pin, characterIds: [], createdAt: new Date().toISOString() };
@@ -275,7 +295,8 @@ async function handleApi(req, res, url) {
     const state = store.read();
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (closeSpur(state, session)) { store.write(state); emitState(); }
-    return send(res, 200, snapshot());
+    const full = isGm(state, { as: "gm", gmKey: url.searchParams.get("gmKey") || "" });
+    return send(res, 200, snapshot(state, full));
   }
   if (method === "GET" && p === "/api/events") {
     res.writeHead(200, {
@@ -387,7 +408,7 @@ async function handleApi(req, res, url) {
   }
   const photoChar = p.match(/^\/api\/characters\/([^/]+)\/photos$/);
   if (method === "POST" && photoChar) {
-    const body = await readJson(req);
+    const body = await readJson(req, bodyLimit(p));
     const state = store.read();
     if (denyUnlessGm(res, state, body)) return;
     const character = state.characters.find((c) => c.id === photoChar[1]);
@@ -408,7 +429,7 @@ async function handleApi(req, res, url) {
 
   const portChar = p.match(/^\/api\/characters\/([^/]+)\/portrait$/);
   if (method === "POST" && portChar) {
-    const body = await readJson(req);
+    const body = await readJson(req, bodyLimit(p));
     const state = store.read();
     if (denyUnlessGm(res, state, body)) return;
     const character = state.characters.find((c) => c.id === portChar[1]);
@@ -426,15 +447,16 @@ async function handleApi(req, res, url) {
     const body = await readJson(req);
     const state = store.read();
     if (!isGm(state, body) && !isLocalAddress(req.socket.remoteAddress || "")) return send(res, 403, { error: "Nur der SL." });
-    delete body.as;
-    delete body.gmKey;
-    state.settings = { ...(state.settings || {}), ...body };
+    const next = {};
+    if (body.language != null) next.language = body.language;
+    if (body.houseName != null) next.houseName = String(body.houseName || "").slice(0, 40);
+    state.settings = { ...(state.settings || {}), ...next };
     store.write(state); emitState();
     return send(res, 200, state.settings);
   }
 
   if (method === "POST" && p === "/api/media") {
-    const body = await readJson(req);
+    const body = await readJson(req, bodyLimit(p));
     const state = store.read();
     if (!isGm(state, body) && !isLocalAddress(req.socket.remoteAddress || "")) return send(res, 403, { error: "Nur der SL." });
     if (!state.media) state.media = [];
@@ -524,6 +546,8 @@ async function handleApi(req, res, url) {
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine offene Session." });
     const pc = state.characters.find((c) => c.id === body.characterId);
+    const seatOk = session.seats && session.seats[body.characterId] === body.seat;
+    if (!isGm(state, body) && !seatOk) return send(res, 403, { error: "Nur der eigene Sitz." });
     if (!session.spotlightQueue) session.spotlightQueue = [];
     session.spotlightQueue.push({
       id: id("spot"),
@@ -564,7 +588,17 @@ async function handleApi(req, res, url) {
     const picked = body.tokenId ? (session?.map?.tokens || []).find((t) => t.id === body.tokenId && t.kind === "foe") : null;
     const foe = picked || nearestFoe(session, character);
     const typed = body.difficulty != null && body.difficulty !== "" ? Number(body.difficulty) : 0;
-    const roll = resolveActionRoll({ ...body, hopeDie: body.hopeDie || body.hope, fearDie: body.fearDie || body.fear, difficulty: typed || foe?.difficulty || 0 });
+    const gm = isGm(state, body);
+    const seatOk = session && character && session.seats && session.seats[character.id] === body.seat;
+    if (!gm && !seatOk) return send(res, 403, { error: "Nur der eigene Sitz." });
+    const roll = resolveActionRoll({
+      traitMod: body.traitMod,
+      experiences: Array.isArray(body.experiences) ? body.experiences : [],
+      mode: body.mode,
+      difficulty: typed || foe?.difficulty || 0,
+      hopeDie: gm ? (body.hopeDie || body.hope) : undefined,
+      fearDie: gm ? (body.fearDie || body.fear) : undefined,
+    });
     if (foe && !typed) roll.spoken += " · " + foe.label;
     const camp = session ? state.campaigns.find((c) => c.id === session.campaignId) : null;
     if (session && character) {
@@ -1076,6 +1110,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && p === "/api/solo/start") {
     const body = await readJson(req);
     const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
     const character = state.characters.find((c) => c.id === body.characterId) || state.characters[0];
     if (!character) return send(res, 400, { error: "Erst einen Bogen anlegen." });
     if (!state.active.sessionId) {
@@ -1098,6 +1133,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && p === "/api/solo/bot") {
     const body = await readJson(req);
     const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Erst Solo öffnen." });
     const bot = solo.find(body.botId);
@@ -1115,6 +1151,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && p === "/api/solo/act") {
     const body = await readJson(req);
     const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Erst Solo öffnen." });
     const token = (session.map.tokens || []).filter((t) => t.bot).pop();
@@ -1135,6 +1172,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && p === "/api/maps") {
     const body = await readJson(req);
     const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
     if (!state.maps) state.maps = [];
     const map = { id: id("map"), name: body.name || "Karte", tokens: body.tokens || [], at: new Date().toISOString() };
     state.maps.unshift(map);
@@ -1144,6 +1182,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && p === "/api/maps/load") {
     const body = await readJson(req);
     const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     const map = (state.maps || []).find((m) => m.id === body.id);
     if (!session || !map) return send(res, 404, { error: "Karte oder Session fehlt." });
@@ -1158,6 +1197,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && p === "/api/dungeon") {
     const body = await readJson(req);
     const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Erst Solo öffnen." });
     const rooms = solo.generate(body.rooms);
@@ -1173,6 +1213,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && p === "/api/dungeon/room") {
     const body = await readJson(req);
     const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     const room = session?.dungeon?.rooms?.find((r) => r.id === body.roomId);
     const character = state.characters.find((c) => c.id === body.characterId);
@@ -1201,6 +1242,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && p === "/api/solo/subclass") {
     const body = await readJson(req);
     const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
     const character = state.characters.find((c) => c.id === body.characterId);
     if (!character) return send(res, 404, { error: "Bogen fehlt." });
     solo.applySubclass(character, body.subclass);
@@ -1210,6 +1252,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && p === "/api/solo/level") {
     const body = await readJson(req);
     const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
     const origin = state.characters.find((c) => c.id === body.characterId);
     if (!origin) return send(res, 404, { error: "Bogen fehlt." });
     const targets = body.party
@@ -1314,6 +1357,8 @@ async function handleApi(req, res, url) {
     const state = store.read();
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine offene Session." });
+    const seatOk = session.seats && session.seats[body.characterId] === body.seat;
+    if (!isGm(state, body) && !seatOk) return send(res, 403, { error: "Nur der eigene Sitz." });
     session.ready = session.ready || {};
     session.ready[body.characterId] = Boolean(body.ready);
     const pc = state.characters.find((c) => c.id === body.characterId);
@@ -1329,6 +1374,8 @@ async function handleApi(req, res, url) {
     if (!session) return send(res, 400, { error: "Keine Session." });
     const pc = state.characters.find((c) => c.id === body.characterId && c.campaignId === session.campaignId);
     if (!pc) return send(res, 404, { error: "Bogen fehlt." });
+    if (!pc.playerPin) pc.playerPin = pin();
+    if (!isGm(state, body) && String(body.pin || "") !== String(pc.playerPin)) return send(res, 403, { error: "PIN stimmt nicht." });
     session.seats = session.seats || {};
     const seat = session.seats[pc.id] || id("seat");
     session.seats[pc.id] = seat;
@@ -1432,7 +1479,8 @@ async function handleApi(req, res, url) {
 const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
-    if (url.pathname.startsWith("/api/")) return await handleApi(req, res, url);
+    if (url.pathname === "/api/events") return await handleApi(req, res, url);
+    if (url.pathname.startsWith("/api/")) return await store.enqueue(() => handleApi(req, res, url));
     if (url.pathname === "/player" || url.pathname === "/player/") {
       return serveFile(res, path.join(PUBLIC, "player.html"), req);
     }
@@ -1492,6 +1540,7 @@ if (url.pathname.startsWith("/docs/bibliothek/")) {
     return serveFile(res, file, req);
   } catch (err) {
     if (err && err.badJson) return send(res, 400, { error: err.message });
+    if (err && err.tooBig) return send(res, 413, { error: err.message });
     send(res, 500, { error: err.message || "Serverfehler" });
   }
 });
