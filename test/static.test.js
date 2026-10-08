@@ -27,11 +27,21 @@ test("CSS und Skripte kommen als Datei, nicht als 500", async () => {
       try { await get(port, "/api/state"); up = true; } catch { await new Promise((r) => setTimeout(r, 100)); }
     }
     assert.equal(up, true, "Server ist nicht hochgekommen");
-    for (const urlPath of ["/css/ember.css", "/css/home-desk.css", "/js/gm.js", "/js/home-desk.js", "/pixelstube", "/api/sl-pin"]) {
+    for (const urlPath of ["/css/ember.css", "/css/home-desk.css", "/js/gm.js", "/js/home-desk.js", "/pixelstube", "/api/sl-pin", "/ember", "/solo"]) {
       const res = await get(port, urlPath);
       assert.equal(res.status, 200, urlPath + " " + res.body.slice(0, 80));
       assert.equal(res.body.includes("method is not defined"), false, urlPath);
     }
+    const start = await get(port, "/ember");
+    assert.match(start.body, /Ignite the Ember/);
+    assert.match(start.body, /Sit by the Fire/);
+    assert.match(start.body, /Extinguish the Ember/);
+    assert.match(start.body, /view-menu/);
+    assert.equal(start.body.includes("const topChip"), false);
+    assert.match(start.body, /if \(!document.getElementById\("view-" \+ name\)\) name = "menu"/);
+    const solo = await get(port, "/solo");
+    assert.match(solo.body, /id="btnSchwelle"/);
+    assert.match(solo.body, /Asche unter der Schwelle/);
   } finally {
     child.kill("SIGTERM");
   }

@@ -11,12 +11,19 @@
   <link rel="stylesheet" href="/css/start.css?v=13" />
   <script>
     var emberStack = ["menu"];
+    var emberNames = { menu: "Start", session: "Am Tisch", encounter: "Karte", tunnel: "Tunnel", chats: "Chats", "campaign-manager": "Kampagne", "character-manager": "Charakter" };
     function emberGo(name, back) {
+      if (!document.getElementById("view-" + name)) name = "menu";
       var current = emberStack[emberStack.length - 1];
       if (!back && name !== current) emberStack.push(name);
       document.querySelectorAll(".view").forEach(function (v) {
         v.classList.toggle("on", v.id === "view-" + name);
       });
+      var label = emberNames[name] || "Start";
+      document.title = "DYE.TV: Spielleiter, " + label;
+      document.querySelectorAll(".brand").forEach(function (el) { el.textContent = document.title; });
+      var foot = document.getElementById("footPage");
+      if (foot) foot.textContent = label;
     }
     function emberBack() {
       if (emberStack.length > 1) emberStack.pop();
@@ -28,22 +35,20 @@
     }
     document.addEventListener("click", function (ev) {
       var btn = ev.target.closest("[data-go]");
-      if (btn) {
-        emberGo(btn.getAttribute("data-go"));
-        var names = { menu: "Start", session: "Am Tisch", encounter: "Karte", tunnel: "Tunnel", chats: "Chats", "campaign-manager": "Kampagne", "character-manager": "Charakter" };
-        document.title = "DYE.TV: Spielleiter, " + (names[btn.getAttribute("data-go")] || "Start");
-        document.querySelectorAll(".brand").forEach(function (el) { el.textContent = document.title; });
-    const topChip = document.getElementById("lanChip");
-    const footChip = document.getElementById("lanChipFoot");
-    if (topChip && footChip) new MutationObserver(function () { footChip.textContent = topChip.textContent; footChip.style.display = topChip.style.display; }).observe(topChip, { childList: true, characterData: true, subtree: true, attributes: true });
-        var names = { menu: "Start", session: "Am Tisch", encounter: "Karte", "campaign-manager": "Kampagne", "character-manager": "Charakter", chats: "Chats", tunnel: "Tunnel" };
-        var go = btn.getAttribute("data-go");
-        document.title = "DYE.TV: Spielleiter, " + (names[go] || go);
-        var foot = document.getElementById("footPage");
-        if (foot) foot.textContent = names[go] || go;
-      }
+      if (btn) emberGo(btn.getAttribute("data-go"));
       if (ev.target.closest("#btnLeave")) emberLeave();
       if (ev.target.closest("#btnBack")) emberBack();
+    });
+    document.addEventListener("DOMContentLoaded", function () {
+      var topChip = document.getElementById("lanChip");
+      var footChip = document.getElementById("lanChipFoot");
+      if (!topChip || !footChip) return;
+      var copy = function () {
+        footChip.textContent = topChip.textContent;
+        footChip.style.display = topChip.style.display;
+      };
+      new MutationObserver(copy).observe(topChip, { childList: true, characterData: true, subtree: true, attributes: true });
+      copy();
     });
   </script>
 </head>
