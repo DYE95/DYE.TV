@@ -1,0 +1,38 @@
+{
+  "url": "http://127.0.0.1:8081/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Ember",
+      "hasCanvas": false,
+      "bodyTextLen": 202,
+      "bodyTextHash": "4c48b33ea747776ca617679e1c651fcab80b4a47eaf6e6e631143ef00ceb7551",
+      "bodyTextPrefix": "Ember DIE GLUT AM RAND DER UMBRA Die Glut zünden Spielleitung An",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Ember",
+      "hasCanvas": false,
+      "bodyTextLen": 202,
+      "bodyTextHash": "4c48b33ea747776ca617679e1c651fcab80b4a47eaf6e6e631143ef00ceb7551",
+      "bodyTextPrefix": "Ember DIE GLUT AM RAND DER UMBRA Die Glut zünden Spielleitung An",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-built.json",
+  "divergesFromBaseline": false,
+  "baselineReasons": []
+}

@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0c0908;
+  --color-surface: #161010;
+  --color-elevated: #1c1412;
+  --color-line: #3a2a24;
+  --color-fg: #f3e6d8;
+  --color-muted: #9a8476;
+  --color-ember: #e85d04;
+  --color-gold: #f4d6a0;
+  --color-hope: #e9c46a;
+  --color-fear: #e5989b;
+  --font-serif: "Fraunces", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-sans: "Outfit", "Segoe UI", sans-serif;
+  --radius-card: 0.85rem;
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+    background: var(--color-bg);
+    color: var(--color-fg);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+}
+
+.ember-start {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 768px) {
+  .ember-start {
+    grid-template-columns: minmax(20rem, 28rem) minmax(0, 1fr);
+  }
+}
+
+.ember-sigil {
+  box-shadow: 0 0 18px var(--color-ember);
+}
+
+.ember-map {
+  background-color: var(--color-bg);
+  background-image:
+    radial-gradient(ellipse at 50% 78%, color-mix(in srgb, var(--color-ember) 28%, transparent), transparent 58%),
+    linear-gradient(color-mix(in srgb, var(--color-line) 80%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-line) 80%, transparent) 1px, transparent 1px);
+  background-size: auto, 48px 48px, 48px 48px;
+  touch-action: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ember-pulse {
+    animation: none !important;
+  }
+}
