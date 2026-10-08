@@ -4,19 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>DYE.TV: Spielleiter, Start</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Outfit:wght@400;500;600&display=swap" />
   <link rel="stylesheet" href="/css/ember.css?v=17" />
   <link rel="stylesheet" href="/css/table-indicator.css?v=1" />
   <link rel="stylesheet" href="/css/topbar.css?v=11" />
   <link rel="stylesheet" href="/css/float.css?v=1" />
-  <link rel="stylesheet" href="/css/start.css?v=13" />
+  <link rel="stylesheet" href="/css/start.css?v=14" />
   <script>
     var emberStack = ["menu"];
+    var emberNames = { menu: "Start", session: "Am Tisch", encounter: "Karte", tunnel: "Tunnel", chats: "Chats", "campaign-manager": "Kampagne", "character-manager": "Charakter" };
     function emberGo(name, back) {
+      if (!document.getElementById("view-" + name)) name = "menu";
       var current = emberStack[emberStack.length - 1];
       if (!back && name !== current) emberStack.push(name);
       document.querySelectorAll(".view").forEach(function (v) {
         v.classList.toggle("on", v.id === "view-" + name);
       });
+      var label = emberNames[name] || "Start";
+      document.title = "DYE.TV: Spielleiter, " + label;
+      document.querySelectorAll(".brand").forEach(function (el) { el.textContent = document.title; });
+      var foot = document.getElementById("footPage");
+      if (foot) foot.textContent = label;
     }
     function emberBack() {
       if (emberStack.length > 1) emberStack.pop();
@@ -28,22 +38,20 @@
     }
     document.addEventListener("click", function (ev) {
       var btn = ev.target.closest("[data-go]");
-      if (btn) {
-        emberGo(btn.getAttribute("data-go"));
-        var names = { menu: "Start", session: "Am Tisch", encounter: "Karte", tunnel: "Tunnel", chats: "Chats", "campaign-manager": "Kampagne", "character-manager": "Charakter" };
-        document.title = "DYE.TV: Spielleiter, " + (names[btn.getAttribute("data-go")] || "Start");
-        document.querySelectorAll(".brand").forEach(function (el) { el.textContent = document.title; });
-    const topChip = document.getElementById("lanChip");
-    const footChip = document.getElementById("lanChipFoot");
-    if (topChip && footChip) new MutationObserver(function () { footChip.textContent = topChip.textContent; footChip.style.display = topChip.style.display; }).observe(topChip, { childList: true, characterData: true, subtree: true, attributes: true });
-        var names = { menu: "Start", session: "Am Tisch", encounter: "Karte", "campaign-manager": "Kampagne", "character-manager": "Charakter", chats: "Chats", tunnel: "Tunnel" };
-        var go = btn.getAttribute("data-go");
-        document.title = "DYE.TV: Spielleiter, " + (names[go] || go);
-        var foot = document.getElementById("footPage");
-        if (foot) foot.textContent = names[go] || go;
-      }
+      if (btn) emberGo(btn.getAttribute("data-go"));
       if (ev.target.closest("#btnLeave")) emberLeave();
       if (ev.target.closest("#btnBack")) emberBack();
+    });
+    document.addEventListener("DOMContentLoaded", function () {
+      var topChip = document.getElementById("lanChip");
+      var footChip = document.getElementById("lanChipFoot");
+      if (!topChip || !footChip) return;
+      var copy = function () {
+        footChip.textContent = topChip.textContent;
+        footChip.style.display = topChip.style.display;
+      };
+      new MutationObserver(copy).observe(topChip, { childList: true, characterData: true, subtree: true, attributes: true });
+      copy();
     });
   </script>
 </head>
@@ -81,19 +89,35 @@
 
     <section class="view on" id="view-menu">
       <div class="start">
-        <div class="start-side">
+        <figure class="start-art start-art-mobile">
+          <img src="/ember/hearth.jpg" alt="" />
+        </figure>
+        <section class="start-side">
           <div class="start-card">
             <div class="sigil"></div>
             <h1 class="start-title">Ember</h1>
             <p class="tagline">Die Glut am Rand der Umbra</p>
-            <div class="start-menu">
-              <button class="start-item" id="btnIgnite" data-go="session"><b>Ignite the Ember</b><span>The fire knows who sits.</span></button>
-              <a class="start-item" href="/player"><b>Sit by the Fire</b><span>Own seat, new tab.</span></a>
-              <button class="start-item start-item-danger" id="btnLeave"><b>Extinguish the Ember</b><span>The pin stays.</span></button>
-            </div>
+            <nav class="start-menu" aria-label="Eingänge">
+              <button class="start-item" id="btnIgnite" data-go="session" type="button">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2s1 3 1 5a3 3 0 0 1-6 0c0-1 .5-2 1-3-2 2-3 4-3 6a7 7 0 0 0 14 0c0-3-2-6-4-8-1 2-2 3-3 0z"/></svg>
+                <span class="start-copy"><b>Die Glut zünden</b><span>Spielleitung</span></span>
+              </button>
+              <a class="start-item" href="/player">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-3.3 0-8 1.7-8 5v1h16v-1c0-3.3-4.7-5-8-5z"/></svg>
+                <span class="start-copy"><b>Ans Feuer setzen</b><span>Eigener Sitz</span></span>
+              </a>
+              <a class="start-item" href="/solo">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M4 20V10l8-6 8 6v10h-6v-6H10v6z"/></svg>
+                <span class="start-copy"><b>Unter die Schwelle</b><span>Solo, vier Räume</span></span>
+              </a>
+            </nav>
+            <p class="start-note">Drei Eingänge, auch nach dem Neuladen. Der Tisch bleibt auf diesem Rechner.</p>
+            <button class="start-leave" id="btnLeave" type="button">Glut löschen</button>
           </div>
-        </div>
-        <div class="start-art" role="img" aria-label="Lagerfeuer am Rand der Umbra"></div>
+        </section>
+        <figure class="start-art start-art-desk">
+          <img src="/ember/hearth.jpg" alt="Lagerfeuer am Rand der Umbra" />
+        </figure>
       </div>
     </section>
 
