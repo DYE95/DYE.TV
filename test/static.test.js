@@ -33,9 +33,10 @@ test("CSS und Skripte kommen als Datei, nicht als 500", async () => {
       assert.equal(res.body.includes("method is not defined"), false, urlPath);
     }
     const start = await get(port, "/ember");
-    assert.match(start.body, /Ignite the Ember/);
-    assert.match(start.body, /Sit by the Fire/);
-    assert.match(start.body, /Extinguish the Ember/);
+    assert.match(start.body, /Die Glut zünden/);
+    assert.match(start.body, /Ans Feuer setzen/);
+    assert.match(start.body, /Unter die Schwelle/);
+    assert.match(start.body, /hearth.jpg/);
     assert.match(start.body, /view-menu/);
     assert.equal(start.body.includes("const topChip"), false);
     assert.match(start.body, /if \(!document.getElementById\("view-" \+ name\)\) name = "menu"/);
