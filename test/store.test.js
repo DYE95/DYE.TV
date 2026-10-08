@@ -121,13 +121,13 @@ test("dedupeProbes behält eine Probe und wirft Kopien weg", () => {
   assert.equal(state.active.campaignId, "b");
 });
 
-test("makeCharacter setzt Standardwerte und eine vierstellige PIN", () => {
+test("makeCharacter setzt Standardwerte und eine PIN aus acht Zeichen", () => {
   const c = store.makeCharacter({ name: "Sable", campaignId: "camp1" });
   assert.equal(c.name, "Sable");
   assert.equal(c.campaignId, "camp1");
   assert.equal(c.hope, 2);
   assert.equal(c.hopeMax, 6);
-  assert.match(c.playerPin, /^\d{4}$/);
+  assert.match(c.playerPin, /^[A-Z2-9]{8}$/);
 });
 
 test("öffentlicher Blick leert fremde Notizen, der SL-Blick behält sie", () => {

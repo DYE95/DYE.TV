@@ -244,6 +244,9 @@ function render() {
       const b = document.createElement("button");
       b.type = "button";
       b.className = "pip" + (i <= val ? " on" : "");
+      b.type = "button";
+      b.setAttribute("aria-pressed", i <= val ? "true" : "false");
+      b.setAttribute("aria-label", label + " " + i);
       b.addEventListener("click", () => fetch("/api/characters/" + pc.id, {
         method: "PATCH", headers: { "Content-Type": "application/json" },
         body: JSON.stringify(Object.assign(key === "hope" ? { hope: i === val ? i - 1 : i } : key === "stress" ? { stressMarked: i === val ? i - 1 : i } : { hpMarked: i === val ? i - 1 : i }, { seat: seatBox.getItem("ember.seat") || "" })),

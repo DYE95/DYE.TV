@@ -389,7 +389,7 @@ function sheetSeat() {
 }
 function startStateFeed(apply) {
   let last = 0;
-  const pull = () => fetch(stateUrl()).then((r) => r.json()).then((s) => { last = Date.now(); apply(s); }).catch(() => {});
+  const pull = () => fetch(stateUrl()).then((r) => r.json()).then((s) => { last = Date.now(); document.body.dataset.offline = "0"; apply(s); }).catch(() => { document.body.dataset.offline = "1"; });
   pull();
   const es = new EventSource("/api/events");
   es.addEventListener("message", (ev) => {

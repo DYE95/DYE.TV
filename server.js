@@ -15,6 +15,7 @@ const compendium = require("./lib/compendium");
 const solo = require("./lib/solo");
 const spur = require("./lib/spur");
 const { isGm, recordGmKey, isLocalAddress } = require("./lib/auth");
+const rules = require("./lib/rules");
 
 const PORT = Number(process.env.EMBER_PORT || 3478);
 const HOST = process.env.EMBER_HOST || "0.0.0.0";
@@ -104,7 +105,11 @@ function remember(session, entry) {
 }
 
 function send(res, status, body) {
-  res.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
+  res.writeHead(status, {
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "no-store",
+    "X-Content-Type-Options": "nosniff",
+  });
   res.end(JSON.stringify(body));
 }
 
@@ -181,7 +186,7 @@ function serveFile(res, filePath, req) {
       });
       return fs.createReadStream(filePath, { start, end }).pipe(res);
     }
-    res.writeHead(200, { "Content-Type": type, "Accept-Ranges": "bytes", "Content-Length": st.size });
+    res.writeHead(200, { "Content-Type": type, "Accept-Ranges": "bytes", "Content-Length": st.size, "X-Content-Type-Options": "nosniff" });
     fs.createReadStream(filePath).pipe(res);
   });
 }
@@ -305,6 +310,11 @@ async function handleApi(req, res, url) {
       Connection: "keep-alive",
     });
     res.write("data: " + JSON.stringify(snapshot()) + "\n\n");
+    if (clients.size >= 32) {
+      const oldest = clients.values().next().value;
+      try { oldest.end(); } catch {}
+      clients.delete(oldest);
+    }
     clients.add(res);
     req.on("close", () => clients.delete(res));
     return;
@@ -591,10 +601,15 @@ async function handleApi(req, res, url) {
     const gm = isGm(state, body);
     const seatOk = session && character && session.seats && session.seats[character.id] === body.seat;
     if (!gm && !seatOk) return send(res, 403, { error: "Nur der eigene Sitz." });
+    if (session && session.paused && !gm) return send(res, 403, { error: "Pause. Die Glut wartet." });
+    const experiences = character ? rules.ownedExperiences(character, body.experiences) : [];
+    if (character && experiences.length > Number(character.hope || 0)) return send(res, 400, { error: "Zu wenig Hope für die Experience." });
+    const helped = session && character && session.help && session.help[character.id];
+    if (helped && session) delete session.help[character.id];
     const roll = resolveActionRoll({
       traitMod: body.traitMod,
-      experiences: Array.isArray(body.experiences) ? body.experiences : [],
-      mode: body.mode,
+      experiences,
+      mode: helped ? "advantage" : body.mode,
       difficulty: typed || foe?.difficulty || 0,
       hopeDie: gm ? (body.hopeDie || body.hope) : undefined,
       fearDie: gm ? (body.fearDie || body.fear) : undefined,
@@ -947,19 +962,18 @@ async function handleApi(req, res, url) {
     const evasion = Number(character.evasion || 10);
     const hit = total >= evasion;
     let dmg = 0;
+    let mark = "";
     if (hit) {
-      dmg = Math.max(1, 1 + bonus);
-      if (Number(character.armorMarked || 0) < Number(character.armorScore || character.armor?.score || 0)) {
-        character.armorMarked = Number(character.armorMarked || 0) + 1;
-        dmg = Math.max(0, dmg - Number(character.armorScore || character.armor?.score || 1));
-      }
-      character.hpMarked = clamp(Number(character.hpMarked || 0) + dmg, 0, character.hpMax || 6);
+      const raw = Math.max(1, Number(token.damage || (1 + bonus)));
+      const applied = rules.applyHit(character, raw);
+      dmg = applied.dmg;
+      mark = applied.mark;
     }
     const down = Number(character.hpMarked || 0) >= Number(character.hpMax || 6);
     addLog(session, {
       kind: "roll",
       author: token.label,
-      text: token.label + " würfelt " + die + "+" + bonus + " = " + total + " gegen Evasion " + evasion + " — " + (hit ? "trifft, " + dmg + " HP" : "verfehlt") + (down ? ". " + character.name + " liegt." : ""),
+      text: token.label + " würfelt " + die + "+" + bonus + " = " + total + " gegen Evasion " + evasion + " — " + (hit ? "trifft, " + dmg + " HP" + (mark ? ", " + mark : "") : "verfehlt") + (down ? ". " + character.name + " liegt." : ""),
     });
     const heroes = state.characters.filter((c) => c.campaignId === session.campaignId);
     if (heroes.length && heroes.every((c) => Number(c.hpMarked || 0) >= Number(c.hpMax || 6))) {
@@ -975,10 +989,12 @@ async function handleApi(req, res, url) {
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     if (!session) return send(res, 400, { error: "Keine Session." });
     const camp = state.campaigns.find((c) => c.id === session.campaignId);
-    if (!camp || !(camp.gmFear > 0)) return send(res, 400, { error: "Kein Fear." });
-    camp.gmFear -= 1;
+    const spend = Math.max(1, Math.min(Number(body.amount || 1), Number(camp?.gmFear || 0)));
+    if (!camp || spend < 1) return send(res, 400, { error: "Kein Fear." });
+    camp.gmFear -= spend;
+    if (body.tick) session.sceneClock = (session.sceneClock || 0) + 1;
     initiative.apply(session, { action: "side" });
-    addLog(session, { kind: "system", author: "Fear", text: "Fear ausgegeben. " + (initiative.spoken(session) || "Gegenseite.") });
+    addLog(session, { kind: "system", author: "Fear", text: spend + " Fear. " + (body.reason || "Gegenseite.") + " " + (initiative.spoken(session) || "") });
     store.write(state); emitState();
     return send(res, 200, { gmFear: camp.gmFear, initiative: session.initiative });
   }
@@ -1076,6 +1092,8 @@ async function handleApi(req, res, url) {
 
     try {
       const cwd = __dirname;
+      const dirty = execSync("git status --porcelain", { cwd }).toString().trim();
+      if (dirty) return send(res, 400, { error: "Lokale Änderungen. Erst beiseite legen." });
       const before = execSync("git rev-parse HEAD", { cwd }).toString().trim();
       execSync("git fetch --all --prune", { cwd, stdio: "pipe" });
       const pullLog = execSync("git pull --ff-only", { cwd }).toString().trim();
@@ -1100,9 +1118,7 @@ async function handleApi(req, res, url) {
       });
     } catch (err) {
       return send(res, 500, {
-        error: err.message,
-        stdout: err.stdout ? err.stdout.toString() : "",
-        stderr: err.stderr ? err.stderr.toString() : "",
+        error: "Update nicht möglich.",
       });
     }
   }
@@ -1388,6 +1404,8 @@ async function handleApi(req, res, url) {
     const rows = session?.handouts || [];
     if (isGm(state, { as: "gm", gmKey: url.searchParams.get("gmKey") || "" })) return send(res, 200, { handouts: rows });
     const who = url.searchParams.get("characterId") || "";
+    const seatOk = session && session.seats && session.seats[who] === (url.searchParams.get("seat") || "");
+    if (!seatOk) return send(res, 200, { handouts: rows.filter((h) => !h.toId).map((h) => ({ id: h.id, title: h.title, sealed: true })) });
     return send(res, 200, { handouts: rows.filter((h) => !h.toId || h.toId === who) });
   }
   if (method === "GET" && p === "/api/spur") return send(res, 200, { games: spur.list() });
@@ -1473,6 +1491,107 @@ async function handleApi(req, res, url) {
     return send(res, 200, { ok: true, result: line || "" });
   }
 
+
+  if (method === "GET" && p === "/api/backup") {
+    if (!isLocalAddress(req.socket.remoteAddress || "")) return send(res, 403, { error: "Nur dieser Rechner." });
+    const file = path.join(__dirname, "data", "ember.json");
+    if (!fs.existsSync(file)) return send(res, 404, { error: "Noch keine Glut." });
+    res.writeHead(200, {
+      "Content-Type": "application/json; charset=utf-8",
+      "Content-Disposition": "attachment; filename=ember-backup.json",
+      "X-Content-Type-Options": "nosniff",
+    });
+    return fs.createReadStream(file).pipe(res);
+  }
+  if (method === "POST" && p === "/api/session/pause") {
+    const body = await readJson(req);
+    const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Keine Session." });
+    session.paused = !session.paused;
+    addLog(session, { kind: "system", author: "Pause", text: session.paused ? "Die Glut wartet." : "Weiter." });
+    store.write(state); emitState();
+    return send(res, 200, { paused: session.paused });
+  }
+  if (method === "POST" && p === "/api/session/countdown") {
+    const body = await readJson(req);
+    const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Keine Session." });
+    session.countdowns = session.countdowns || [];
+    const row = session.countdowns.find((c) => c.id === body.id) || { id: id("cd"), name: body.name || "Uhr", max: Number(body.max || 6), value: 0 };
+    if (!session.countdowns.includes(row)) session.countdowns.push(row);
+    if (body.tick) row.value = Math.min(row.max, Number(row.value || 0) + 1);
+    if (body.value != null) row.value = Math.max(0, Math.min(row.max, Number(body.value)));
+    addLog(session, { kind: "system", author: row.name, text: row.value + "/" + row.max });
+    store.write(state); emitState();
+    return send(res, 200, row);
+  }
+  if (method === "POST" && p === "/api/session/help") {
+    const body = await readJson(req);
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Keine Session." });
+    const helper = state.characters.find((c) => c.id === body.helperId);
+    const target = state.characters.find((c) => c.id === body.characterId);
+    if (!helper || !target) return send(res, 404, { error: "Bogen fehlt." });
+    if (!isGm(state, body) && (!session.seats || session.seats[helper.id] !== body.seat)) return send(res, 403, { error: "Nur der eigene Sitz." });
+    if (body.spend === "hope") {
+      if (Number(helper.hope || 0) < 1) return send(res, 400, { error: "Kein Hope." });
+      helper.hope -= 1;
+    } else helper.stressMarked = Math.min(helper.stressMax || 6, Number(helper.stressMarked || 0) + 1);
+    session.help = session.help || {};
+    session.help[target.id] = helper.id;
+    addLog(session, { kind: "system", author: helper.name, text: "Hilft " + target.name + "." });
+    store.write(state); emitState();
+    return send(res, 200, { ok: true });
+  }
+  if (method === "POST" && p === "/api/session/tag") {
+    const body = await readJson(req);
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Keine Session." });
+    const lead = state.characters.find((c) => c.id === body.characterId);
+    const helper = state.characters.find((c) => c.id === body.helperId);
+    if (!lead || !helper) return send(res, 404, { error: "Bogen fehlt." });
+    const gm = isGm(state, body);
+    const leadOk = session.seats && session.seats[lead.id] === body.seat;
+    const helpOk = session.seats && session.seats[helper.id] === body.helperSeat;
+    if (!gm && !(leadOk && helpOk)) return send(res, 403, { error: "Beide Sitze." });
+    if (Number(helper.hope || 0) < 1) return send(res, 400, { error: "Helfer hat kein Hope." });
+    helper.hope -= 1;
+    const roll = resolveActionRoll({ traitMod: body.traitMod, hopeDie: undefined, fearDie: undefined });
+    const second = 1 + Math.floor(Math.random() * 12);
+    roll.total += second;
+    roll.spoken += " · Tag " + second;
+    const camp = state.campaigns.find((c) => c.id === session.campaignId);
+    const pools = applyPools({ hope: lead.hope, hopeMax: lead.hopeMax, fear: camp ? camp.gmFear : 0, fearMax: camp ? camp.fearMax : 12 }, roll);
+    lead.hope = pools.hope;
+    if (camp) camp.gmFear = pools.fear;
+    addLog(session, { kind: "roll", author: lead.name + " + " + helper.name, text: roll.spoken });
+    store.write(state); emitState();
+    return send(res, 200, { roll });
+  }
+  if (method === "POST" && p === "/api/session/weapon") {
+    const body = await readJson(req);
+    const state = store.read();
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Keine Session." });
+    const character = state.characters.find((c) => c.id === body.characterId);
+    if (!character) return send(res, 404, { error: "Bogen fehlt." });
+    if (!isGm(state, body) && (!session.seats || session.seats[character.id] !== body.seat)) return send(res, 403, { error: "Nur der eigene Sitz." });
+    const row = rules.levelRow(character.level);
+    const dice = [];
+    for (let i = 0; i < row.proficiency; i += 1) dice.push(1 + Math.floor(Math.random() * 6));
+    const trait = Number(body.traitMod || 0);
+    const total = dice.reduce((s, n) => s + n, 0) + trait;
+    addLog(session, { kind: "roll", author: character.name, text: "Waffe " + dice.join("+") + (trait ? "+" + trait : "") + " = " + total });
+    store.write(state); emitState();
+    return send(res, 200, { dice, total });
+  }
+
   return send(res, 404, { error: "Unbekannte Route." });
 }
 
@@ -1544,6 +1663,17 @@ if (url.pathname.startsWith("/docs/bibliothek/")) {
     send(res, 500, { error: err.message || "Serverfehler" });
   }
 });
+
+setInterval(() => {
+  store.enqueue(() => {
+    const state = store.read();
+    const session = (state.sessions || []).find((s) => s.id === state.active.sessionId);
+    if (session && closeSpur(state, session)) {
+      store.write(state);
+      emitState();
+    }
+  }).catch(() => {});
+}, 1000);
 
 server.listen(PORT, HOST, async () => {
   await spark.ignite({ label: "Ember zündet" });

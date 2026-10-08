@@ -269,3 +269,6 @@ button, .btn, .icon-btn, select, input, textarea { font: inherit; }
 .panel h2 { letter-spacing: .03em; font-weight: 500; }
 .log-item .who { color: var(--gold); font-size: 12px; }
 .log-item .txt { color: #f3e6d8; }
+
+.player-shell .actions { padding-bottom: calc(8px + env(safe-area-inset-bottom)); }
+body[data-offline='1'] .topbar::after { content: 'Glut weg'; margin-left: 8px; color: #e85d04; }

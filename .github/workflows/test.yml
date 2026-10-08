@@ -28,17 +28,9 @@ jobs:
         with:
           node-version: 20
 
-      - name: npm-Cache
-        if: hashFiles('package-lock.json') != ''
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: npm-${{ runner.os }}-node20-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            npm-${{ runner.os }}-node20-
 
       - name: Syntax
-        run: node --check server.js && node --check lib/initiative.js && node --check lib/dice.js
+        run: node --check server.js && find lib public/js -name '*.js' -print0 | xargs -0 -n1 node --check
 
       - name: Rundenlogik und Duality
-        run: node --test test/initiative.test.js test/dice.test.js test/solo.test.js test/store.test.js test/auth.test.js
+        run: node --test test/*.test.js
