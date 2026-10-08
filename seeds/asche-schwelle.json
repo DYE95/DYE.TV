@@ -1,0 +1,32 @@
+{
+  "revision": 1,
+  "campaigns": [
+    {
+      "id": "camp_schwelle",
+      "name": "Asche unter der Schwelle",
+      "frame": "Age of Umbra",
+      "notes": "Vier R\u00e4ume, halb Zufall. Schwelle, Krypta, Brunnen, Galerie.",
+      "gmFear": 2,
+      "fearMax": 12
+    }
+  ],
+  "characters": [
+    {
+      "id": "char_ira",
+      "campaignId": "camp_schwelle",
+      "name": "Ira",
+      "class": "Rogue",
+      "level": 1,
+      "hope": 2,
+      "hopeMax": 6,
+      "traits": {
+        "agility": 2
+      }
+    }
+  ],
+  "sessions": [],
+  "active": {
+    "campaignId": "camp_schwelle",
+    "sessionId": null
+  }
+}

@@ -43,12 +43,15 @@
   gap: 4px;
   padding: 14px 16px;
   border: 1px solid #2c3a48;
+  border-radius: 12px;
   background: #16202a;
   color: inherit;
   text-align: left;
   cursor: grab;
   user-select: none;
+  transition: border-color .15s ease;
 }
+.desk-tile:hover { border-color: #7ea0c4; }
 .desk-tile:active { cursor: grabbing; }
 .desk-tile b { font-size: 1.05em; }
 .desk-tile span { color: #8aa0b5; font-size: 0.85em; }

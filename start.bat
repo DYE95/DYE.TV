@@ -6,9 +6,18 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
-echo Ein Fenster. Glut und Tunnel. Offen lassen.
-echo Lokal: http://127.0.0.1:3478/
-echo Zu Hause steht unten, sobald cloudflared eine Adresse schreibt.
+if not exist data mkdir data
+if not exist data\sl.pin (
+  set /p SL_PIN=Spielleiter-PIN, einmalig, bleibt liegen:
+  echo %SL_PIN%> data\sl.pin
+)
+title DYE.TV  Spielleiter http://127.0.0.1:3478/ember
+echo.
+echo  Spielleiter   http://127.0.0.1:3478/ember
+echo  Spieler       http://127.0.0.1:3478/player
+echo  PIN           data\sl.pin
+echo  Zu Hause      steht in der Titelleiste, sobald der Tunnel da ist
+echo.
 start /b node tools\tunnel.js
 :emberloop
 node server.js

@@ -204,6 +204,61 @@ async function handleApi(req, res, url) {
   const method = req.method;
   const p = url.pathname;
 
+  if (method === "GET" && p === "/api/sl-pin") {
+    const remote = req.socket.remoteAddress || "";
+    if (!remote.endsWith("127.0.0.1") && remote !== "::1") return send(res, 403, { error: "Nur dieser Rechner." });
+    const pinPath = path.join(__dirname, "data", "sl.pin");
+    const pin = fs.existsSync(pinPath) ? fs.readFileSync(pinPath, "utf8").trim() : "";
+    return send(res, 200, { pin });
+  }
+
+  if (method === "GET" && p === "/api/profiles") {
+    const remote = req.socket.remoteAddress || "";
+    if (!isLocalAddress(remote)) return send(res, 403, { error: "Nur dieser Rechner." });
+    const state = store.read();
+    return send(res, 200, { profiles: state.profiles || [], characters: (state.characters || []).map((c) => ({ id: c.id, name: c.name, class: c.class || "" })) });
+  }
+  if (method === "POST" && p === "/api/profiles") {
+    const body = await readJson(req);
+    const name = String(body.name || "").trim();
+    const pin = String(body.pin || "").trim();
+    if (!name || pin.length < 4) return send(res, 400, { error: "Name und PIN, mindestens 4 Zeichen." });
+    const state = store.read();
+    state.profiles = state.profiles || [];
+    if (state.profiles.some((row) => row.name.toLowerCase() === name.toLowerCase())) return send(res, 409, { error: "Name ist schon vergeben." });
+    const profile = { id: id("prf"), name, pin, characterIds: [], createdAt: new Date().toISOString() };
+    state.profiles.push(profile);
+    store.write(state);
+    return send(res, 200, { id: profile.id, name: profile.name, characterIds: [] });
+  }
+  if (method === "POST" && p === "/api/profiles/enter") {
+    const body = await readJson(req);
+    const name = String(body.name || "").trim().toLowerCase();
+    const pin = String(body.pin || "").trim();
+    const state = store.read();
+    const profile = (state.profiles || []).find((row) => row.name.toLowerCase() === name && row.pin === pin);
+    if (!profile) return send(res, 403, { error: "Name oder PIN stimmt nicht." });
+    const mine = new Set(profile.characterIds || []);
+    const characters = (state.characters || []).filter((c) => mine.has(c.id)).map((c) => ({ id: c.id, name: c.name, class: c.class || "", hope: c.hope }));
+    return send(res, 200, { id: profile.id, name: profile.name, characterIds: profile.characterIds || [], characters });
+  }
+  if (method === "POST" && p === "/api/profiles/bind") {
+    const body = await readJson(req);
+    const remote = req.socket.remoteAddress || "";
+    const state = store.read();
+    const local = isLocalAddress(remote);
+    const name = String(body.name || "").trim().toLowerCase();
+    const pin = String(body.pin || "").trim();
+    const profile = (state.profiles || []).find((row) => row.name.toLowerCase() === name && (local || row.pin === pin));
+    if (!profile) return send(res, 403, { error: "Profil nicht gefunden." });
+    if (!local && profile.pin !== pin) return send(res, 403, { error: "PIN stimmt nicht." });
+    const character = (state.characters || []).find((c) => c.id === body.characterId);
+    if (!character) return send(res, 404, { error: "Charakter fehlt." });
+    profile.characterIds = profile.characterIds || [];
+    if (!profile.characterIds.includes(character.id)) profile.characterIds.push(character.id);
+    store.write(state);
+    return send(res, 200, { id: profile.id, name: profile.name, characterIds: profile.characterIds });
+  }
   if (method === "GET" && p === "/api/chats") {
     const file = path.join(PUBLIC, "data", "chats.json");
     const dir = path.join(__dirname, "docs", "chats");
@@ -234,6 +289,18 @@ async function handleApi(req, res, url) {
     return;
   }
 
+
+  if (method === "POST" && p === "/api/campaigns/import-schwelle") {
+    const body = await readJson(req);
+    const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
+    const file = path.join(__dirname, "seeds", "asche-schwelle.json");
+    if (!fs.existsSync(file)) return send(res, 404, { error: "Kampagne fehlt." });
+    const seed = JSON.parse(fs.readFileSync(file, "utf8"));
+    if (store.importProbe(state, seed, "Asche unter der Schwelle")) store.write(state);
+    emitState();
+    return send(res, 200, { campaignId: state.campaigns.find((c) => c.name === "Asche unter der Schwelle")?.id });
+  }
   if (method === "POST" && p === "/api/campaigns/import-umbra") {
     const body = await readJson(req);
     const state = store.read();
@@ -1392,7 +1459,7 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === "/karten" || url.pathname === "/karten/") {
       return serveFile(res, path.join(PUBLIC, "karten.html"), req);
     }
-    if (url.pathname.startsWith("/docs/bibliothek/")) {
+if (url.pathname.startsWith("/docs/bibliothek/")) {
       const rel = decodeURIComponent(url.pathname.slice("/docs/bibliothek/".length));
       const file = safeJoin(LIBRARY, rel);
       if (!file) { res.writeHead(403); return res.end(); }
@@ -1431,20 +1498,32 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, HOST, async () => {
   await spark.ignite({ label: "Ember zündet" });
-  const urls = addresses();
+  try {
+    const pinPath = path.join(__dirname, "data", "sl.pin");
+    if (fs.existsSync(pinPath)) {
+      const pin = fs.readFileSync(pinPath, "utf8").trim();
+      const state = store.read();
+      if (pin && state.settings && !state.settings.gmKey) {
+        state.settings.gmKey = pin;
+        store.write(state);
+      }
+    }
+  } catch {}
   console.log("");
-  console.log("  Ember brennt.");
-  console.log("  Home:            http://127.0.0.1:" + PORT + "/");
-  console.log("  Die Glut:        http://127.0.0.1:" + PORT + "/ember");
-  console.log("  Fallwerk:        http://127.0.0.1:" + PORT + "/fallwerk");
-  console.log("  Pastellpfad:     http://127.0.0.1:" + PORT + "/pastellpfad");
-  console.log("  Scharfschuss:    http://127.0.0.1:" + PORT + "/scharfschuss");
-  console.log("  Pixelstube:      http://127.0.0.1:" + PORT + "/pixelstube");
-  console.log("  Puls:            http://127.0.0.1:" + PORT + "/puls");
-  console.log("  Heft:            http://127.0.0.1:" + PORT + "/heft");
-  if (!urls.length) console.log("  Kein LAN-Interface.");
-  else for (const u of urls) console.log("  Spieler-Ansicht: http://" + u.address + ":" + PORT + "/player   (" + u.name + ")");
-  if (remoteUrl()) console.log("  Zu Hause:        " + remoteUrl() + "/player");
-  else console.log("  Zu Hause:        tunnel.bat starten, dann die ausgegebene Adresse.");
+  console.log("  Spielleiter   http://127.0.0.1:" + PORT + "/ember");
+  console.log("  Spieler       http://127.0.0.1:" + PORT + "/player");
   console.log("");
+  const paintTitle = () => {
+    const remote = remoteUrl();
+    process.title = "DYE.TV  Spielleiter http://127.0.0.1:" + PORT + "/ember" + (remote ? "  |  Spieler " + remote + "/player" : "  |  Spieler http://127.0.0.1:" + PORT + "/player");
+  };
+  paintTitle();
+  let seen = remoteUrl();
+  setInterval(() => {
+    paintTitle();
+    const remote = remoteUrl();
+    if (remote && remote !== seen) {
+      seen = remote;
+    }
+  }, 2000);
 });

@@ -1,6 +1,6 @@
 {
   "name": "ember",
-  "version": "0.4.0",
+  "version": "0.0.0",
   "private": true,
   "main": "server.js",
   "scripts": { "start": "node server.js", "test": "node --test test/initiative.test.js test/dice.test.js test/solo.test.js test/store.test.js test/auth.test.js" }

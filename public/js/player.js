@@ -96,7 +96,7 @@ function renderClips() {
 function renderRoles() {
   const menu = $("#roleMenu");
   if (!menu) return;
-  const chars = state.characters || [];
+  const chars = profileChars();
   menu.innerHTML = "<p class='hint'>Rolle in diesem Tab. Tab öffnet denselben Bogen daneben, ohne diesen Sitz zu übernehmen.</p>" + chars.map((c) => `<button class="card" data-role="${c.id}"><div class="name">${c.name}</div><div class="meta">${c.class || "Spieler"}</div></button><a class="btn tiny" data-tab="${c.id}" href="${playerHref(c.id)}" target="_blank" rel="noopener">Tab</a>`).join("") + `<button class="card" data-role="guest"><div class="name">Gast</div><div class="meta">Karte, kein Bogen</div></button><a class="btn tiny" data-tab="guest" href="${playerHref("", true)}" target="_blank" rel="noopener">Gast-Tab</a><a class="btn" href="/">Spielleitung</a>`;
   menu.querySelectorAll("[data-role]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -108,13 +108,41 @@ function renderRoles() {
   });
 }
 $("#btnRoles")?.addEventListener("click", () => $("#roleMenu")?.classList.toggle("hidden"));
+let profile = null;
+try { profile = JSON.parse(sessionStorage.getItem("ember.profile") || "null"); } catch (err) { profile = null; }
+function profileChars() {
+  const chars = state.characters || [];
+  if (!profile) return [];
+  const mine = new Set(profile.characterIds || []);
+  return chars.filter((c) => mine.has(c.id));
+}
+async function saveProfile(path) {
+  const name = $("#profileName")?.value.trim();
+  const pin = $("#profilePin")?.value.trim();
+  const note = $("#profileNote");
+  const res = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, pin }) });
+  const data = await res.json();
+  if (!res.ok) { if (note) note.textContent = data.error || "Profil abgelehnt."; return; }
+  profile = data;
+  sessionStorage.setItem("ember.profile", JSON.stringify({ id: data.id, name: data.name, pin, characterIds: data.characterIds || [] }));
+  if (note) note.textContent = data.name + " sitzt. Bögen: " + (data.characterIds || []).length;
+  renderGate();
+}
+$("#btnProfileEnter")?.addEventListener("click", () => saveProfile("/api/profiles/enter"));
+$("#btnProfileCreate")?.addEventListener("click", () => saveProfile("/api/profiles"));
 function renderGate() {
   const list = $("#seatList");
   if (!list) return;
   list.innerHTML = "";
-  const chars = state.characters || [];
+  const note = $("#profileNote");
+  if (note && profile) note.textContent = profile.name + " · " + (profile.characterIds || []).length + " Bögen";
+  const chars = profileChars();
+  if (!profile) {
+    list.innerHTML = "<p class='hint'>Erst Profil anlegen oder eintreten. Ohne PIN kein eigener Bogen.</p>";
+    return;
+  }
   if (!chars.length) {
-    list.innerHTML = "<p class='hint'>Noch keine Bögen. Trotzdem Gast, Tokenatelier und Video gehen.</p>";
+    list.innerHTML = "<p class='hint'>Profil steht, noch kein Bogen. Der Spielleiter merkt einen Bogen diesem Namen.</p>";
     return;
   }
   chars.forEach((c) => {

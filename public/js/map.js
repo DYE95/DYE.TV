@@ -1,4 +1,4 @@
-const MapKit = { draggingId: null, lastSig: "", tool: "move", zoneStart: null };
+const MapKit = { draggingId: null, lastSig: "", tool: "move", zoneStart: null, view: { scale: 1, x: 0, y: 0 } };
 
 function gm(body) { return { as: "gm", ...body, gmKey: localStorage.getItem("ember.gmKey") || "" }; }
 
@@ -21,17 +21,109 @@ function tokenStatus(token, state) {
   if (ses?.narrating && token.kind === "pc") return "narrating";
   return seat ? "online" : "";
 }
+function worldOf(stage) {
+  let world = stage.querySelector(":scope > .map-world");
+  if (!world) {
+    world = document.createElement("div");
+    world.className = "map-world";
+    while (stage.firstChild) world.appendChild(stage.firstChild);
+    stage.appendChild(world);
+    bindView(stage);
+  }
+  return world;
+}
+function applyView(stage) {
+  const world = stage.querySelector(":scope > .map-world");
+  if (!world) return;
+  const v = MapKit.view;
+  world.style.transform = `translate(${v.x}px, ${v.y}px) scale(${v.scale})`;
+}
+function pct(el, clientX, clientY) {
+  const box = el.getBoundingClientRect();
+  return {
+    x: box.width ? ((clientX - box.left) / box.width) * 100 : 0,
+    y: box.height ? ((clientY - box.top) / box.height) * 100 : 0,
+  };
+}
+function bindView(stage) {
+  if (stage.dataset.view === "1") return;
+  stage.dataset.view = "1";
+  let hud = stage.querySelector(".map-zoom");
+  if (!hud) {
+    hud = document.createElement("div");
+    hud.className = "map-zoom";
+    hud.innerHTML = `<button type="button" data-z="in">+</button><button type="button" data-z="out">−</button><button type="button" data-z="reset">1:1</button>`;
+    stage.appendChild(hud);
+    hud.addEventListener("click", (ev) => {
+      const b = ev.target.closest("button");
+      if (!b) return;
+      const box = stage.getBoundingClientRect();
+      const next = b.dataset.z === "in" ? MapKit.view.scale * 1.2 : b.dataset.z === "out" ? MapKit.view.scale / 1.2 : 1;
+      if (b.dataset.z === "reset") { MapKit.view.x = 0; MapKit.view.y = 0; MapKit.view.scale = 1; applyView(stage); return; }
+      zoomAt(stage, box.left + box.width / 2, box.top + box.height / 2, next);
+    });
+  }
+  stage.addEventListener("wheel", (ev) => {
+    ev.preventDefault();
+    const next = MapKit.view.scale * (ev.deltaY < 0 ? 1.12 : 0.9);
+    zoomAt(stage, ev.clientX, ev.clientY, next);
+  }, { passive: false });
+  stage.addEventListener("pointerdown", (ev) => {
+    if (ev.target.closest(".map-zoom, .token, .door")) return;
+    const pan = ev.button === 1 || ev.button === 2 || ev.altKey || (ev.button === 0 && MapKit.tool === "move");
+    if (!pan) return;
+    if (ev.button === 0 && MapKit.tool === "move" && ev.target.closest(".token")) return;
+    ev.preventDefault();
+    const start = { x: ev.clientX, y: ev.clientY, vx: MapKit.view.x, vy: MapKit.view.y };
+    const move = (e) => {
+      MapKit.view.x = start.vx + (e.clientX - start.x);
+      MapKit.view.y = start.vy + (e.clientY - start.y);
+      applyView(stage);
+    };
+    const up = () => {
+      stage.removeEventListener("pointermove", move);
+      stage.removeEventListener("pointerup", up);
+    };
+    stage.addEventListener("pointermove", move);
+    stage.addEventListener("pointerup", up);
+  });
+  stage.addEventListener("contextmenu", (ev) => ev.preventDefault());
+}
+function zoomAt(stage, clientX, clientY, next) {
+  const box = stage.getBoundingClientRect();
+  const v = MapKit.view;
+  const px = clientX - box.left;
+  const py = clientY - box.top;
+  const wx = (px - v.x) / v.scale;
+  const wy = (py - v.y) / v.scale;
+  v.scale = Math.max(1, Math.min(3.5, next));
+  v.x = px - wx * v.scale;
+  v.y = py - wy * v.scale;
+  applyView(stage);
+}
+function showTokenCard(stage, token) {
+  let card = stage.querySelector(".map-card");
+  if (!card) {
+    card = document.createElement("div");
+    card.className = "map-card";
+    stage.appendChild(card);
+  }
+  card.innerHTML = `<b>${token.label || "Token"}</b><span>${token.kind || "figur"} · ${Math.round(token.x || 0)}, ${Math.round(token.y || 0)}</span>`;
+  card.classList.add("on");
+}
 function renderMap(stage, state, opts = {}) {
   if (!stage) return;
+  const world = worldOf(stage);
   const ses = (state.sessions || []).find((s) => s.id === state.active?.sessionId);
   const map = ses?.map || { image: "", tokens: [] };
-  if (map.image) stage.style.backgroundImage = `url("${map.image}")`;
+  world.style.backgroundImage = map.image ? `url("${map.image}")` : "";
+  stage.style.backgroundImage = "none";
   let fog = stage.querySelector("canvas.fow");
   if (!fog) {
     fog = document.createElement("canvas");
     fog.className = "fow";
     fog.style.pointerEvents = "none";
-    stage.prepend(fog);
+    world.prepend(fog);
   }
   const tokens = map.tokens || [];
   const live = new Set(tokens.map((t) => t.id));
@@ -43,7 +135,7 @@ function renderMap(stage, state, opts = {}) {
       el.type = "button";
       el.dataset.id = token.id;
       el.addEventListener("pointerdown", (ev) => startDrag(ev, el, token, opts));
-      stage.appendChild(el);
+      world.appendChild(el);
     }
     const turn = (ses?.initiative?.on && (ses.initiative.order || [])[ses.initiative.index]) || null;
     const onTurn = turn && (turn.tokenId === token.id || (turn.characterId && turn.characterId === token.characterId));
@@ -62,7 +154,8 @@ function renderMap(stage, state, opts = {}) {
   });
   drawFog(fog, stage, map, opts);
   drawPing(stage, ses);
-  drawOverlays(stage, ses, opts);
+
+  drawRanges(world, stage, ses, state, opts);
   bindFieldTools(stage, opts);
 }
 function drawPing(stage, ses) {
@@ -75,7 +168,7 @@ function drawPing(stage, ses) {
   el.style.left = ping.x + "%";
   el.style.top = ping.y + "%";
   el.textContent = ping.name;
-  stage.appendChild(el);
+  worldOf(stage).appendChild(el);
   const left = Math.max(200, 4000 - (Date.now() - ping.at));
   setTimeout(() => el.remove(), left);
 }
@@ -164,7 +257,7 @@ function drawOverlays(stage, ses, opts) {
     el.style.left = z.x + "%"; el.style.top = z.y + "%";
     el.style.width = z.w + "%"; el.style.height = z.h + "%";
     el.innerHTML = `<span>${z.label}</span>`;
-    stage.appendChild(el);
+    worldOf(stage).appendChild(el);
   });
   const map = ses?.map || {};
   (map.walls || []).forEach((w) => {
@@ -174,7 +267,7 @@ function drawOverlays(stage, ses, opts) {
     el.style.top = w.y1 + "%";
     el.style.width = Math.abs(w.x2 - w.x1) + "%";
     el.style.height = Math.max(2, Math.abs(w.y2 - w.y1)) + "%";
-    stage.appendChild(el);
+    worldOf(stage).appendChild(el);
   });
   (map.doors || []).forEach((d) => {
     const el = document.createElement("button");
@@ -184,7 +277,7 @@ function drawOverlays(stage, ses, opts) {
     el.style.top = d.y + "%";
     el.textContent = d.open ? "auf" : "zu";
     if (opts.actor === "gm") el.addEventListener("click", () => fetch("/api/session/map/door", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(gm({ id: d.id })) }));
-    stage.appendChild(el);
+    worldOf(stage).appendChild(el);
   });
   (enc.traps || []).forEach((t) => {
     if (!gm && !t.sprung) return;
@@ -192,7 +285,7 @@ function drawOverlays(stage, ses, opts) {
     el.className = "trap-mark" + (t.sprung ? " sprung" : "");
     el.style.left = t.x + "%"; el.style.top = t.y + "%";
     el.textContent = t.sprung ? "!" : "▴";
-    stage.appendChild(el);
+    worldOf(stage).appendChild(el);
   });
 }
 function bindFieldTools(stage, opts) {
@@ -201,9 +294,9 @@ function bindFieldTools(stage, opts) {
   stage.addEventListener("pointerdown", async (ev) => {
     if (ev.target.closest(".token")) return;
     if (opts.actor !== "gm") return;
-    const box = stage.getBoundingClientRect();
-    const x = ((ev.clientX - box.left) / box.width) * 100;
-    const y = ((ev.clientY - box.top) / box.height) * 100;
+    const point = pct(worldOf(stage), ev.clientX, ev.clientY);
+    const x = point.x;
+    const y = point.y;
     if (MapKit.tool === "brush") {
       await fetch("/api/session/map/brush", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(gm({ x, y, r: 9 })) });
     } else if (MapKit.tool === "trap") {
@@ -250,11 +343,14 @@ function startDrag(ev, el, token, opts) {
   ev.preventDefault();
   try { el.setPointerCapture(ev.pointerId); } catch {}
   MapKit.draggingId = token.id;
-  const stage = el.parentElement;
+  const stage = el.closest(".stage");
+  const world = el.parentElement;
+  let moved = false;
   const move = (e) => {
-    const box = stage.getBoundingClientRect();
-    const x = Math.max(2, Math.min(98, ((e.clientX - box.left) / box.width) * 100));
-    const y = Math.max(4, Math.min(96, ((e.clientY - box.top) / box.height) * 100));
+    moved = true;
+    const point = pct(world, e.clientX, e.clientY);
+    const x = Math.max(2, Math.min(98, point.x));
+    const y = Math.max(4, Math.min(96, point.y));
     el.style.left = x + "%"; el.style.top = y + "%";
     el.dataset.x = String(x); el.dataset.y = String(y);
   };
@@ -263,6 +359,7 @@ function startDrag(ev, el, token, opts) {
     el.removeEventListener("pointerup", up);
     el.removeEventListener("pointercancel", up);
     MapKit.draggingId = null;
+    if (!moved) { showTokenCard(stage, token); return; }
     const x = Number(el.dataset.x), y = Number(el.dataset.y);
     if (!Number.isFinite(x)) return;
     const res = await fetch("/api/session/map/move", {
@@ -290,4 +387,105 @@ function startStateFeed(apply) {
   const es = new EventSource("/api/events");
   es.addEventListener("message", (ev) => { last = Date.now(); try { apply(JSON.parse(ev.data)); } catch {} });
   setInterval(() => { if (Date.now() - last > 4000) pull(); }, 2500);
+}
+
+const RANGE_CELL = 100 / 24;
+const RANGE_BANDS = [
+  { name: "Melee", feet: 5, cells: 1, fill: "rgba(232,93,4,.28)", stroke: "#e85d04" },
+  { name: "Very Close", feet: 10, cells: 2, fill: "rgba(244,162,97,.22)", stroke: "#f4a261" },
+  { name: "Close", feet: 30, cells: 6, fill: "rgba(233,196,106,.16)", stroke: "#e9c46a" },
+  { name: "Far", feet: 100, cells: 20, fill: "rgba(42,157,143,.12)", stroke: "#2a9d8f" },
+];
+function cellCenter(pct) {
+  const i = Math.max(0, Math.min(23, Math.floor(pct / RANGE_CELL)));
+  return (i + 0.5) * RANGE_CELL;
+}
+function cellDist(a, b) {
+  return Math.hypot(a.x - b.x, a.y - b.y) / RANGE_CELL;
+}
+function bandFor(cells) {
+  return RANGE_BANDS.find((b) => cells <= b.cells + 0.55) || null;
+}
+function activeActor(ses, state) {
+  const turn = ses?.initiative?.on && ses.initiative.order?.length ? ses.initiative.order[ses.initiative.index] : null;
+  if (!turn) return null;
+  const token = (ses.map?.tokens || []).find((t) => t.id === turn.tokenId || (turn.characterId && t.characterId === turn.characterId));
+  if (!token || token.kind === "foe") return null;
+  return { turn, token };
+}
+function drawRanges(world, stage, ses, state, opts) {
+  world.querySelectorAll(".range-layer").forEach((n) => n.remove());
+  const actor = activeActor(ses, state);
+  MapKit.intent = Boolean(actor && opts.actor === "player" && opts.characterId && actor.token.characterId === opts.characterId);
+  if (!actor) return;
+  const cx = cellCenter(actor.token.x);
+  const cy = cellCenter(actor.token.y);
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("class", "range-layer");
+  svg.setAttribute("viewBox", "0 0 100 100");
+  svg.setAttribute("preserveAspectRatio", "none");
+  const grid = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  let d = "";
+  for (let i = 0; i <= 24; i += 1) d += `M ${i * RANGE_CELL} 0 V 100 M 0 ${i * RANGE_CELL} H 100 `;
+  grid.setAttribute("d", d);
+  grid.setAttribute("class", "range-grid");
+  svg.appendChild(grid);
+  [...RANGE_BANDS].reverse().forEach((band) => {
+    const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    const r = (band.cells + 0.5) * RANGE_CELL;
+    c.setAttribute("cx", String(cx));
+    c.setAttribute("cy", String(cy));
+    c.setAttribute("r", String(r));
+    c.setAttribute("fill", band.fill);
+    c.setAttribute("stroke", band.stroke);
+    c.setAttribute("stroke-width", "0.35");
+    svg.appendChild(c);
+  });
+  world.appendChild(svg);
+  let legend = stage.querySelector(".range-legend");
+  if (!legend) {
+    legend = document.createElement("div");
+    legend.className = "range-legend";
+    stage.appendChild(legend);
+  }
+  legend.innerHTML = RANGE_BANDS.map((b) => `<i style="background:${b.stroke}"></i>${b.name} ${b.feet} Fuß`).join(" · ");
+  if (!stage.dataset.intent) {
+    stage.dataset.intent = "1";
+    stage.addEventListener("click", (ev) => onIntent(ev, stage));
+  }
+  stage._intent = { actor, opts, state };
+}
+async function onIntent(ev) {
+  const stage = ev.currentTarget;
+  const pack = stage._intent;
+  if (!pack || !MapKit.intent || MapKit.draggingId) return;
+  if (ev.target.closest(".map-zoom, .door")) return;
+  const world = worldOf(stage);
+  const point = pct(world, ev.clientX, ev.clientY);
+  const actor = pack.actor.token;
+  const foeEl = ev.target.closest(".token.foe");
+  const foe = foeEl && (pack.state.sessions || []).flatMap((s) => s.map?.tokens || []).find((t) => t.id === foeEl.dataset.id);
+  const target = foe || { x: cellCenter(point.x), y: cellCenter(point.y) };
+  const cells = cellDist(actor, target);
+  const band = bandFor(cells);
+  if (foe && !band) return;
+  if (!foe && cells > 6.55) return;
+  if (foe && cells > 6.55) {
+    const step = 6 / cells;
+    await postMove(actor, actor.x + (foe.x - actor.x) * step, actor.y + (foe.y - actor.y) * step, pack.opts);
+  } else if (!foe) {
+    await postMove(actor, target.x, target.y, pack.opts);
+    return;
+  }
+  const trait = "agility";
+  await fetch("/api/roll", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ characterId: pack.opts.characterId, tokenId: foe.id, trait, action: "Angriff " + (band ? band.name : "Far"), seat: localStorage.getItem("ember.seat") || "" }),
+  });
+}
+async function postMove(token, x, y, opts) {
+  await fetch("/api/session/map/move", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id: token.id, x, y, rev: token.rev || 0, as: "player", characterId: opts.characterId, gmKey: "" }),
+  });
 }

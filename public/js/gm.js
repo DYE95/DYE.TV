@@ -58,6 +58,8 @@ function renderLan() {
   const urls = (state.lan?.addresses || []).map((a) => `http://${a.address}:${state.lan.port}/player`);
   const remote = state.lan?.remote ? `${state.lan.remote}/player` : "";
   $("#lanChip").textContent = remote ? `Zu Hause: ${remote}` : urls[0] ? `Tisch: ${urls[0]}` : "LAN …";
+  const box = $("#tunnelUrl");
+  if (box) box.textContent = remote || (urls[0] ? "Tunnel wartet. Am Tisch: " + urls[0] : "Tunnel wartet. start.bat offen lassen.");
 }
 
 function renderHud() {
@@ -225,6 +227,7 @@ function renderEncounter() {
     ).join("") || "<p class='hint'>Die Dunkelheit hält noch still.</p>";
   }
   renderMap($("#mapStage"), state, { viewer: "gm", actor: "gm", canMove: () => true });
+  renderMap($("#hubMap"), state, { viewer: "gm", actor: "gm", canMove: () => true });
   if ($("#btnFow")) $("#btnFow").textContent = ses?.map?.fow?.on ? "Umbra: AN" : "Umbra: AUS";
   const tone = { ready: "liegt im Dunkeln bereit", live: "läuft — der Boden hat nachgegeben", ended: "ist verloschen" };
   if ($("#sessionEncName")) $("#sessionEncName").textContent = enc ? enc.name : "Kein Event bereit";
@@ -268,7 +271,9 @@ function renderSession() {
   const ses = activeSession();
   if ($("#sessionMeta")) $("#sessionMeta").textContent = camp ? `${camp.name}${ses ? " · Glut offen" : ""}` : "Keine Kampagne.";
   const hub = $("#hubCampaign");
-  if (hub) hub.textContent = camp ? "Aktiv: " + camp.name : "Noch keine Kampagne.";
+  if (hub) hub.textContent = camp ? camp.name : "Keine Kampagne";
+  const loaded = document.getElementById("loadedStory");
+  if (loaded) loaded.textContent = camp ? camp.name : "nichts geladen";
   const pick = $("#campaignPick");
   if (pick && document.activeElement !== pick) {
     pick.innerHTML = `<option value="">—</option>` + (state.campaigns || []).map((c) => `<option value="${c.id}">${c.name}</option>`).join("");
@@ -278,7 +283,8 @@ function renderSession() {
   const seated = charsOf(activeCampaignId()).filter((c) => Number.isInteger(c.tableSeat) || (state.presence || []).some((p) => p.characterId === c.id && p.status !== "offline"));
   const ready = ses?.ready || {};
   if (readyList) {
-    readyList.innerHTML = seated.map((c) => `<div class="card"><div class="name">${c.name}</div><div class="meta">${ready[c.id] ? "ready" : "wartet"}</div></div>`).join("") || "<p class='hint'>Noch niemand sitzt.</p>";
+    readyList.innerHTML = "<p class='hint'>Wer ist on</p><p class='hint'>Bereit für die Geschichte</p>" + (seated.map((c) => `<div class="card seat-claim" data-id="${c.id}"><div class="name">${c.name}</div><div class="meta">${ready[c.id] ? "bereit" : "wartet"}</div></div>`).join("") || "<p class='hint'>Noch niemand sitzt.</p>");
+    readyList.querySelectorAll(".seat-claim").forEach((card) => card.addEventListener("click", () => claimSeat(card.dataset.id, card.querySelector(".name").textContent)));
   }
   const allReady = seated.length > 0 && seated.every((c) => ready[c.id]);
   const enter = $("#btnEnter");
@@ -735,3 +741,49 @@ async function fillSubclass(form, className, current) {
   if (current) sel.value = current;
 }
 document.querySelector("#characterForm [name=class]")?.addEventListener("change", (ev) => fillSubclass(ev.target.form, ev.target.value, ""));
+
+$("#btnCopyTunnel")?.addEventListener("click", async () => {
+  const text = $("#tunnelUrl")?.textContent || "";
+  const note = $("#tunnelNote");
+  if (!text.startsWith("http")) {
+    if (note) note.textContent = "Noch keine Adresse. Tunnel offen lassen.";
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    if (note) note.textContent = "Kopiert.";
+  } catch {
+    if (note) note.textContent = text;
+  }
+});
+
+const seats = {};
+function claimSeat(id, name) {
+  const taken = Object.entries(seats).find(([who, seat]) => seat === "fire" && who !== id);
+  seats[id] = "fire";
+  const tag = document.querySelector(".fire-figure");
+  if (tag && !tag.querySelector(".name-tag")) {
+    const el = document.createElement("div");
+    el.className = "name-tag";
+    el.textContent = name;
+    tag.appendChild(el);
+  }
+  if (taken) {
+    document.getElementById("seatDuel")?.classList.remove("hidden");
+    const out = document.getElementById("duelOut");
+    document.getElementById("btnDuel").onclick = () => {
+      const a = name, b = taken[1] && taken[0];
+      let left = 0;
+      const stop = setTimeout(() => {
+        const win = left % 2 ? a : b;
+        if (out) out.textContent = win + " ist die Hauptfigur. Der andere ist Sidekick. Pause, wenn ihr wollt.";
+      }, 4000);
+      if (out) out.textContent = "Klickt, wer schneller ist.";
+      document.getElementById("btnDuel").onclick = () => { left += 1; clearTimeout(stop); if (out) out.textContent = name + " hält den Stuhl. Hauptfigur heute."; };
+    };
+  }
+}
+
+fetch("/api/sl-pin").then((r) => r.ok ? r.json() : null).then((row) => {
+  if (row && row.pin) localStorage.setItem("ember.gmKey", row.pin);
+}).catch(() => {});

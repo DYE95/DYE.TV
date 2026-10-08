@@ -3,20 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ember</title>
-  <link rel="stylesheet" href="/css/ember.css?v=13" />
+  <title>DYE.TV: Spielleiter, Start</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Outfit:wght@400;500;600&display=swap" />
+  <link rel="stylesheet" href="/css/ember.css?v=17" />
   <link rel="stylesheet" href="/css/table-indicator.css?v=1" />
-  <link rel="stylesheet" href="/css/topbar.css?v=9" />
+  <link rel="stylesheet" href="/css/topbar.css?v=11" />
   <link rel="stylesheet" href="/css/float.css?v=1" />
-  <link rel="stylesheet" href="/css/start.css?v=10" />
+  <link rel="stylesheet" href="/css/start.css?v=14" />
   <script>
     var emberStack = ["menu"];
+    var emberNames = { menu: "Start", session: "Am Tisch", encounter: "Karte", tunnel: "Tunnel", chats: "Chats", "campaign-manager": "Kampagne", "character-manager": "Charakter" };
     function emberGo(name, back) {
+      if (!document.getElementById("view-" + name)) name = "menu";
       var current = emberStack[emberStack.length - 1];
       if (!back && name !== current) emberStack.push(name);
       document.querySelectorAll(".view").forEach(function (v) {
         v.classList.toggle("on", v.id === "view-" + name);
       });
+      var label = emberNames[name] || "Start";
+      document.title = "DYE.TV: Spielleiter, " + label;
+      document.querySelectorAll(".brand").forEach(function (el) { el.textContent = document.title; });
+      var foot = document.getElementById("footPage");
+      if (foot) foot.textContent = label;
     }
     function emberBack() {
       if (emberStack.length > 1) emberStack.pop();
@@ -32,6 +42,17 @@
       if (ev.target.closest("#btnLeave")) emberLeave();
       if (ev.target.closest("#btnBack")) emberBack();
     });
+    document.addEventListener("DOMContentLoaded", function () {
+      var topChip = document.getElementById("lanChip");
+      var footChip = document.getElementById("lanChipFoot");
+      if (!topChip || !footChip) return;
+      var copy = function () {
+        footChip.textContent = topChip.textContent;
+        footChip.style.display = topChip.style.display;
+      };
+      new MutationObserver(copy).observe(topChip, { childList: true, characterData: true, subtree: true, attributes: true });
+      copy();
+    });
   </script>
 </head>
 <body>
@@ -42,7 +63,7 @@
   </aside>
   <div class="app">
     <header class="ember-topbar">
-      <div class="brand">Ember · Age of Umbra</div>
+      <div class="brand">DYE.TV: Spielleiter, Start</div>
       <div class="grow"></div>
       <div class="chip" id="lanChip">LAN …</div>
       <button class="btn tiny" id="btnRoles" type="button">Rollen</button>
@@ -63,27 +84,61 @@
       <p class="hint" id="gearLog">Update, Schrift, Neustart.</p>
       <button class="btn primary" id="btnUpdate" type="button">Jetzt prüfen & ziehen</button>
       <button class="btn" id="btnRestart" type="button">Server neu starten</button>
+      <button class="btn" id="btnProfiles" type="button">Profile auslesen</button>
+      <label>Profil <input id="bindName" placeholder="Name" /></label>
+      <label>Bogen-Id <input id="bindChar" placeholder="pc_…" /></label>
+      <button class="btn" id="btnBind" type="button">Bogen merken</button>
+      <pre class="hint" id="profileLog" style="white-space:pre-wrap;"></pre>
       <a class="btn" href="/home">Altes Home</a>
     </div>
 
     <section class="view on" id="view-menu">
       <div class="start">
-        <div class="start-side">
+        <figure class="start-art start-art-mobile">
+          <img src="/img/umbra-fire.jpg" alt="" />
+        </figure>
+        <section class="start-side">
           <div class="start-card">
             <div class="sigil"></div>
             <h1 class="start-title">Ember</h1>
             <p class="tagline">Die Glut am Rand der Umbra</p>
-            <div class="start-menu">
-              <button class="start-item" data-go="session"><b>Entfache die Glut</b><span>Tisch, Ready, dann rein</span></button>
-              <button class="start-item" data-go="encounter"><b>Events</b><span>Karten bereitlegen, dann Play Event</span></button>
-              <button class="start-item" data-go="campaign-manager"><b>Kampagne</b><span>was brennt und Editor</span></button>
-              <button class="start-item" data-go="character-manager"><b>Charakter</b><span>Bogen, Editor, Fotos</span></button>
-              <button class="start-item" data-go="chats"><b>Chats</b><span>Fäden aus dem Projekt</span></button>
-              <button class="start-item start-item-danger" id="btnLeave"><b>Verlöschen</b><span>Ember schließen</span></button>
-            </div>
+            <nav class="start-menu" aria-label="Eingänge">
+              <button class="start-item" id="btnIgnite" data-go="session" type="button">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2s1 3 1 5a3 3 0 0 1-6 0c0-1 .5-2 1-3-2 2-3 4-3 6a7 7 0 0 0 14 0c0-3-2-6-4-8-1 2-2 3-3 0z"/></svg>
+                <span class="start-copy"><b>Die Glut zünden</b><span>Spielleitung</span></span>
+              </button>
+              <a class="start-item" href="/player">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-3.3 0-8 1.7-8 5v1h16v-1c0-3.3-4.7-5-8-5z"/></svg>
+                <span class="start-copy"><b>Ans Feuer setzen</b><span>Eigener Sitz</span></span>
+              </a>
+              <a class="start-item" href="/solo">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M4 20V10l8-6 8 6v10h-6v-6H10v6z"/></svg>
+                <span class="start-copy"><b>Unter die Schwelle</b><span>Solo, vier Räume</span></span>
+              </a>
+            </nav>
+            <p class="start-note">Drei Eingänge, auch nach dem Neuladen. Der Tisch bleibt auf diesem Rechner.</p>
+            <button class="start-leave" id="btnLeave" type="button">Glut löschen</button>
           </div>
+        </section>
+        <figure class="start-art start-art-desk">
+          <img src="/img/umbra-fire.jpg" alt="Lagerfeuer am Rand der Umbra" />
+        </figure>
+      </div>
+    </section>
+
+    
+    <section class="view" id="view-tunnel">
+      <div class="panel" style="margin:24px auto;max-width:720px;">
+        <h2>Tunnel</h2>
+        <p class="hint">Spieler zu Hause. Die Spielleitung bleibt auf diesem Rechner: http://127.0.0.1:3478/ember</p>
+        <p class="name" id="tunnelUrl">Tunnel wartet. start.bat offen lassen.</p>
+        <div class="row">
+          <button class="btn tiny" id="btnCopyTunnel" type="button">Adresse kopieren</button>
+          <button class="btn tiny" data-go="menu" type="button">Zurück</button>
         </div>
-        <div class="start-art" role="img" aria-label="Lagerfeuer am Rand der Umbra"></div>
+        <p class="hint" id="tunnelNote">Pings liegen in data/tunnel.log und schieben die Adressen nicht weg.</p>
+        <p class="hint">Ansage</p>
+        <audio id="emberAnsage" controls preload="none" src="/audio/ember-ansage.mp3" style="width:100%;margin-top:8px;"></audio>
       </div>
     </section>
 
@@ -96,16 +151,18 @@
     </section>
     <section class="view" id="view-session">
       <div class="hub" id="sessionHub">
-        <header class="hub-banner">
-          <div>
-            <h2>Am Tisch</h2>
-            <p class="hint" id="hubCampaign">Noch keine Kampagne.</p>
+        <div class="table-layout">
+          <aside class="who-on" id="readyList"></aside>
+          <div class="fire-table">
+            <div class="fire-figure">
+              <div id="tableIndicator" data-table="gm"></div>
+              <button class="camp-tile beside" data-go="campaign-manager" type="button"><b id="hubCampaign">Kampagne</b><span>Campaign Manager</span></button>
+              <div class="loaded-tile beside"><span>Geladen</span><b id="loadedStory">Die Krone ohne Flamme</b></div>
+            </div>
           </div>
-          <label>Kampagne <select id="campaignPick"><option value="">—</option></select></label>
-        </header>
-        <div class="hub-table" id="tableIndicator" data-table="gm"></div>
-        <div class="hub-ready" id="readyList"></div>
+        </div>
         <button class="btn primary" id="btnEnter" type="button" disabled>Rein, wenn alle ready sind</button>
+        <div class="duel hidden" id="seatDuel"><p>Zwei wollen denselben Stuhl.</p><button class="btn" id="btnDuel" type="button">Duell</button><p id="duelOut"></p></div>
       </div>
       <div class="workspace hidden" id="sessionLive">
         <aside class="panel">
@@ -469,11 +526,26 @@
     .gear-panel { position:fixed; top:52px; right:16px; z-index:40; width:min(320px,92vw); padding:14px; background:#141c27; border:1px solid #3d5166; text-align:left; }
     .gear-panel label, .gear-panel .btn, .gear-panel a.btn { display:block; width:100%; margin-top:8px; }
   </style>
+  <footer class="ember-topbar ember-foot">
+      <div class="brand">DYE.TV: Spielleiter, Start</div>
+      <div class="grow"></div>
+      <div class="chip" id="lanChipFoot">LAN …</div>
+      <button class="btn tiny" type="button" onclick="document.getElementById('btnRoles').click()">Rollen</button>
+      <button class="icon-btn" type="button" title="Zurück" onclick="document.getElementById('btnBack').click()">
+        <img src="/img/icon-back.svg" alt="" width="18" height="18" />
+      </button>
+      <a class="icon-btn" href="/home" title="Home" aria-label="Home">
+        <img src="/img/icon-home.svg" alt="" width="18" height="18" />
+      </a>
+      <button class="icon-btn" type="button" title="Einstellungen" onclick="document.getElementById('btnGear').click()">
+        <img src="/img/icon-gear.svg" alt="" width="18" height="18" />
+      </button>
+    </footer>
   <script src="/js/table-indicator.js?v=1"></script>
-  <script src="/js/map.js?v=9"></script>
+  <script src="/js/map.js?v=11"></script>
   <script src="/js/token.js?v=4"></script>
   <script src="/js/float-panels.js?v=1"></script>
-  <script src="/js/gm.js?v=13"></script>
+  <script src="/js/gm.js?v=17"></script>
   <script>
     document.getElementById("btnEnter")?.addEventListener("click", () => {
       document.getElementById("sessionHub")?.classList.add("hidden");
@@ -499,6 +571,30 @@
       } catch (err) {
         log.textContent = "Keine Verbindung.";
       }
+    });
+    document.getElementById("btnGearFoot")?.addEventListener("click", () => document.getElementById("btnGear").click());
+    document.getElementById("btnIgnite")?.addEventListener("click", () => {
+      if (!localStorage.getItem("ember.gmKey")) {
+        const pin = prompt("Spielleiter-PIN. Bleibt in diesem Browser.");
+        if (pin) localStorage.setItem("ember.gmKey", pin.trim());
+      }
+      document.getElementById("gmDrawer")?.classList.remove("hidden");
+    });
+    if (localStorage.getItem("ember.gmKey")) document.getElementById("gmDrawer")?.classList.remove("hidden");
+    document.getElementById("btnBind")?.addEventListener("click", async () => {
+      const log = document.getElementById("profileLog");
+      const res = await fetch("/api/profiles/bind", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: document.getElementById("bindName").value, characterId: document.getElementById("bindChar").value }) });
+      const data = await res.json();
+      log.textContent = res.ok ? data.name + " merkt " + (data.characterIds || []).join(", ") : (data.error || "Nicht gemerkt.");
+    });
+    document.getElementById("btnProfiles")?.addEventListener("click", async () => {
+      const log = document.getElementById("profileLog");
+      try {
+        const res = await fetch("/api/profiles");
+        const data = await res.json();
+        if (!res.ok) { log.textContent = data.error || "Nur an diesem Rechner."; return; }
+        log.textContent = (data.profiles || []).map((row) => row.name + " · PIN " + row.pin + " · " + (row.characterIds || []).join(", ")).join("\n") || "Noch keine Profile.";
+      } catch (err) { log.textContent = "Profile nicht erreichbar."; }
     });
     document.getElementById("btnRestart").addEventListener("click", async () => {
       if (!confirm("Ember neu starten? Die Seite verliert kurz die Verbindung.")) return;

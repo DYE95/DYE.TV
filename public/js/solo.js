@@ -127,14 +127,18 @@ $("#btnSaveMap").addEventListener("click", async () => {
   paint();
   refresh();
 });
+$("#btnSchwelle")?.addEventListener("click", () => run(async () => {
+  await api("/api/campaigns/import-schwelle", {});
+  await refresh();
+}));
 $("#btnDungeon").addEventListener("click", () => run(async () => {
   const res = await api("/api/dungeon", { characterId: $("#pc").value });
   const box = $("#rooms");
   box.innerHTML = "";
-  (res.rooms || []).forEach((room) => {
+  (res.rooms || []).forEach((room, i) => {
     const b = document.createElement("button");
     b.className = "btn";
-    b.textContent = room.name + (room.bot ? " · " + room.bot.name : " · leer");
+    b.textContent = (room.clear ? "leer · " : (i + 1) + " · ") + room.name + (room.bot ? " · " + room.bot.name : " · Durchgang");
     b.addEventListener("click", () => run(async () => {
       const out = await api("/api/dungeon/room", { roomId: room.id, characterId: $("#pc").value });
       b.textContent = out.text;

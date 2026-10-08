@@ -6,8 +6,15 @@
   <title>DYE.TV</title>
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="icon" href="/img/ember-icon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="/css/ember.css?v=7" />
-  <link rel="stylesheet" href="/css/home-desk.css?v=7" />
+  <link rel="stylesheet" href="/css/ember.css?v=16" />
+  <link rel="stylesheet" href="/css/home-desk.css?v=8" />
+  <style>
+    body.desk-body { margin: 0; background: #101820; color: #e7eef6; font: 16px/1.4 Georgia, serif; }
+    .hidden { display: none !important; }
+    .desk-top { padding: 18px 22px; border-bottom: 2px solid #c45c26; }
+    .house-tile, a.house-tile { display: flex; gap: 10px; align-items: center; margin: 8px; padding: 10px 12px; border: 1px solid #3a2a24; background: #161410; color: #f4d6a0; text-decoration: none; }
+    .desk-panel-card { max-width: 880px; margin: 24px auto; padding: 16px; }
+  </style>
 </head>
 <body class="house-body desk-body">
   <header class="desk-top">
@@ -29,6 +36,8 @@
       <a class="house-tile" href="/solo"><img src="/icons/map.svg" alt="" width="28" height="28" /><b>Solo</b><span>Bots, Karte, Dungeon</span></a>
       <a class="house-tile" href="/karten"><img src="/icons/cards.svg" alt="" width="28" height="28" /><b>Karten</b><span>Dread, neue Regeln</span></a>
       <a class="house-tile" href="/bibliothek"><img src="/icons/book.svg" alt="" width="28" height="28" /><b>Bibliothek</b><span>Karten, Bögen, Errata</span></a>
+      <a class="house-tile" href="/ember"><img src="/icons/book.svg" alt="" width="28" height="28" /><b>Handouts</b><span>Zettel an den Tisch</span></a>
+      <a class="house-tile" href="/ember#tunnel"><img src="/icons/spotlight.svg" alt="" width="28" height="28" /><b>Tunnel</b><span>Adresse zu Hause</span></a>
       <h3>Update</h3>
 <button class="btn primary" id="btnUpdate">Jetzt prüfen &amp; ziehen</button>
 <pre class="hint" id="updateLog" style="white-space:pre-wrap;max-height:180px;overflow:auto;"></pre>

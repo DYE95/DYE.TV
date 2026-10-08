@@ -25,7 +25,16 @@
     <div class="scroll" id="gate">
       <div class="menu-card" style="width:min(640px,94%);margin:24px auto;text-align:left;">
         <h1>An den Tisch</h1>
-        <p class="hint">Namen antippen setzt diesen Tab. Neuer Tab öffnet denselben Bogen daneben, ohne den Sitz hier zu übernehmen. Handy-Spieler bleiben beim normalen Antippen.</p>
+        <p class="hint">Profil anlegen oder eintreten. Die PIN merkt sich deine Bögen. Über den Tunnel gilt dieselbe PIN. Der Rechner bleibt beim Spielleiter.</p>
+        <div class="row" style="gap:8px;margin:8px 0;">
+          <label>Name <input id="profileName" autocomplete="username" /></label>
+          <label>PIN <input id="profilePin" type="password" autocomplete="current-password" /></label>
+        </div>
+        <div class="row">
+          <button class="btn primary" id="btnProfileEnter" type="button">Eintreten</button>
+          <button class="btn" id="btnProfileCreate" type="button">Profil anlegen</button>
+        </div>
+        <p class="hint" id="profileNote">Noch kein Profil in diesem Tab.</p>
         <div id="tablePlayer" data-table="player"></div>
         <div class="list" id="seatList"></div>
         <button class="btn" id="btnGuest" style="width:100%;margin-top:12px;">Als Gast (Karte + Video)</button>
