@@ -1,0 +1,8 @@
+[
+  { "id": "blade", "name": "Klinge", "domain": "Blade", "text": "Platzhalter. Eigene Karte darüberlegen.", "image": "/img/placeholders/card-domain.png" },
+  { "id": "bone", "name": "Knochen", "domain": "Bone", "text": "Platzhalter. Eigene Karte darüberlegen.", "image": "/img/placeholders/card-domain.png" },
+  { "id": "grace", "name": "Anmut", "domain": "Grace", "text": "Platzhalter. Eigene Karte darüberlegen.", "image": "/img/placeholders/card-domain.png" },
+  { "id": "sage", "name": "Wissen", "domain": "Sage", "text": "Platzhalter. Eigene Karte darüberlegen.", "image": "/img/placeholders/card-domain.png" },
+  { "id": "splendor", "name": "Pracht", "domain": "Splendor", "text": "Platzhalter. Eigene Karte darüberlegen.", "image": "/img/placeholders/card-domain.png" },
+  { "id": "valor", "name": "Mut", "domain": "Valor", "text": "Platzhalter. Eigene Karte darüberlegen.", "image": "/img/placeholders/card-domain.png" }
+]

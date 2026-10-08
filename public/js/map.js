@@ -116,7 +116,7 @@ function renderMap(stage, state, opts = {}) {
   const world = worldOf(stage);
   const ses = (state.sessions || []).find((s) => s.id === state.active?.sessionId);
   const map = ses?.map || { image: "", tokens: [] };
-  world.style.backgroundImage = map.image ? `url("${map.image}")` : "";
+  world.style.backgroundImage = `url("${map.image || "/img/placeholders/map-blank.png"}")`;
   stage.style.backgroundImage = "none";
   let fog = stage.querySelector("canvas.fow");
   if (!fog) {
@@ -148,10 +148,18 @@ function renderMap(stage, state, opts = {}) {
     }
     el.style.background = token.color || "#e85d04";
     const pc = token.characterId && (state.characters || []).find((c) => c.id === token.characterId);
-    const face = token.portrait || pc?.portrait || "";
+    const face = token.portrait || pc?.portrait || ("/img/placeholders/token-" + (token.kind === "foe" ? "foe" : token.kind === "marker" ? "marker" : token.kind === "npc" ? "npc" : "pc") + ".png");
     if (pc?.color) el.style.background = pc.color;
     el.innerHTML = `<span class="ring"></span>${face ? `<img src="${face}" alt="" draggable="false" />` : `<span>${initials(token.label)}</span>`}<span class="token-label">${token.label}</span>`;
   });
+  if (map.look && opts.actor !== "gm" && stage.dataset.lookAt !== String(map.look.at)) {
+    stage.dataset.lookAt = String(map.look.at);
+    const box = stage.getBoundingClientRect();
+    MapKit.view.scale = 1.4;
+    MapKit.view.x = box.width / 2 - (map.look.x / 100) * box.width * 1.4;
+    MapKit.view.y = box.height / 2 - (map.look.y / 100) * box.height * 1.4;
+    applyView(stage);
+  }
   drawFog(fog, stage, map, opts);
   drawPing(stage, ses);
 
@@ -309,14 +317,14 @@ function bindFieldTools(stage, opts) {
       if (!MapKit.measureStart) { MapKit.measureStart = { x, y }; return; }
       const a = MapKit.measureStart; MapKit.measureStart = null;
       const dx = x - a.x, dy = y - a.y;
-      const steps = Math.max(1, Math.round(Math.sqrt(dx * dx + dy * dy) / 5));
+      const cells = Math.max(1, Math.round(Math.hypot(dx, dy) / RANGE_CELL));
       const line = document.createElement("div");
       line.className = "measure-line";
       line.style.left = Math.min(a.x, x) + "%";
       line.style.top = Math.min(a.y, y) + "%";
       line.style.width = Math.abs(dx) + "%";
       line.style.height = Math.abs(dy) + "%";
-      line.textContent = steps + (steps === 1 ? " Schritt" : " Schritte");
+      line.textContent = cells + (cells === 1 ? " Feld" : " Felder");
       stage.appendChild(line);
       setTimeout(() => line.remove(), 4000);
     } else if (MapKit.tool === "wall") {

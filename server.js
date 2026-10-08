@@ -740,6 +740,11 @@ async function handleApi(req, res, url) {
     token.y = clamp(Number(body.y), 4, 96);
     token.rev = Number(token.rev || 0) + 1;
     const enc = store.activeEncounter(session);
+    if (token.kind === "pc" && session.map.fow && session.map.fow.persist) {
+      session.map.fow.explored = session.map.fow.explored || [];
+      session.map.fow.explored.push({ x: token.x, y: token.y, r: session.map.fow.radius || 16 });
+      if (session.map.fow.explored.length > 120) session.map.fow.explored = session.map.fow.explored.slice(-120);
+    }
     if (token.kind === "pc") checkTriggers(session, enc, token);
     store.write(state); emitState();
     return send(res, 200, token);
@@ -754,7 +759,7 @@ async function handleApi(req, res, url) {
     session.map.fow = {
       on: body.on ?? session.map.fow?.on ?? false,
       radius: Number(body.radius ?? session.map.fow?.radius ?? 16),
-      persist: false,
+      persist: body.persist ?? session.map.fow?.persist ?? false,
       gmSeesAll: body.gmSeesAll ?? true,
       explored: body.clear ? [] : (session.map.fow?.explored || []),
     };
@@ -1491,6 +1496,40 @@ async function handleApi(req, res, url) {
     return send(res, 200, { ok: true, result: line || "" });
   }
 
+
+
+  if (method === "POST" && p === "/api/session/map/look") {
+    const body = await readJson(req);
+    const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
+    const session = state.sessions.find((s) => s.id === state.active.sessionId);
+    if (!session) return send(res, 400, { error: "Keine Session." });
+    store.activeEncounter(session);
+    session.map.look = { x: Number(body.x ?? 50), y: Number(body.y ?? 50), at: Date.now() };
+    addLog(session, { kind: "system", author: "Karte", text: "Alle herholen." });
+    store.write(state); emitState();
+    return send(res, 200, session.map.look);
+  }
+  if (method === "GET" && p === "/api/domains") {
+    const file = path.join(PUBLIC, "data", "domains.json");
+    return send(res, 200, { cards: fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : [] });
+  }
+  if (method === "POST" && p === "/api/characters/domain") {
+    const body = await readJson(req);
+    const state = store.read();
+    if (denyUnlessGm(res, state, body)) return;
+    const character = state.characters.find((c) => c.id === body.characterId);
+    if (!character) return send(res, 404, { error: "Bogen fehlt." });
+    const file = path.join(PUBLIC, "data", "domains.json");
+    const cards = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : [];
+    const card = cards.find((c) => c.id === body.cardId) || { id: body.cardId || id("card"), name: body.name || "Karte", text: body.text || "", image: "/img/placeholders/card-domain.png" };
+    character.domains = character.domains || [];
+    const slots = rules.levelRow(character.level).domainSlots;
+    if (character.domains.length >= slots) return send(res, 400, { error: "Loadout voll (" + slots + ")." });
+    character.domains.push({ ...card, recalled: false });
+    store.write(state); emitState();
+    return send(res, 200, character.domains);
+  }
 
   if (method === "GET" && p === "/api/backup") {
     if (!isLocalAddress(req.socket.remoteAddress || "")) return send(res, 403, { error: "Nur dieser Rechner." });

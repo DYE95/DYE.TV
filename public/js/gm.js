@@ -643,6 +643,9 @@ $("#btnJournal")?.addEventListener("click", () => api("/api/session/journal", {
 $("#btnWall")?.addEventListener("click", () => document.getElementById("sceneWall")?.classList.toggle("hidden"));
 $("#btnFow")?.addEventListener("click", () => api("/api/session/map/fow", { as: "gm", on: !activeSession()?.map?.fow?.on }));
 $("#btnFowClear")?.addEventListener("click", () => { MapKit.draggingId = null; api("/api/session/map/fow", { as: "gm", clear: true, on: true }); });
+$("#btnLook")?.addEventListener("click", () => api("/api/session/map/look", { x: 50, y: 50 }));
+$("#btnPersist")?.addEventListener("click", () => api("/api/session/map/fow", { on: true, persist: !activeSession()?.map?.fow?.persist }));
+
 $("#mapImage")?.addEventListener("change", (ev) => {
   const file = ev.target.files?.[0];
   if (!file) return;
