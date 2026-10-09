@@ -57,7 +57,7 @@ function pips(count, marked, kind, onClick) {
 function renderLan() {
   const urls = (state.lan?.addresses || []).map((a) => `http://${a.address}:${state.lan.port}/player`);
   const remote = state.lan?.remote ? `${state.lan.remote}/player` : "";
-  $("#lanChip").textContent = remote ? `Zu Hause: ${remote}` : urls[0] ? `Tisch: ${urls[0]}` : "LAN …";
+  $("#lanChip").textContent = remote ? `Zu Hause: ${remote}` : urls[0] ? `Tisch: ${urls[0]}` : "Kein Netzwerk gefunden";
   const box = $("#tunnelUrl");
   if (box) box.textContent = remote || (urls[0] ? "Tunnel wartet. Am Tisch: " + urls[0] : "Tunnel wartet. start.bat offen lassen.");
 }
