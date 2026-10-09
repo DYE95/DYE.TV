@@ -168,11 +168,36 @@ function send(res, status, body) {
   res.end(JSON.stringify(body));
 }
 
-function readBody(req) {
+// JSON-Koerper landen komplett im Speicher. Alte Base64-Uploads (Karten,
+// Bilder) brauchen etwas Platz, Videos gehen ueber den Roh-Upload.
+const MAX_JSON_BODY = 64 * 1024 * 1024;
+
+function readBody(req, limit = MAX_JSON_BODY) {
   return new Promise((resolve, reject) => {
+    const declared = Number(req.headers["content-length"] || 0);
+    const tooLarge = () => {
+      const err = new Error("Zu gross. Videos bitte ueber die Mediathek hochladen.");
+      err.tooLarge = true;
+      return err;
+    };
+    if (declared > limit) {
+      req.resume();
+      return reject(tooLarge());
+    }
     const chunks = [];
-    req.on("data", (c) => chunks.push(c));
-    req.on("end", () => resolve(Buffer.concat(chunks)));
+    let size = 0;
+    let failed = false;
+    req.on("data", (c) => {
+      if (failed) return;
+      size += c.length;
+      if (size > limit) {
+        failed = true;
+        chunks.length = 0;
+        return reject(tooLarge());
+      }
+      chunks.push(c);
+    });
+    req.on("end", () => { if (!failed) resolve(Buffer.concat(chunks)); });
     req.on("error", reject);
   });
 }
@@ -206,8 +231,13 @@ function serveFile(res, filePath, req) {
     const type = MIME[ext] || "application/octet-stream";
     const range = parseRange(req && req.headers.range, st.size);
     if (range && range.invalid) {
-      res.writeHead(416, { "Content-Type": "text/plain; charset=utf-8", "Content-Range": `bytes */${st.size}` });
-      return res.end("Bereich ungueltig.");
+      const msg = "Bereich ungueltig.";
+      res.writeHead(416, {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Content-Range": `bytes */${st.size}`,
+        "Content-Length": Buffer.byteLength(msg),
+      });
+      return res.end(msg);
     }
     if (range) {
       res.writeHead(206, {
@@ -1633,6 +1663,10 @@ if (url.pathname.startsWith("/docs/bibliothek/")) {
     return serveFile(res, file, req);
   } catch (err) {
     if (err && err.badJson) return send(res, 400, { error: err.message });
+    if (err && err.tooLarge) {
+      res.setHeader("Connection", "close");
+      return send(res, 413, { error: err.message });
+    }
     send(res, 500, { error: err.message || "Serverfehler" });
   }
 });
