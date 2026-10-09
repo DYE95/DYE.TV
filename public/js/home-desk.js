@@ -502,3 +502,59 @@ document.getElementById("clipFile").addEventListener("change", (ev) => {
   ev.target.value = "";
 });
 
+// Kopf- und Fusszeile: Logo, Uhr, Tunnel, Spieler-Adresse, Knoepfe.
+const logo = document.getElementById("logo");
+const showLogo = () => { if (logo.naturalWidth) logo.hidden = false; };
+logo.addEventListener("load", showLogo);
+logo.addEventListener("error", () => logo.remove());
+if (logo.complete) { if (logo.naturalWidth) showLogo(); else logo.remove(); }
+
+const clock = document.getElementById("clock");
+const tick = () => {
+  clock.textContent = new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+};
+tick();
+setInterval(tick, 10000);
+
+function renderStatus(s) {
+  const lan = s.lan || {};
+  const remote = lan.remote || "";
+  const first = (lan.addresses || [])[0];
+  const url = remote ? `${remote}/player` : first ? `http://${first.address}:${lan.port}/player` : "";
+  document.getElementById("playerUrl").textContent = url || "Keine Spieler-Adresse";
+  const tunnel = document.getElementById("tunnelState");
+  tunnel.textContent = remote ? "Tunnel an" : "Tunnel aus";
+  tunnel.classList.toggle("on", Boolean(remote));
+  renderCount(s.presence || []);
+}
+
+function renderCount(presence) {
+  const n = presence.filter((row) => row.role !== "gm").length;
+  document.getElementById("playerCount").textContent = n === 1 ? "1 Spieler" : `${n} Spieler`;
+}
+
+function serverState(ok) {
+  document.getElementById("serverDot").className = `dot ${ok ? "ok" : "bad"}`;
+  document.getElementById("serverState").textContent = ok ? "Server läuft" : "Server nicht erreichbar";
+}
+
+let current = null;
+const feed = new EventSource("/api/events");
+feed.addEventListener("open", () => serverState(true));
+feed.addEventListener("error", () => { if (feed.readyState !== EventSource.OPEN) serverState(false); });
+feed.addEventListener("message", (ev) => {
+  try { current = JSON.parse(ev.data); } catch { return; }
+  serverState(true);
+  renderStatus(current);
+});
+feed.addEventListener("presence", (ev) => {
+  try { renderCount(JSON.parse(ev.data).presence || []); } catch {}
+});
+window.addEventListener("pagehide", () => feed.close());
+
+document.getElementById("btnFullscreen").addEventListener("click", () => {
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  else document.documentElement.requestFullscreen().catch(() => {});
+});
+document.getElementById("btnReload").addEventListener("click", () => location.reload());
+document.getElementById("btnServer").addEventListener("click", () => openPanel("panelEmber"));
