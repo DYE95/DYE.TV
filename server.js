@@ -1624,6 +1624,9 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === "/solo" || url.pathname === "/solo/") {
       return serveFile(res, path.join(PUBLIC, "solo.html"), req);
     }
+    if (url.pathname === "/solo/werkstatt" || url.pathname === "/solo/werkstatt/") {
+      return serveFile(res, path.join(PUBLIC, "solo-werkstatt.html"), req);
+    }
     if (url.pathname === "/bibliothek" || url.pathname === "/bibliothek/") {
       return serveFile(res, path.join(PUBLIC, "bibliothek.html"), req);
     }

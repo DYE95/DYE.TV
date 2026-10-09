@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ember · Solo-Werkstatt</title>
+  <link rel="stylesheet" href="/css/ember.css?v=9" />
+</head>
+<body class="house-body">
+  <div class="player-shell">
+    <header class="topbar">
+      <a class="btn tiny ghost" href="/solo">Zum Spiel</a>
+      <div class="brand">Solo-Werkstatt</div>
+      <div class="grow"></div>
+      <div class="chip" id="who">kein Bogen</div>
+    </header>
+    <div class="scroll" style="padding:16px;">
+      <div class="log" id="log" aria-live="polite" style="padding:0 0 8px;"></div>
+      <div class="menu-card hidden" id="soloEmpty" style="width:auto;text-align:left;margin-bottom:12px;">
+        <h2>Noch kein Bogen</h2>
+        <p class="hint">Solo braucht einen Charakter. Leg ihn unter Spielleitung an oder hol die Beispielkampagne mit fertigen Bögen.</p>
+        <button class="btn primary" id="btnSchwelleEmpty" type="button">Asche unter der Schwelle laden</button>
+      </div>
+      <div class="solo-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(420px,100%),1fr));gap:12px;align-items:start;">
+      <div class="menu-card" style="width:auto;text-align:left;">
+        <h1>Üben</h1>
+        <p class="hint">Nicht der Spielabend. Ein Bogen, ein Bot, eine Karte.</p>
+        <label>Bogen <select id="pc"></select></label>
+        <label>Subclass <select id="subPick"><option value="">—</option></select></label>
+        <button class="btn" id="btnSubclass">Subclass setzen</button>
+        <button class="btn" id="btnStart">Solo öffnen</button>
+        <button class="btn primary" id="btnLevel">Level-Up</button>
+        <div id="levelBox" class="hidden" style="margin-top:8px;">
+          <p class="hint" id="levelPreview"></p>
+          <label>Neue Experience <input id="levelXp" placeholder="leer = keine neue" /></label>
+          <label>Oder erhöhen <select id="levelUpgrade"><option value="">—</option></select></label>
+          <label>Subclass <select id="levelSub"><option value="">behalten</option></select></label>
+          <label>Notiz <input id="levelNote" placeholder="Domain-Karte, Subclass" /></label>
+          <label><input id="levelParty" type="checkbox" /> ganze Kampagne</label>
+          <button class="btn" id="btnLevelGo" type="button">Bestätigen</button>
+        </div>
+        <p class="hint" id="levelOut"></p>
+      </div>
+      <div class="menu-card" style="width:auto;text-align:left;">
+        <h2>Bot</h2>
+        <label>Gegenspieler <select id="bot"></select></label>
+        <button class="btn" id="btnBot">Bot setzen</button>
+        <button class="btn primary" id="btnAct">Bot zieht</button>
+      </div>
+      <div class="menu-card" style="width:auto;text-align:left;">
+        <h2>Karten-Editor</h2>
+        <p class="hint">Tippen setzt einen Pin. Speichern legt die Karte an die Kampagne.</p>
+        <label>Name <input id="mapName" value="Übungskarte" /></label>
+        <div id="grid" style="position:relative;height:220px;background:#1b2733;border:1px solid #3d5166;margin:8px 0;"></div>
+        <button class="btn" id="btnSaveMap">Karte speichern</button>
+        <div class="list" id="maps"></div>
+      </div>
+      <div class="menu-card" style="width:auto;text-align:left;">
+        <h2>Dungeon</h2>
+        <p class="hint">Räume werden gelegt. Ein Erfolg räumt den Raum. Alle leer: Level +1.</p>
+        <button class="btn" id="btnSchwelle">Asche unter der Schwelle</button>
+        <button class="btn" id="btnDungeon">Dungeon legen</button>
+        <div class="list" id="rooms"></div>
+      </div>
+      </div>
+    </div>
+  </div>
+  <script src="/js/solo.js?v=3"></script>
+</body>
+</html>

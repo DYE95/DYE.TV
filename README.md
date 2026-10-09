@@ -45,7 +45,7 @@ Die Adressen stehen im Fenster und in der Titelleiste. Cloudflare-Pings gehen na
 | `/player?as=ID&tab=1` | Derselbe Bogen in einem eigenen Tab, ohne die anderen Tabs zu übernehmen |
 | `/token`       | Pixel-Token-Atelier                                              |
 | `/pixelstube`  | Pixelstube: Raster, Palette, Stift, Füllen, PNG                 |
-| `/solo`        | Solo-Modus: Übungsbots, Dungeon, Level-Ups, Subklassen            |
+| `/solo`        | Solo-Spiel: Dungeon-Lauf mit einem Helden (Werkstatt: `/solo/werkstatt`) |
 | `/karten`      | Karten-Werkzeug (Marker-Karten speichern/laden)                   |
 | `/bibliothek`  | Regel-PDFs aus `docs/bibliothek/`                                 |
 | `/runner`      | Ereignis: Dye-Runner, vom SL in die Runde geworfen               |
@@ -60,6 +60,19 @@ Die Spieler-URLs zeigt der Server beim Start an (z. B. `http://192.168.0.151:347
 Am SL-Rechner öffnet **Tab** neben einem Bogen `/player?as=<id>&tab=1`. Der Sitz liegt dann nur in diesem Tab (`sessionStorage`), nicht im gemeinsamen `localStorage`. Ein normales `/player` merkt sich den Bogen weiter fürs Handy.
 Spieler verbinden sich über das WLAN — der SL-Rechner muss Port 3478 in der
 Windows-Firewall erlauben (beim ersten Start bestätigen).
+
+## Solo-Spiel (`/solo`)
+
+Ein Held, ein kurzer Dungeon (sieben Räume, fünf davon auf dem Weg, zuletzt der
+Glutwächter). Daggerheart-Regeln wie am Tisch: Duality-Wurf mit Hope- und
+Fear-W12, Experiences kosten Hope, Schaden gegen Major/Severe, Armor fängt eine
+Stufe ab, kurze Rast mit zwei Aktionen. Nach einem Sieg gibt es ein Level-Up.
+
+- Steuerung nur mit Klicks (Wii-Zeiger), Tasten 1–9 optional
+- Spielstand in `data/solo.json`, übersteht Neuladen und Neustart
+- Regeln in `lib/dungeon.js`, API in `lib/solo-game.js`
+- Bilder: Platzhalter in `public/solo/sprites/`, gleiche Dateinamen ersetzen (siehe `LIESMICH.md` dort)
+- Die alte Übungsseite (Bots, Übungskarte, Level-Up für Kampagnen-Bögen) liegt unter `/solo/werkstatt`
 
 ## Projektstruktur
 
