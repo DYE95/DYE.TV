@@ -111,3 +111,22 @@ test("Pfade aus dem public-Ordner heraus sind gesperrt", async () => {
   const res = await request("GET", "/docs/regeln/..%2f..%2fserver.js");
   assert.notEqual(res.status, 200);
 });
+
+test("Solo-Spiel: neuer Lauf, Aktion, Stand bleibt in solo.json", async () => {
+  const start = await request("GET", "/api/solo/game");
+  assert.equal(start.status, 200);
+  assert.ok(start.json.heroes.length >= 5);
+  const fresh = await postJson("/api/solo/game/new", { hero: "cat:2" });
+  assert.equal(fresh.status, 200);
+  assert.equal(fresh.json.save.run.hero.name, "Garrick Reed");
+  const go = fresh.json.actions.find((a) => a.id === "go");
+  const moved = await postJson("/api/solo/game/act", { action: go });
+  assert.equal(moved.status, 200);
+  assert.equal(moved.json.save.run.at, go.to);
+  const bad = await postJson("/api/solo/game/act", { action: { id: "attack" } });
+  assert.equal(bad.status, 400);
+  const saved = JSON.parse(fs.readFileSync(path.join(dir, "solo.json"), "utf8"));
+  assert.equal(saved.run.at, go.to);
+  const early = await postJson("/api/solo/game/run", {});
+  assert.equal(early.status, 409);
+});
