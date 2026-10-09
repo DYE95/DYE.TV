@@ -1606,7 +1606,13 @@ const server = http.createServer(async (req, res) => {
       if (!file) { res.writeHead(403); return res.end(); }
       return serveFile(res, file, req);
     }
-    if (url.pathname === "/" || url.pathname === "/home" || url.pathname === "/house") {
+    // Die Startseite ist das Pult am SL-Rechner. Wer ueber Tunnel oder LAN
+    // kommt, landet direkt bei den Spielern.
+    if (["/", "/home", "/house", "/home.html"].includes(url.pathname)) {
+      if (!isLocalRequest(req)) {
+        res.writeHead(302, { Location: "/player", "Cache-Control": "no-store" });
+        return res.end();
+      }
       return serveFile(res, path.join(PUBLIC, "home.html"), req);
     }
     if (url.pathname === "/ember" || url.pathname === "/ember/") {
