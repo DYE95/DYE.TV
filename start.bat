@@ -7,10 +7,11 @@ if errorlevel 1 (
   exit /b 1
 )
 if not exist data mkdir data
-if not exist data\sl.pin (
-  set /p SL_PIN=Spielleiter-PIN, einmalig, bleibt liegen:
-  echo %SL_PIN%> data\sl.pin
-)
+rem PIN ausserhalb einer Klammer abfragen, sonst ist die Variable beim Lesen noch leer.
+if exist data\sl.pin goto pinda
+set /p SL_PIN=Spielleiter-PIN, einmalig, bleibt liegen: 
+>data\sl.pin echo(%SL_PIN%
+:pinda
 title DYE.TV  Spielleiter http://127.0.0.1:3478/ember
 echo.
 echo  Spielleiter   http://127.0.0.1:3478/ember
@@ -22,7 +23,7 @@ start /b node tools\tunnel.js
 :emberloop
 node server.js
 if errorlevel 42 (
-  echo Neustart nach Update ...
+  echo Neustart ...
   timeout /t 1 /nobreak >nul
   goto emberloop
 )
