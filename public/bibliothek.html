@@ -13,20 +13,26 @@
       <div class="brand">Bibliothek</div>
     </header>
     <div class="scroll" style="padding:16px;">
-      <p class="hint">Die PDFs liegen lokal unter docs/bibliothek. Nichts davon geht ins Netz.</p>
-      <div class="list" id="books"></div>
-      <h2>Karten</h2>
+      <p class="hint">Die PDFs liegen lokal unter docs/bibliothek und docs/regeln. Nichts davon geht ins Netz.</p>
+      <div class="list" id="books"><p class="hint">Lädt …</p></div>
+      <h2 id="mapsTitle" class="hidden">Karten</h2>
       <div class="list" id="maps"></div>
     </div>
   </div>
   <script>
+    const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+    const empty = "<p class='hint'>Noch keine PDFs. Lege Dateien in den Ordner docs\\bibliothek und lade die Seite neu.</p>";
     fetch("/api/bibliothek").then((r) => r.json()).then((data) => {
       document.querySelector("#books").innerHTML = (data.books || []).map((b) =>
-        `<a class="card" href="${b.href}" target="_blank"><div class="name">${b.title}</div><div class="meta">${b.kind}${b.missing ? " · Datei fehlt" : ""}</div></a>`
-      ).join("") || "<p class='hint'>Ordner docs/bibliothek ist leer.</p>";
-      document.querySelector("#maps").innerHTML = (data.maps || []).map((m) =>
-        `<a class="card" href="${m.href}" target="_blank"><div class="name">${m.title}</div></a>`
+        `<a class="card" href="${esc(b.href)}" target="_blank"><div class="name">${esc(b.title)}</div><div class="meta">${esc(b.kind)}${b.missing ? " · Datei fehlt" : ""}</div></a>`
+      ).join("") || empty;
+      const maps = data.maps || [];
+      document.querySelector("#mapsTitle").classList.toggle("hidden", !maps.length);
+      document.querySelector("#maps").innerHTML = maps.map((m) =>
+        `<a class="card" href="${esc(m.href)}" target="_blank"><div class="name">${esc(m.title)}</div></a>`
       ).join("");
+    }).catch(() => {
+      document.querySelector("#books").innerHTML = "<p class='hint'>Bibliothek nicht erreichbar.</p>";
     });
   </script>
 </body>

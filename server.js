@@ -22,6 +22,7 @@ const PORT = Number(process.env.EMBER_PORT || 3478);
 const HOST = process.env.EMBER_HOST || "0.0.0.0";
 const PUBLIC = path.join(__dirname, "public");
 const LIBRARY = path.join(__dirname, "docs", "bibliothek");
+const RULES = path.join(__dirname, "docs", "regeln");
 const UPLOADS = path.join(__dirname, "data", "uploads");
 const clients = new Set();
 const presence = new Map();
@@ -61,6 +62,7 @@ const MIME = {
   ".mp4": "video/mp4",
   ".webm": "video/webm",
   ".m4v": "video/mp4",
+  ".pdf": "application/pdf",
 };
 
 function presenceList() {
@@ -219,6 +221,49 @@ function serveFile(res, filePath, req) {
 // und ein Lesefehler beendet nur diese Antwort, nicht den Server.
 function streamTo(res, source) {
   pipeline(source, res, () => {});
+}
+
+function readJsonFile(file, fallback) {
+  try {
+    return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function filesIn(dir, pattern) {
+  try {
+    return fs.readdirSync(dir).filter((f) => pattern.test(f)).sort((a, b) => a.localeCompare(b, "de"));
+  } catch {
+    return [];
+  }
+}
+
+// index.json darf fehlen oder kaputt sein. PDFs in docs/bibliothek und
+// docs/regeln tauchen auch ohne Eintrag auf, Karten aus public/maps ebenso.
+function libraryIndex() {
+  const listed = readJsonFile(path.join(LIBRARY, "index.json"), []);
+  const rows = Array.isArray(listed) ? listed.filter((b) => b && typeof b.file === "string") : [];
+  const books = rows.map((b) => ({
+    ...b,
+    title: b.title || b.file,
+    kind: b.kind || "PDF",
+    href: `/docs/bibliothek/${encodeURI(b.file)}`,
+    missing: !safeJoin(LIBRARY, b.file) || !fs.existsSync(safeJoin(LIBRARY, b.file)),
+  }));
+  const known = new Set(rows.map((b) => b.file));
+  for (const f of filesIn(LIBRARY, /\.pdf$/i)) {
+    if (!known.has(f)) books.push({ title: f.replace(/\.pdf$/i, ""), kind: "PDF", file: f, href: `/docs/bibliothek/${encodeURIComponent(f)}`, missing: false });
+  }
+  for (const f of filesIn(RULES, /\.pdf$/i)) {
+    books.push({ title: f.replace(/\.pdf$/i, ""), kind: "Regeln", file: f, href: `/docs/regeln/${encodeURIComponent(f)}`, missing: false });
+  }
+  const image = /\.(jpg|jpeg|png|webp)$/i;
+  const maps = [
+    ...filesIn(path.join(LIBRARY, "maps"), image).map((f) => ({ title: f, href: `/docs/bibliothek/maps/${encodeURIComponent(f)}` })),
+    ...filesIn(path.join(PUBLIC, "maps"), image).map((f) => ({ title: f, href: `/maps/${encodeURIComponent(f)}` })),
+  ];
+  return { books, maps };
 }
 
 function checkTriggers(session, enc, token) {
@@ -1282,11 +1327,7 @@ async function handleApi(req, res, url) {
   }
 
   if (method === "GET" && p === "/api/bibliothek") {
-    const indexPath = path.join(LIBRARY, "index.json");
-    const books = fs.existsSync(indexPath) ? JSON.parse(fs.readFileSync(indexPath, "utf8")) : [];
-    const mapsDir = path.join(LIBRARY, "maps");
-    const maps = fs.existsSync(mapsDir) ? fs.readdirSync(mapsDir).filter((f) => /\.(jpg|png|webp)$/i.test(f)).map((f) => ({ title: f, href: "/docs/bibliothek/maps/" + f })) : [];
-    return send(res, 200, { books: books.map((b) => ({ ...b, href: "/docs/bibliothek/" + b.file, missing: !fs.existsSync(path.join(LIBRARY, b.file)) })), maps });
+    return send(res, 200, libraryIndex());
   }
   if (method === "GET" && p === "/api/errata") {
     const file = path.join(LIBRARY, "errata.json");
@@ -1514,6 +1555,13 @@ const server = http.createServer(async (req, res) => {
 if (url.pathname.startsWith("/docs/bibliothek/")) {
       const rel = decodeURIComponent(url.pathname.slice("/docs/bibliothek/".length));
       const file = safeJoin(LIBRARY, rel);
+      if (!file) { res.writeHead(403); return res.end(); }
+      return serveFile(res, file, req);
+    }
+    if (url.pathname.startsWith("/docs/regeln/")) {
+      let rel = "";
+      try { rel = decodeURIComponent(url.pathname.slice("/docs/regeln/".length)); } catch { rel = ""; }
+      const file = rel && safeJoin(RULES, rel);
       if (!file) { res.writeHead(403); return res.end(); }
       return serveFile(res, file, req);
     }
