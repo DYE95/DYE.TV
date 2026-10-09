@@ -7,7 +7,7 @@ const { URL } = require("url");
 const { pipeline } = require("stream");
 const { pipeline: pipelineAsync } = require("stream/promises");
 const store = require("./lib/store");
-const { resolveActionRoll, applyPools } = require("./lib/dice");
+const { resolveActionRoll, applyPools, canPayExperiences } = require("./lib/dice");
 const { addresses } = require("./lib/lan");
 const { id } = require("./lib/ids");
 const catalog = require("./lib/catalog");
@@ -693,6 +693,9 @@ async function handleApi(req, res, url) {
     const state = store.read();
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     const character = state.characters.find((c) => c.id === body.characterId);
+    if (character && !canPayExperiences(character.hope, body.experiences)) {
+      return send(res, 400, { error: "Zu wenig Hope für die Experience." });
+    }
     const picked = body.tokenId ? (session?.map?.tokens || []).find((t) => t.id === body.tokenId && t.kind === "foe") : null;
     const foe = picked || nearestFoe(session, character);
     const typed = body.difficulty != null && body.difficulty !== "" ? Number(body.difficulty) : 0;

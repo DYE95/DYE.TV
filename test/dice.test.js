@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { resolveActionRoll, applyPools } = require("../lib/dice");
+const { resolveActionRoll, applyPools, canPayExperiences, experienceCost } = require("../lib/dice");
 
 test("Duality mit Hope über Fear", () => {
   const roll = resolveActionRoll({ hopeDie: 8, fearDie: 3, traitMod: 1, difficulty: 12 });
@@ -124,4 +124,13 @@ test("Deckel: Hope läuft nicht in Fear, Fear-Überlauf tickt die Uhr, Fehlbetra
   assert.equal(short.unpaid, 2);
   assert.equal(short.fear, 5);
   assert.equal(short.clockTick, 0);
+});
+
+test("Experience muss vor dem Wurf bezahlt sein", () => {
+  assert.equal(experienceCost([{ bonus: 2 }, { bonus: 1 }]), 2);
+  assert.equal(experienceCost(undefined), 0);
+  assert.equal(canPayExperiences(0, [{ bonus: 2 }]), false);
+  assert.equal(canPayExperiences(1, [{ bonus: 2 }]), true);
+  assert.equal(canPayExperiences(1, [{ bonus: 2 }, { bonus: 1 }]), false);
+  assert.equal(canPayExperiences(0, []), true);
 });
