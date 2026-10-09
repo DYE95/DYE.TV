@@ -7,6 +7,7 @@ const { URL } = require("url");
 const { pipeline } = require("stream");
 const { pipeline: pipelineAsync } = require("stream/promises");
 const store = require("./lib/store");
+const { crossSiteBlocked } = require("./lib/guard");
 const { resolveActionRoll, applyPools, canPayExperiences } = require("./lib/dice");
 const { addresses } = require("./lib/lan");
 const { id } = require("./lib/ids");
@@ -1557,7 +1558,15 @@ async function handleApi(req, res, url) {
 const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
-    if (url.pathname.startsWith("/api/")) return await handleApi(req, res, url);
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    res.setHeader("Referrer-Policy", "same-origin");
+    if (url.pathname.startsWith("/api/")) {
+      if (crossSiteBlocked(req.method, req.headers, [remoteUrl()])) {
+        return send(res, 403, { error: "Fremde Seite. Bitte Ember direkt öffnen." });
+      }
+      return await handleApi(req, res, url);
+    }
     if (url.pathname === "/player" || url.pathname === "/player/") {
       return serveFile(res, path.join(PUBLIC, "player.html"), req);
     }
