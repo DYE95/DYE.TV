@@ -39,7 +39,7 @@ Die Adressen stehen im Fenster und in der Titelleiste. Cloudflare-Pings gehen na
 
 | Pfad          | Zweck                                                            |
 | ------------- | ---------------------------------------------------------------- |
-| `/`            | Technik-Tisch: Glut, Spieler, Bibliothek, Einstellungen        |
+| `/`            | Startseite am SL-Rechner: Kacheln, Einstellungen, Status (Tunnel/LAN → `/player`) |
 | `/ember`       | SL-Tisch: Session, Action Rolls, Events, Karte, Initiative      |
 | `/player`      | Spieler-Ansicht: Namen antippen, Bogen, Würfe, Spotlight        |
 | `/player?as=ID&tab=1` | Derselbe Bogen in einem eigenen Tab, ohne die anderen Tabs zu übernehmen |
@@ -54,7 +54,7 @@ Die Adressen stehen im Fenster und in der Titelleiste. Cloudflare-Pings gehen na
 | `/scharfschuss`| Ereignis: Turmverteidigung                                       |
 | `/puls`        | Ereignis: Live-Umfrage                                           |
 | `/heft`        | Heft: Notizen mit Markdown, Suche und lokaler Speicherung         |
-| `/home`        | Ältere Home-Ansicht                                              |
+| `/home`        | Wie `/`, ebenfalls nur am SL-Rechner                              |
 
 Die Spieler-URLs zeigt der Server beim Start an (z. B. `http://192.168.0.151:3478/player`).
 Am SL-Rechner öffnet **Tab** neben einem Bogen `/player?as=<id>&tab=1`. Der Sitz liegt dann nur in diesem Tab (`sessionStorage`), nicht im gemeinsamen `localStorage`. Ein normales `/player` merkt sich den Bogen weiter fürs Handy.
