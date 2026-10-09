@@ -5,6 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const { URL } = require("url");
 const { pipeline } = require("stream");
+const { pipeline: pipelineAsync } = require("stream/promises");
 const store = require("./lib/store");
 const { resolveActionRoll, applyPools } = require("./lib/dice");
 const { addresses } = require("./lib/lan");
@@ -24,6 +25,7 @@ const PUBLIC = path.join(__dirname, "public");
 const LIBRARY = path.join(__dirname, "docs", "bibliothek");
 const RULES = path.join(__dirname, "docs", "regeln");
 const UPLOADS = path.join(__dirname, "data", "uploads");
+const VIDEO_EXT = ["mp4", "m4v", "webm", "mkv", "mov", "ogv"];
 const clients = new Set();
 const presence = new Map();
 let presenceSent = "";
@@ -62,6 +64,9 @@ const MIME = {
   ".mp4": "video/mp4",
   ".webm": "video/webm",
   ".m4v": "video/mp4",
+  ".mkv": "video/x-matroska",
+  ".mov": "video/quicktime",
+  ".ogv": "video/ogg",
   ".pdf": "application/pdf",
 };
 
@@ -537,22 +542,46 @@ async function handleApi(req, res, url) {
   }
 
   if (method === "POST" && p === "/api/media") {
-    const body = await readJson(req);
+    const raw = !String(req.headers["content-type"] || "").includes("application/json");
+    // Neu: Datei kommt roh im Body und geht direkt auf die Platte, egal wie gross.
+    // Alt: JSON mit base64 bleibt fuer kleine Clips erhalten.
+    const body = raw ? { as: "gm", gmKey: String(req.headers["x-ember-gmkey"] || "") } : await readJson(req);
     const state = store.read();
-    if (!isGm(state, body) && !isLocalRequest(req)) return send(res, 403, { error: "Nur der SL." });
+    if (!isGm(state, body) && !isLocalRequest(req)) {
+      req.resume();
+      return send(res, 403, { error: "Nur der SL." });
+    }
     if (!state.media) state.media = [];
     fs.mkdirSync(UPLOADS, { recursive: true });
-    const ext = body.ext === "webm" ? "webm" : "mp4";
-    const filename = id("vid") + "." + ext;
-    fs.writeFileSync(path.join(UPLOADS, filename), Buffer.from(body.data, "base64"));
+    const name = raw ? String(url.searchParams.get("name") || "") : String(body.name || "");
+    const wanted = String((raw ? url.searchParams.get("ext") : body.ext) || path.extname(name).slice(1)).toLowerCase();
+    const ext = VIDEO_EXT.includes(wanted) ? wanted : "mp4";
+    const filename = `${id("vid")}.${ext}`;
+    const target = path.join(UPLOADS, filename);
+    if (raw) {
+      const part = `${target}.part`;
+      try {
+        await pipelineAsync(req, fs.createWriteStream(part));
+        fs.renameSync(part, target);
+      } catch (err) {
+        fs.rm(part, { force: true }, () => {});
+        if (!res.headersSent && !res.destroyed) send(res, 500, { error: "Upload abgebrochen." });
+        return;
+      }
+    } else {
+      if (typeof body.data !== "string" || !body.data) return send(res, 400, { error: "Keine Datei." });
+      fs.writeFileSync(target, Buffer.from(body.data, "base64"));
+    }
     const clip = {
       id: id("vid"),
       file: filename,
-      name: body.name || filename,
+      name: name || filename,
       addedAt: new Date().toISOString(),
     };
-    state.media.unshift(clip);
-    store.write(state); emitState();
+    const fresh = store.read();
+    if (!fresh.media) fresh.media = [];
+    fresh.media.unshift(clip);
+    store.write(fresh); emitState();
     return send(res, 200, clip);
   }
 
