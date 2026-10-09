@@ -25,13 +25,14 @@ const HOST = process.env.EMBER_HOST || "0.0.0.0";
 const PUBLIC = path.join(__dirname, "public");
 const LIBRARY = path.join(__dirname, "docs", "bibliothek");
 const RULES = path.join(__dirname, "docs", "regeln");
-const UPLOADS = path.join(__dirname, "data", "uploads");
+const DATA = store.ROOT;
+const UPLOADS = path.join(DATA, "uploads");
 const VIDEO_EXT = ["mp4", "m4v", "webm", "mkv", "mov", "ogv"];
 const clients = new Set();
 const presence = new Map();
 let presenceSent = "";
 
-const CRASH_LOG = path.join(__dirname, "data", "crash.log");
+const CRASH_LOG = path.join(DATA, "crash.log");
 
 // Absturz festhalten. Laeuft der Server schon eine Weile, Exit 42: start.bat
 // startet dann neu. Stirbt er gleich beim Start, Exit 1, sonst dreht die Schleife durch.
@@ -79,7 +80,7 @@ function presenceList() {
 
 function remoteUrl() {
   try {
-    return fs.readFileSync(path.join(__dirname, "data", "public-url.txt"), "utf8").trim();
+    return fs.readFileSync(path.join(DATA, "public-url.txt"), "utf8").trim();
   } catch {
     return process.env.DYE_PUBLIC_URL || "";
   }
@@ -341,7 +342,7 @@ async function handleApi(req, res, url) {
 
   if (method === "GET" && p === "/api/sl-pin") {
     if (!isLocalRequest(req)) return send(res, 403, { error: "Nur dieser Rechner." });
-    const pinPath = path.join(__dirname, "data", "sl.pin");
+    const pinPath = path.join(DATA, "sl.pin");
     const pin = fs.existsSync(pinPath) ? fs.readFileSync(pinPath, "utf8").trim() : "";
     return send(res, 200, { pin });
   }
@@ -1679,10 +1680,12 @@ server.on("error", (err) => {
   logCrash("server", err);
 });
 
+store.backup();
+
 server.listen(PORT, HOST, async () => {
   await spark.ignite({ label: "Ember zündet" });
   try {
-    const pinPath = path.join(__dirname, "data", "sl.pin");
+    const pinPath = path.join(DATA, "sl.pin");
     if (fs.existsSync(pinPath)) {
       const pin = fs.readFileSync(pinPath, "utf8").trim();
       const state = store.read();
