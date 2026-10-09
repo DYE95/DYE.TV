@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { isGm, isLocalAddress, recordGmKey } = require("../lib/auth");
+const { isGm, isLocalAddress, isLocalRequest, requestAddress, recordGmKey } = require("../lib/auth");
 
 function stateWith(key) {
   return key ? { settings: { gmKey: key } } : { settings: {} };
@@ -46,4 +46,33 @@ test("Localhost-Adressen werden erkannt", () => {
   for (const a of ["127.0.0.1", "::1", "::ffff:127.0.0.1", "localhost"]) assert.equal(isLocalAddress(a), true);
   assert.equal(isLocalAddress("192.168.0.5"), false);
   assert.equal(isLocalAddress(""), false);
+});
+
+function fakeReq(remote, headers = {}) {
+  return { socket: { remoteAddress: remote }, headers };
+}
+
+test("lokale Anfrage ohne Proxy gilt als dieser Rechner", () => {
+  assert.equal(isLocalRequest(fakeReq("127.0.0.1")), true);
+  assert.equal(isLocalRequest(fakeReq("::1")), true);
+  assert.equal(isLocalRequest(fakeReq("::ffff:127.0.0.1")), true);
+});
+
+test("Tunnel-Anfragen sind nie lokal, auch von 127.0.0.1", () => {
+  assert.equal(isLocalRequest(fakeReq("127.0.0.1", { "cf-connecting-ip": "203.0.113.9" })), false);
+  assert.equal(isLocalRequest(fakeReq("127.0.0.1", { "x-forwarded-for": "203.0.113.9" })), false);
+  assert.equal(isLocalRequest(fakeReq("127.0.0.1", { "cf-ray": "abc" })), false);
+  assert.equal(requestAddress(fakeReq("127.0.0.1", { "cf-connecting-ip": "1.2.3.4" })), "tunnel");
+});
+
+test("LAN-Adressen sind nicht lokal", () => {
+  assert.equal(isLocalRequest(fakeReq("192.168.1.20")), false);
+  assert.equal(isLocalRequest(fakeReq("")), false);
+});
+
+test("recordGmKey nimmt keinen Schluessel ueber den Tunnel an", () => {
+  const state = { settings: {} };
+  const remote = requestAddress(fakeReq("127.0.0.1", { "cf-connecting-ip": "1.2.3.4" }));
+  assert.equal(recordGmKey(state, { role: "gm", gmKey: "gm_x" }, remote), false);
+  assert.equal(state.settings.gmKey, undefined);
 });

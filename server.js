@@ -14,7 +14,7 @@ const initiative = require("./lib/initiative");
 const compendium = require("./lib/compendium");
 const solo = require("./lib/solo");
 const spur = require("./lib/spur");
-const { isGm, recordGmKey, isLocalAddress } = require("./lib/auth");
+const { isGm, recordGmKey, isLocalRequest, requestAddress } = require("./lib/auth");
 
 const PORT = Number(process.env.EMBER_PORT || 3478);
 const HOST = process.env.EMBER_HOST || "0.0.0.0";
@@ -205,16 +205,14 @@ async function handleApi(req, res, url) {
   const p = url.pathname;
 
   if (method === "GET" && p === "/api/sl-pin") {
-    const remote = req.socket.remoteAddress || "";
-    if (!remote.endsWith("127.0.0.1") && remote !== "::1") return send(res, 403, { error: "Nur dieser Rechner." });
+    if (!isLocalRequest(req)) return send(res, 403, { error: "Nur dieser Rechner." });
     const pinPath = path.join(__dirname, "data", "sl.pin");
     const pin = fs.existsSync(pinPath) ? fs.readFileSync(pinPath, "utf8").trim() : "";
     return send(res, 200, { pin });
   }
 
   if (method === "GET" && p === "/api/profiles") {
-    const remote = req.socket.remoteAddress || "";
-    if (!isLocalAddress(remote)) return send(res, 403, { error: "Nur dieser Rechner." });
+    if (!isLocalRequest(req)) return send(res, 403, { error: "Nur dieser Rechner." });
     const state = store.read();
     return send(res, 200, { profiles: state.profiles || [], characters: (state.characters || []).map((c) => ({ id: c.id, name: c.name, class: c.class || "" })) });
   }
@@ -244,9 +242,8 @@ async function handleApi(req, res, url) {
   }
   if (method === "POST" && p === "/api/profiles/bind") {
     const body = await readJson(req);
-    const remote = req.socket.remoteAddress || "";
     const state = store.read();
-    const local = isLocalAddress(remote);
+    const local = isLocalRequest(req);
     const name = String(body.name || "").trim().toLowerCase();
     const pin = String(body.pin || "").trim();
     const profile = (state.profiles || []).find((row) => row.name.toLowerCase() === name && (local || row.pin === pin));
@@ -432,7 +429,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && p === "/api/settings") {
     const body = await readJson(req);
     const state = store.read();
-    if (!isGm(state, body) && !isLocalAddress(req.socket.remoteAddress || "")) return send(res, 403, { error: "Nur der SL." });
+    if (!isGm(state, body) && !isLocalRequest(req)) return send(res, 403, { error: "Nur der SL." });
     delete body.as;
     delete body.gmKey;
     state.settings = { ...(state.settings || {}), ...body };
@@ -443,7 +440,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && p === "/api/media") {
     const body = await readJson(req);
     const state = store.read();
-    if (!isGm(state, body) && !isLocalAddress(req.socket.remoteAddress || "")) return send(res, 403, { error: "Nur der SL." });
+    if (!isGm(state, body) && !isLocalRequest(req)) return send(res, 403, { error: "Nur der SL." });
     if (!state.media) state.media = [];
     fs.mkdirSync(UPLOADS, { recursive: true });
     const ext = body.ext === "webm" ? "webm" : "mp4";
@@ -613,7 +610,7 @@ async function handleApi(req, res, url) {
     const state = store.read();
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     const settled = closeSpur(state, session);
-    if (recordGmKey(state, body, req.socket.remoteAddress || "") || settled) {
+    if (recordGmKey(state, body, requestAddress(req)) || settled) {
       store.write(state);
     }
     const changed = !prev || prev.status !== row.status;
@@ -1035,16 +1032,14 @@ async function handleApi(req, res, url) {
     return send(res, 200, token);
   }
   if (method === "POST" && p === "/api/restart") {
-    const remote = req.socket.remoteAddress || "";
-    const local = ["127.0.0.1", "::1", "::ffff:127.0.0.1", "localhost"].includes(remote);
+    const local = isLocalRequest(req);
     if (!local) return send(res, 403, { error: "Neustart nur am SL-Rechner." });
     send(res, 200, { restarting: true });
     setTimeout(() => process.exit(42), 250);
     return;
   }
   if (method === "POST" && p === "/api/update") {
-    const remote = req.socket.remoteAddress || "";
-    const local = ["127.0.0.1", "::1", "::ffff:127.0.0.1", "localhost"].includes(remote);
+    const local = isLocalRequest(req);
     if (!local) return send(res, 403, { error: "Update nur am SL-Rechner." });
 
     try {
