@@ -384,9 +384,11 @@ function statusLabel(code) {
 // sonst sind die sechs Verbindungen pro Adresse schnell weg.
 function startStateFeed(apply) {
   let last = 0;
+  let current = null;
   window.emberFeed = true;
   const share = (s) => {
     last = Date.now();
+    current = s;
     apply(s);
     window.dispatchEvent(new CustomEvent("ember:state", { detail: s }));
   };
@@ -398,8 +400,15 @@ function startStateFeed(apply) {
     try { next = JSON.parse(ev.data); } catch { return; }
     share(next);
   });
+  // Der Server schickt "presence" nur, wenn jemand kommt, geht oder den Status wechselt.
+  es.addEventListener("presence", (ev) => {
+    let data = null;
+    try { data = JSON.parse(ev.data); } catch { return; }
+    if (current) share({ ...current, presence: data.presence || [] });
+  });
   window.addEventListener("pagehide", () => es.close());
-  setInterval(() => { if (Date.now() - last > 4000) pull(); }, 2500);
+  // Nur noch Notnagel, falls der Stream still haengt.
+  setInterval(() => { if (Date.now() - last > 45000) pull(); }, 10000);
 }
 
 const RANGE_CELL = 100 / 24;

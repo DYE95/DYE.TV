@@ -25,7 +25,7 @@ const LIBRARY = path.join(__dirname, "docs", "bibliothek");
 const UPLOADS = path.join(__dirname, "data", "uploads");
 const clients = new Set();
 const presence = new Map();
-let presenceEmitAt = 0;
+let presenceSent = "";
 
 const CRASH_LOG = path.join(__dirname, "data", "crash.log");
 
@@ -76,15 +76,45 @@ function remoteUrl() {
     return process.env.DYE_PUBLIC_URL || "";
   }
 }
-function snapshot() {
-  return { ...store.publicView(store.read()), presence: presenceList(), lan: { port: PORT, addresses: addresses(), remote: remoteUrl() } };
+const STREAM_LOG = 100;
+
+// Alle Seiten lesen nur die aktive Session. Alte Sessions gehen schlank raus,
+// sonst waechst jede Nachricht mit jedem Spielabend (bis 500 Logzeilen pro Session).
+function leanSessions(view) {
+  const activeId = view.active && view.active.sessionId;
+  view.sessions = (view.sessions || []).map((s) => {
+    if (s.id !== activeId) return { id: s.id, campaignId: s.campaignId, startedAt: s.startedAt, endedAt: s.endedAt, solo: s.solo };
+    if ((s.log || []).length > STREAM_LOG) s.log = s.log.slice(-STREAM_LOG);
+    return s;
+  });
+  return view;
 }
 
-function emitState() {
-  const payload = `data: ${JSON.stringify(snapshot())}\n\n`;
+function snapshot() {
+  return { ...leanSessions(store.publicView(store.read())), presence: presenceList(), lan: { port: PORT, addresses: addresses(), remote: remoteUrl() } };
+}
+
+function broadcast(payload) {
   for (const res of clients) {
     try { res.write(payload); } catch { clients.delete(res); }
   }
+}
+
+function emitState() {
+  broadcast(`data: ${JSON.stringify(snapshot())}\n\n`);
+  presenceSent = presenceKey(presenceList());
+}
+
+// Nur wer da ist, als kleines Ereignis. Kein ganzer Stand pro Ping.
+function presenceKey(list) {
+  return list.map((row) => `${row.key}:${row.status}:${row.characterId || ""}`).sort().join("|");
+}
+function emitPresence() {
+  const list = presenceList();
+  const key = presenceKey(list);
+  if (key === presenceSent) return;
+  presenceSent = key;
+  broadcast(`event: presence\ndata: ${JSON.stringify({ presence: list })}\n\n`);
 }
 
 function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
@@ -624,7 +654,6 @@ async function handleApi(req, res, url) {
   if (method === "POST" && p === "/api/presence") {
     const body = await readJson(req);
     const key = body.key || id("seat");
-    const prev = presence.get(key);
     const row = {
       key, role: body.role || "player", name: body.name || "Unbekannt",
       characterId: body.characterId || null, status: body.status || "online",
@@ -637,11 +666,8 @@ async function handleApi(req, res, url) {
     if (recordGmKey(state, body, requestAddress(req)) || settled) {
       store.write(state);
     }
-    const changed = !prev || prev.status !== row.status;
-    if (changed || Date.now() - presenceEmitAt > 2500) {
-      presenceEmitAt = Date.now();
-      emitState();
-    }
+    if (settled) emitState();
+    else emitPresence();
     return send(res, 200, { key });
   }
 
