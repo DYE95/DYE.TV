@@ -380,6 +380,35 @@ function startDrag(ev, el, token, opts) {
 function statusLabel(code) {
   return ({ online: "am Tisch", queued: "Want Spotlight", spotlight: "im Spotlight", rolling: "würfelt", narrating: "lauscht" })[code] || "fort";
 }
+// Kleiner Hinweis unten links, wenn der Stream laenger als 4 s weg ist
+// (Tunnel weg, Server neu gestartet). EventSource verbindet selbst neu.
+function connectionBadge() {
+  let timer = 0;
+  let el = null;
+  const show = () => {
+    if (timer || (el && !el.hidden)) return;
+    timer = setTimeout(() => {
+      timer = 0;
+      if (!el) {
+        el = document.createElement("div");
+        el.className = "ember-offline";
+        el.setAttribute("role", "status");
+        el.textContent = "Verbindung weg, verbinde neu …";
+        el.style.cssText = "position:fixed;left:1rem;bottom:1rem;z-index:9999;padding:.5rem .9rem;border-radius:999px;"
+          + "background:rgba(20,10,30,.88);color:#ffd6e8;border:1px solid #ff5fa2;font:600 1rem/1.2 system-ui,sans-serif;pointer-events:none";
+        document.body.appendChild(el);
+      }
+      el.hidden = false;
+    }, 4000);
+  };
+  const hide = () => {
+    clearTimeout(timer);
+    timer = 0;
+    if (el) el.hidden = true;
+  };
+  return { show, hide };
+}
+
 // Ein Stream pro Seite. Andere Skripte hoeren auf "ember:state" statt einen eigenen zu oeffnen,
 // sonst sind die sechs Verbindungen pro Adresse schnell weg.
 function startStateFeed(apply) {
@@ -406,6 +435,10 @@ function startStateFeed(apply) {
     try { data = JSON.parse(ev.data); } catch { return; }
     if (current) share({ ...current, presence: data.presence || [] });
   });
+  const lost = connectionBadge();
+  es.addEventListener("open", lost.hide);
+  es.addEventListener("message", lost.hide);
+  es.addEventListener("error", () => { if (es.readyState !== EventSource.OPEN) lost.show(); });
   window.addEventListener("pagehide", () => es.close());
   // Nur noch Notnagel, falls der Stream still haengt.
   setInterval(() => { if (Date.now() - last > 45000) pull(); }, 10000);
