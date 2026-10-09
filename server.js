@@ -16,6 +16,7 @@ const spark = require("./lib/spark");
 const initiative = require("./lib/initiative");
 const compendium = require("./lib/compendium");
 const solo = require("./lib/solo");
+const soloGame = require("./lib/solo-game");
 const spur = require("./lib/spur");
 const { isGm, recordGmKey, isLocalRequest, requestAddress } = require("./lib/auth");
 const { parseRange } = require("./lib/range");
@@ -1232,6 +1233,11 @@ async function handleApi(req, res, url) {
         stderr: err.stderr ? err.stderr.toString() : "",
       });
     }
+  }
+  if (p === "/api/solo/game" || p.startsWith("/api/solo/game/")) {
+    const body = method === "POST" ? await readJson(req) : {};
+    const out = soloGame.route(method, p, body, { dir: DATA, characters: store.read().characters || [] });
+    if (out) return send(res, out.status, out.body);
   }
   if (method === "GET" && p === "/api/solo/bots") return send(res, 200, { bots: solo.list() });
   if (method === "POST" && p === "/api/solo/start") {
