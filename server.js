@@ -27,6 +27,26 @@ const clients = new Set();
 const presence = new Map();
 let presenceEmitAt = 0;
 
+const CRASH_LOG = path.join(__dirname, "data", "crash.log");
+
+// Absturz festhalten. Laeuft der Server schon eine Weile, Exit 42: start.bat
+// startet dann neu. Stirbt er gleich beim Start, Exit 1, sonst dreht die Schleife durch.
+function logCrash(kind, err) {
+  const text = `${new Date().toISOString()} ${kind}\n${(err && err.stack) || String(err)}\n\n`;
+  try {
+    fs.mkdirSync(path.dirname(CRASH_LOG), { recursive: true });
+    fs.appendFileSync(CRASH_LOG, text);
+  } catch {}
+  try { process.stderr.write(`\n  Absturz (${kind}), Details in data/crash.log\n`); } catch {}
+}
+process.on("uncaughtException", (err) => {
+  logCrash("uncaughtException", err);
+  process.exit(process.uptime() > 10 ? 42 : 1);
+});
+process.on("unhandledRejection", (err) => {
+  logCrash("unhandledRejection", err);
+});
+
 const MIME = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -1500,6 +1520,14 @@ if (url.pathname.startsWith("/docs/bibliothek/")) {
     if (err && err.badJson) return send(res, 400, { error: err.message });
     send(res, 500, { error: err.message || "Serverfehler" });
   }
+});
+
+server.on("error", (err) => {
+  if (err && err.code === "EADDRINUSE") {
+    console.log(`  Port ${PORT} ist belegt. Laeuft Ember schon in einem anderen Fenster?`);
+    process.exit(1);
+  }
+  logCrash("server", err);
 });
 
 server.listen(PORT, HOST, async () => {
