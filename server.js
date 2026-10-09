@@ -4,6 +4,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const { URL } = require("url");
+const { pipeline } = require("stream");
 const store = require("./lib/store");
 const { resolveActionRoll, applyPools } = require("./lib/dice");
 const { addresses } = require("./lib/lan");
@@ -15,6 +16,7 @@ const compendium = require("./lib/compendium");
 const solo = require("./lib/solo");
 const spur = require("./lib/spur");
 const { isGm, recordGmKey, isLocalRequest, requestAddress } = require("./lib/auth");
+const { parseRange } = require("./lib/range");
 
 const PORT = Number(process.env.EMBER_PORT || 3478);
 const HOST = process.env.EMBER_HOST || "0.0.0.0";
@@ -144,27 +146,29 @@ function serveFile(res, filePath, req) {
     }
     const ext = path.extname(filePath).toLowerCase();
     const type = MIME[ext] || "application/octet-stream";
-    const range = req && req.headers.range;
-    if (range && /^bytes=/.test(range)) {
-      const [startStr, endStr] = range.replace("bytes=", "").split("-");
-      const start = Math.max(0, Number(startStr) || 0);
-      let end = endStr ? Number(endStr) : st.size - 1;
-      if (end > st.size - 1) end = st.size - 1;
-      if (start > end) {
-        res.writeHead(416, { "Content-Type": "text/plain; charset=utf-8", "Content-Range": `bytes */${st.size}` });
-        return res.end("Bereich ungueltig.");
-      }
+    const range = parseRange(req && req.headers.range, st.size);
+    if (range && range.invalid) {
+      res.writeHead(416, { "Content-Type": "text/plain; charset=utf-8", "Content-Range": `bytes */${st.size}` });
+      return res.end("Bereich ungueltig.");
+    }
+    if (range) {
       res.writeHead(206, {
         "Content-Type": type,
-        "Content-Range": `bytes ${start}-${end}/${st.size}`,
+        "Content-Range": `bytes ${range.start}-${range.end}/${st.size}`,
         "Accept-Ranges": "bytes",
-        "Content-Length": end - start + 1,
+        "Content-Length": range.end - range.start + 1,
       });
-      return fs.createReadStream(filePath, { start, end }).pipe(res);
+      return streamTo(res, fs.createReadStream(filePath, { start: range.start, end: range.end }));
     }
     res.writeHead(200, { "Content-Type": type, "Accept-Ranges": "bytes", "Content-Length": st.size });
-    fs.createReadStream(filePath).pipe(res);
+    streamTo(res, fs.createReadStream(filePath));
   });
+}
+
+// pipeline schliesst die Datei, wenn der Browser abbricht (Spulen, Neuladen),
+// und ein Lesefehler beendet nur diese Antwort, nicht den Server.
+function streamTo(res, source) {
+  pipeline(source, res, () => {});
 }
 
 function checkTriggers(session, enc, token) {
