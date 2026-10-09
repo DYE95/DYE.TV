@@ -280,12 +280,19 @@ async function handleApi(req, res, url) {
   if (method === "GET" && p === "/api/events") {
     res.writeHead(200, {
       "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
+      "Cache-Control": "no-cache, no-transform",
+      "X-Accel-Buffering": "no",
       Connection: "keep-alive",
     });
-    res.write("data: " + JSON.stringify(snapshot()) + "\n\n");
+    res.flushHeaders();
+    res.write(`data: ${JSON.stringify(snapshot())}\n\n`);
     clients.add(res);
-    req.on("close", () => clients.delete(res));
+    // Kommentarzeile alle 20 s, damit Tunnel und Proxys die Leitung nicht als tot schliessen.
+    const beat = setInterval(() => res.write(":\n\n"), 20000);
+    req.on("close", () => {
+      clearInterval(beat);
+      clients.delete(res);
+    });
     return;
   }
 

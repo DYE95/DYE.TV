@@ -380,12 +380,25 @@ function startDrag(ev, el, token, opts) {
 function statusLabel(code) {
   return ({ online: "am Tisch", queued: "Want Spotlight", spotlight: "im Spotlight", rolling: "würfelt", narrating: "lauscht" })[code] || "fort";
 }
+// Ein Stream pro Seite. Andere Skripte hoeren auf "ember:state" statt einen eigenen zu oeffnen,
+// sonst sind die sechs Verbindungen pro Adresse schnell weg.
 function startStateFeed(apply) {
   let last = 0;
-  const pull = () => fetch("/api/state").then((r) => r.json()).then((s) => { last = Date.now(); apply(s); }).catch(() => {});
+  window.emberFeed = true;
+  const share = (s) => {
+    last = Date.now();
+    apply(s);
+    window.dispatchEvent(new CustomEvent("ember:state", { detail: s }));
+  };
+  const pull = () => fetch("/api/state").then((r) => r.json()).then(share).catch(() => {});
   pull();
   const es = new EventSource("/api/events");
-  es.addEventListener("message", (ev) => { last = Date.now(); try { apply(JSON.parse(ev.data)); } catch {} });
+  es.addEventListener("message", (ev) => {
+    let next = null;
+    try { next = JSON.parse(ev.data); } catch { return; }
+    share(next);
+  });
+  window.addEventListener("pagehide", () => es.close());
   setInterval(() => { if (Date.now() - last > 4000) pull(); }, 2500);
 }
 
