@@ -1,4 +1,5 @@
-const STORE = "ember.home.desk.v2";
+const STORE = "ember.home.desk.v3";
+const OLD_STORE = "ember.home.desk.v2";
 
 const BUILTIN = [
   { id: "ember", title: "Ember", sub: "Die Glut · SL", href: "/ember" },
@@ -10,27 +11,31 @@ const BUILTIN = [
   { id: "karten", title: "Karten", sub: "Print and Play", href: "/karten" },
   { id: "solo", title: "Solo", sub: "Übung, keine Runde", href: "/solo" },
   { id: "heft", title: "Heft", sub: "Notizen · Markdown", href: "/heft" },
-  { id: "settings", title: "Einstellungen", sub: "Schrift, Kacheln, Raster", panel: "panelSettings" },
+  { id: "settings", title: "Einstellungen", sub: "Seitenleiste ein/aus", toggle: true },
 ];
 
+// Masse in "Basis-Pixeln" (16 = 1rem). Die Seite rechnet sie in rem um,
+// damit Kacheln auf dem 4K-TV mitwachsen. Drei Spalten passen neben die
+// Einstellungen, grosse Flaechen fuer den Wii-Zeiger.
 function defaults() {
   return {
-    fontSize: 15,
-    tileW: 260,
-    tileH: 88,
+    fontSize: 18,
+    tileW: 272,
+    tileH: 120,
     grid: 24,
     locked: false,
+    panelOpen: true,
     tiles: {
       ember: { x: 24, y: 24 },
-      player: { x: 312, y: 24 },
-      token: { x: 600, y: 24 },
-      pixelstube: { x: 888, y: 24 },
-      media: { x: 24, y: 136 },
-      bibliothek: { x: 312, y: 136 },
-      karten: { x: 600, y: 136 },
-      solo: { x: 888, y: 136 },
-      heft: { x: 24, y: 248 },
-      settings: { x: 312, y: 248 },
+      player: { x: 320, y: 24 },
+      token: { x: 616, y: 24 },
+      pixelstube: { x: 24, y: 168 },
+      media: { x: 320, y: 168 },
+      bibliothek: { x: 616, y: 168 },
+      karten: { x: 24, y: 312 },
+      solo: { x: 320, y: 312 },
+      heft: { x: 616, y: 312 },
+      settings: { x: 24, y: 456 },
     },
     custom: [],
     profiles: {},
@@ -38,10 +43,29 @@ function defaults() {
   };
 }
 
+// Vom alten Tisch (v2) bleiben Profile, eigene Kacheln und Sperre.
+// Die Positionen starten neu, weil die alten vier Spalten nicht neben
+// die Seitenleiste passen.
+function fromOld() {
+  try {
+    const old = JSON.parse(localStorage.getItem(OLD_STORE) || "null");
+    if (!old) return null;
+    return {
+      ...defaults(),
+      locked: Boolean(old.locked),
+      custom: Array.isArray(old.custom) ? old.custom : [],
+      profiles: old.profiles || {},
+      activeProfile: old.activeProfile || "",
+    };
+  } catch {
+    return null;
+  }
+}
+
 function load() {
   try {
     const raw = JSON.parse(localStorage.getItem(STORE) || "null");
-    if (!raw) return defaults();
+    if (!raw) return fromOld() || defaults();
     return {
       ...defaults(),
       ...raw,
@@ -66,17 +90,19 @@ function catalog() {
   return BUILTIN.concat(state.custom);
 }
 
+const U = (n) => `${Number(n) / 16}rem`;
+const remPx = () => parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+
 let state = load();
 const desk = document.getElementById("desk");
 const nodes = {};
 
 function applyChrome() {
-  const px = state.fontSize + "px";
-  document.body.style.fontSize = px;
-  document.getElementById("houseTitle").style.fontSize = state.fontSize * 1.7 + "px";
-  desk.style.fontSize = px;
-  desk.style.setProperty("--grid", state.grid + "px");
+  document.body.style.setProperty("--fs", String(state.fontSize));
+  desk.style.setProperty("--grid", U(state.grid));
   document.body.classList.toggle("locked", Boolean(state.locked));
+  document.body.classList.toggle("panel-off", state.panelOpen === false);
+  if (nodes.settings) nodes.settings.classList.toggle("on", state.panelOpen !== false);
   const font = document.getElementById("fontSize");
   const tileW = document.getElementById("tileW");
   const tileH = document.getElementById("tileH");
@@ -97,11 +123,10 @@ function place(id) {
   const el = nodes[id];
   if (!el) return;
   const pos = state.tiles[id] || { x: 24, y: 24 };
-  el.style.width = state.tileW + "px";
-  el.style.height = state.tileH + "px";
-  el.style.left = pos.x + "px";
-  el.style.top = pos.y + "px";
-  el.style.fontSize = state.fontSize + "px";
+  el.style.width = U(state.tileW);
+  el.style.height = U(state.tileH);
+  el.style.left = U(pos.x);
+  el.style.top = U(pos.y);
 }
 
 function openPanel(id) {
@@ -114,6 +139,11 @@ function activate(item) {
     if (/^https?:/i.test(item.href)) window.open(item.href, "_blank", "noopener");
     else location.href = item.href;
   } else if (item.panel) openPanel(item.panel);
+  else if (item.toggle) {
+    state.panelOpen = state.panelOpen === false;
+    applyChrome();
+    save();
+  }
 }
 
 function bindDrag(el, item) {
@@ -127,9 +157,10 @@ function bindDrag(el, item) {
   });
   el.addEventListener("pointermove", (ev) => {
     if (!drag || state.locked) return;
-    const dx = ev.clientX - drag.x;
-    const dy = ev.clientY - drag.y;
-    if (Math.hypot(dx, dy) > 4) drag.moved = true;
+    const scale = 16 / remPx();
+    const dx = (ev.clientX - drag.x) * scale;
+    const dy = (ev.clientY - drag.y) * scale;
+    if (Math.hypot(dx, dy) > 6) drag.moved = true;
     if (!drag.moved) return;
     state.tiles[item.id] = {
       x: snap(Math.max(0, drag.ox + dx)),
@@ -157,12 +188,17 @@ function buildTiles() {
     const el = document.createElement("button");
     el.type = "button";
     el.className = "desk-tile";
-    el.innerHTML = "<b>" + item.title + "</b><span>" + (item.sub || "") + "</span>";
+    const title = document.createElement("b");
+    title.textContent = item.title;
+    const sub = document.createElement("span");
+    sub.textContent = item.sub || "";
+    el.append(title, sub);
     desk.appendChild(el);
     nodes[item.id] = el;
     bindDrag(el, item);
     place(item.id);
   });
+  if (nodes.settings) nodes.settings.classList.toggle("on", state.panelOpen !== false);
 }
 
 function renderProfiles() {
@@ -375,8 +411,8 @@ document.getElementById("packFile").addEventListener("change", async (ev) => {
   }
 });
 
-applyChrome();
 buildTiles();
+applyChrome();
 renderProfiles();
 
 document.getElementById("btnUpdate").addEventListener("click", async () => {
@@ -465,3 +501,4 @@ document.getElementById("clipFile").addEventListener("change", (ev) => {
   xhr.send(file);
   ev.target.value = "";
 });
+
