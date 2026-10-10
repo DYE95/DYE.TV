@@ -497,13 +497,18 @@
       const link = out.payload && out.payload.url ? `<a href="${esc(out.payload.url)}" target="_blank" rel="noopener">${esc(out.folder)}</a>` : esc(out.folder);
       let hook;
       if (!out.webhook.configured) {
-        hook = '<p class="warn">Hochgeladen – Legion-Webhook nicht eingerichtet. Unten bei „Legion-Verbindung“ Adresse und Schlüssel eintragen (Anleitung: docs/TESTLAUF-UPLOAD.md).</p>';
+        hook = `<div class="tl-alert" role="alert">
+            <p class="tl-alert-head">⚠ Legion weiß noch nichts davon</p>
+            <p>Der Bericht liegt auf GitHub, aber der Legion-Webhook ist nicht eingerichtet. Adresse und Schlüssel eintragen, dann den Bericht noch einmal hochladen.</p>
+            <a class="tl-btn tl-big tl-primary" href="#legionCard" data-goto-legion>Legion-Verbindung einrichten ↓</a>
+          </div>`;
       } else if (out.webhook.ok) {
         hook = "<p class=\"ok\">Legion hat Bescheid bekommen.</p>";
       } else {
         hook = `<p class="warn">Hochgeladen, aber Legion nicht erreicht: ${esc(out.webhook.error || "unbekannt")}</p>`;
       }
-      box.className = `tl-upload ${out.webhook.ok ? "ok" : "warn"}`;
+      box.className = `tl-upload ${out.webhook.ok ? "ok" : out.webhook.configured ? "warn" : "alert"}`;
+      if (!out.webhook.configured) $("legionMissing").hidden = true; // der Warnkasten sagt es schon
       box.innerHTML = `<p class="ok">Hochgeladen: ${link} · Commit <code>${esc(String(out.commit).slice(0, 7))}</code></p>${hook}`;
       loadRuns();
     } catch (err) {
@@ -519,7 +524,30 @@
   $("btnUploadViewer").addEventListener("click", (ev) => uploadRun(viewerRun, $("viewerUpload"), ev.currentTarget));
 
   // ---------- Legion-Verbindung ----------
+  // Zur Legion-Verbindung springen: Bericht-Ansicht schliessen, Kasten
+  // aufleuchten lassen, Cursor ins Adressfeld.
+  function gotoLegion() {
+    $("viewer").hidden = true;
+    const card = $("legionCard");
+    card.classList.remove("tl-flash");
+    void card.offsetWidth;
+    card.classList.add("tl-flash");
+    card.scrollIntoView({ behavior: "smooth", block: "center" });
+    setTimeout(() => $("legionUrl").focus({ preventScroll: true }), 400);
+  }
+  document.addEventListener("click", (ev) => {
+    const link = ev.target.closest("[data-goto-legion]");
+    if (!link) return;
+    ev.preventDefault();
+    gotoLegion();
+  });
+  if (location.hash === "#legionCard") setTimeout(gotoLegion, 600);
+
   function showLegion(cfg) {
+    const missing = !cfg.url;
+    $("legionCard").classList.toggle("tl-missing", missing);
+    const pre = $("legionMissing");
+    if (pre) pre.hidden = !missing;
     $("legionUrl").value = cfg.url || "";
     $("legionHeader").value = cfg.header || "Authorization";
     $("legionKey").value = "";

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Testlauf · DYE.TV</title>
   <link rel="icon" href="/img/ember-icon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="/css/testlauf.css?v=3" />
+  <link rel="stylesheet" href="/css/testlauf.css?v=4" />
 </head>
 <body class="tl-body">
   <header class="tl-top">
@@ -70,6 +70,7 @@
           </div>
         </div>
         <div id="uploadResult" class="tl-upload" hidden aria-live="polite"></div>
+        <p class="tl-hint tl-missing-hint" id="legionMissing" hidden>Legion-Webhook fehlt: Hochladen geht, Legion bekommt aber keine Nachricht. <a href="#legionCard" data-goto-legion>Jetzt einrichten ↓</a></p>
         <p class="tl-hint" id="finishHint"></p>
       </section>
 
@@ -109,6 +110,6 @@
     </div>
   </div>
 
-  <script src="/js/testlauf.js?v=3"></script>
+  <script src="/js/testlauf.js?v=4"></script>
 </body>
 </html>

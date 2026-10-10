@@ -247,3 +247,15 @@ html, body { height: 100%; }
 .tl-time { font-variant-numeric: tabular-nums; color: var(--muted); padding: 0.2rem 0.7rem; border: var(--line) solid rgba(118, 142, 177, 0.35); border-radius: 1rem; }
 .tl-time.on { color: var(--lantern); border-color: var(--lantern); }
 @keyframes tlBlink { 50% { opacity: 0.2; } }
+
+/* Legion-Webhook fehlt: nicht übersehbar, mit Sprung zur Verbindung */
+.tl-upload.alert { border-color: var(--orange); border-width: 2px; }
+.tl-alert { margin-top: 0.6rem; padding: 0.8rem 1rem; border-radius: 0.35rem; background: rgba(231, 72, 6, 0.16); border: 2px solid var(--orange); display: grid; gap: 0.5rem; }
+.tl-alert-head { font-size: 1.25rem; color: #ffb38a; margin: 0; }
+.tl-alert .tl-btn { justify-self: start; text-decoration: none; color: inherit; display: inline-flex; align-items: center; }
+.tl-missing-hint { color: var(--lantern); }
+.tl-missing-hint a { color: var(--lantern); font-weight: bold; }
+#legionCard.tl-missing { border-color: var(--lantern); }
+#legionCard.tl-missing #legionState { color: var(--lantern); }
+#legionCard.tl-flash { animation: tlFlash 1.6s ease-out 1; }
+@keyframes tlFlash { 0%, 50% { box-shadow: 0 0 0 4px var(--lantern); } 100% { box-shadow: none; } }
