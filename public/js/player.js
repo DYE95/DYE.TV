@@ -51,9 +51,33 @@ function sit(id, asGuest) {
   render();
 }
 
+function restoreSeatFromStorage() {
+  const storedId = seatBox.getItem("ember.characterId") || "";
+  const storedGuest = seatBox.getItem("ember.guest") === "1";
+  if (!meId && storedId) meId = storedId;
+  if (!meId && !guest && storedGuest) guest = true;
+  return Boolean(meId || guest);
+}
+
+function claimSeatIfNeeded() {
+  if (!meId) return;
+  fetch("/api/session/sit", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ characterId: meId }),
+  }).then((r) => r.json()).then((data) => {
+    if (data.seat) seatBox.setItem("ember.seat", data.seat);
+  }).catch(() => {});
+}
+
 function applyState(next) {
   state = next;
-  if (meId && !state.characters.some((c) => c.id === meId)) meId = "";
+  // Nach Entsperren/Neuladen: Sitz aus dem Speicher holen, bevor die Gate aufgeht.
+  restoreSeatFromStorage();
+  if (meId && state.characters && state.characters.length && !state.characters.some((c) => c.id === meId)) {
+    // Bogen wirklich weg (andere Kampagne) — Speicher mitraeumen.
+    meId = "";
+    seatBox.removeItem("ember.characterId");
+  }
   const typing = document.activeElement && ["question", "hopeDie", "fearDie", "compQ", "playLogQ"].includes(document.activeElement.id);
   if (!typing) render();
   else {
@@ -67,6 +91,19 @@ function applyState(next) {
   }
 }
 startStateFeed(applyState);
+// Beim ersten Laden und nach dem Entsperren den Sitz am Server erneut anmelden.
+claimSeatIfNeeded();
+window.emberSit = (id) => sit(id, false);
+window.addEventListener("ember:sit", (ev) => {
+  const id = ev.detail && ev.detail.characterId;
+  if (id) sit(id, false);
+});
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) return;
+  restoreSeatFromStorage();
+  claimSeatIfNeeded();
+  render();
+});
 
 function renderClips() {
   const box = $("#playVideoBox");
@@ -214,6 +251,7 @@ function render() {
   const trapSig = (encNow?.traps || []).map((t) => t.id + (t.sprung ? "1" : "0")).join(",");
   const mapKey = (sesTurn?.map?.tokens || []).map((t) => t.id + ":" + t.x + ":" + t.y + ":" + (t.rev || 0)).join("|")
     + "|" + (sesTurn?.map?.fow?.on ? "1" : "0")
+    + "|img:" + (sesTurn?.map?.image || "")
     + "|p:" + (sesTurn?.ping?.at || 0)
     + "|d:" + doorsSig + "|z:" + zoneSig + "|t:" + trapSig;
   if ($("#mapStage")) {

@@ -138,7 +138,10 @@
         onSit: root.dataset.table === "player" ? (id) => {
           localStorage.setItem("ember.characterId", id);
           localStorage.setItem("ember.guest", "0");
-          location.reload();
+          // player.js hoert darauf und ruft sit() — Sitz bleibt auch nach Entsperren.
+          window.dispatchEvent(new CustomEvent("ember:sit", { detail: { characterId: id } }));
+          // Fallback, falls die Seite die Sitz-Logik noch nicht geladen hat.
+          if (typeof window.emberSit !== "function") location.reload();
         } : null,
       }));
     };

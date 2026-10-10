@@ -151,8 +151,15 @@ body.narrating .hud { border-color: var(--ember); }
 .mark-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; }
 .mark-row .pip { width: 28px; height: 28px; border-radius: 50%; border: 1px solid #3a2a24; background: transparent; }
 .mark-row .pip.on { background: #e9c46a; }
-.ping { position: absolute; transform: translate(-50%, -50%); z-index: 5; color: #e9c46a; font-size: 12px; pointer-events: none; text-shadow: 0 1px 4px #000; }
-.ping::before { content: ""; position: absolute; left: 50%; top: 50%; width: 36px; height: 36px; border: 2px solid #e9c46a; border-radius: 50%; transform: translate(-50%, -50%); }
+.ping { position: absolute; transform: translate(-50%, -50%); z-index: 8; color: #ffd56a; font-size: 18px; font-weight: 700; pointer-events: none; text-shadow: 0 2px 8px #000, 0 0 12px #e85d04; white-space: nowrap; }
+.ping::before { content: ""; position: absolute; left: 50%; top: 50%; width: 72px; height: 72px; border: 3px solid #ffd56a; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 6px rgba(232, 93, 4, 0.25); animation: ember-ping 1.2s ease-out infinite; }
+@keyframes ember-ping {
+  0% { transform: translate(-50%, -50%) scale(0.55); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.35); opacity: 0; }
+}
+.play-dock, .play-dock input, .play-dock select, .play-dock textarea, .play-dock button {
+  touch-action: manipulation;
+}
 .player-shell .scroll { flex: 1; min-height: 0; }
 .actions { display: grid; gap: 8px; padding: 12px; border-top: 1px solid var(--line); }
 .status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--mute); }
