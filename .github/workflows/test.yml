@@ -2,7 +2,7 @@ name: Ember
 
 on:
   push:
-    branches: [main]
+    branches: [DYE.TV]
   pull_request:
 
 concurrency:
@@ -13,32 +13,16 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 1
 
-      - name: Node-Toolcache
-        id: node-cache
-        uses: actions/cache@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          path: ${{ runner.tool_cache }}/node
-          key: node-20-${{ runner.os }}-${{ runner.arch }}
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: npm-Cache
-        if: hashFiles('package-lock.json') != ''
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: npm-${{ runner.os }}-node20-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            npm-${{ runner.os }}-node20-
+          node-version: 22
 
       - name: Syntax
-        run: node --check server.js && node --check lib/initiative.js && node --check lib/dice.js
+        run: node --check server.js
 
-      - name: Rundenlogik und Duality
-        run: node --test test/initiative.test.js test/dice.test.js test/solo.test.js test/store.test.js test/auth.test.js
+      - name: Tests
+        run: npm test
