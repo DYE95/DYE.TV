@@ -1722,6 +1722,9 @@ if (url.pathname.startsWith("/docs/bibliothek/")) {
       if (!file) { res.writeHead(403); return res.end(); }
       return serveFile(res, file, req);
     }
+    if (url.pathname === "/ereignisse" || url.pathname === "/ereignisse/") {
+      return serveFile(res, path.join(PUBLIC, "ereignisse.html"), req);
+    }
     if (url.pathname === "/runner" || url.pathname === "/runner/") {
       return serveFile(res, path.join(PUBLIC, "runner.html"), req);
     }

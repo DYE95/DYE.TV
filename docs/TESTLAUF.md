@@ -34,7 +34,7 @@ Datum: ________ Version (`git log --oneline -1`): ________________
 - [ ] `/bibliothek` zeigt DH-SRD (öffnet als PDF) und die Karten
 - [ ] `/karten` lädt
 - [ ] Einstellungen (Startseite): Schrift/Kacheln ändern, bleibt nach Neuladen
-- [ ] Ereignis-Seiten: `/runner`, `/fallwerk`, `/pastellpfad`, `/scharfschuss`, `/puls` laden
+- [ ] Ereignis-Seiten über die Kachel „Ereignisse“ (oder `/ember` → Ereignisse): Leitungsparcours, Fallwerk, Pastellpfad, Scharfschuss, Puls laden
 
 ## Spieler lokal (LAN)
 

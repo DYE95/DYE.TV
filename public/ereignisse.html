@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ereignisse · DYE.TV</title>
+  <link rel="icon" href="/img/ember-icon.svg" type="image/svg+xml" />
+  <style>
+    /* Grosse Ziele für Wii-Zeiger und 4K-TV: alles in rem, Wurzel wächst mit der Breite. */
+    html { font-size: clamp(16px, 1.05vw, 44px); }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: #0c0908; color: #f4efe4; font: 1rem/1.45 Georgia, "Times New Roman", serif; }
+    header { display: flex; align-items: center; gap: 1rem; padding: 0.9rem 1.4rem; border-bottom: 1px solid #c45c26; }
+    header h1 { margin: 0; font-weight: normal; font-size: 1.6rem; color: #ffb703; }
+    .back { display: inline-flex; align-items: center; min-height: 3rem; padding: 0 1.1rem; border: 1px solid #6a432c; border-radius: 0.5rem; color: #f4efe4; text-decoration: none; background: #1a120e; }
+    .back:hover, .back:focus-visible { border-color: #ffb703; outline: none; }
+    main { padding: 1.4rem; max-width: 90rem; margin: 0 auto; }
+    .hint { color: #d9c7b8; margin: 0 0 1.2rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 1rem; }
+    .tile { display: grid; gap: 0.3rem; min-height: 7.5rem; padding: 1.1rem 1.3rem; border: 1px solid #6a432c; border-radius: 0.7rem; background: #1a120e; color: #f4efe4; text-decoration: none; }
+    .tile b { font-size: 1.35rem; color: #ffb703; font-weight: normal; }
+    .tile span { color: #d9c7b8; }
+    .tile code { color: #8fa2bd; font-size: 0.85rem; }
+    .tile:hover, .tile:focus-visible { border-color: #ffb703; background: #241812; outline: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="back" href="/">← Startseite</a>
+    <a class="back" href="/ember">Ember</a>
+    <h1>Ereignisse</h1>
+  </header>
+  <main>
+    <p class="hint">Kurze Spiele für zwischendurch. Am Tisch wirft die Spielleitung sie in der laufenden Session unter „Ereignis“ allen Spielern zu; hier öffnet man jedes einzeln zum Üben oder Testen.</p>
+    <nav class="grid" id="events" aria-label="Ereignis-Seiten">
+      <a class="tile" href="/runner"><b>Leitungsparcours</b><span>Spring über Apparate, rutsch unter Leitungen.</span><code>/runner</code></a>
+      <a class="tile" href="/fallwerk"><b>Fallwerk</b><span>Formen stapeln, bis es einstürzt.</span><code>/fallwerk</code></a>
+      <a class="tile" href="/pastellpfad"><b>Pastellpfad</b><span>3D-Labyrinth: einsammeln und den Ausgang finden.</span><code>/pastellpfad</code></a>
+      <a class="tile" href="/scharfschuss"><b>Scharfschuss</b><span>Talverteidigung: zielen, treffen, Stellung halten.</span><code>/scharfschuss</code></a>
+      <a class="tile" href="/puls"><b>Puls</b><span>Schnelle Abstimmung: Frage stellen, alle tippen eine Antwort.</span><code>/puls</code></a>
+    </nav>
+  </main>
+</body>
+</html>
