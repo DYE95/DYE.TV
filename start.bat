@@ -7,16 +7,14 @@ if errorlevel 1 (
   exit /b 1
 )
 if not exist data mkdir data
-rem PIN ausserhalb einer Klammer abfragen, sonst ist die Variable beim Lesen noch leer.
-if exist data\sl.pin goto pinda
-set /p SL_PIN=Spielleiter-PIN, einmalig, bleibt liegen: 
->data\sl.pin echo(%SL_PIN%
-:pinda
+rem Die PIN fragt und schreibt Node, nicht cmd: "set /p" plus "echo" hat frueher
+rem "ECHO ist ausgeschaltet" in data\sl.pin hinterlassen. tools\slpin.js erkennt
+rem solche Reste und fragt dann neu.
+node tools\slpin.js
 title DYE.TV  Spielleiter http://127.0.0.1:3478/ember
 echo.
 echo  Spielleiter   http://127.0.0.1:3478/ember
 echo  Spieler       http://127.0.0.1:3478/player
-echo  PIN           data\sl.pin
 echo  Zu Hause      steht in der Titelleiste, sobald der Tunnel da ist
 echo.
 start /b node tools\tunnel.js

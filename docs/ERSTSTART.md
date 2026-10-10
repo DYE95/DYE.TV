@@ -19,4 +19,14 @@ Lies das, bevor du eine `.bat` doppelklickst. Eine Batch-Datei ist ein Skript. S
 4. Ember ist die Glut. Spieler im selben WLAN nehmen die Adresse aus der Leiste.
 5. Zu Hause: `tunnel.bat` in einem zweiten Fenster offen lassen und die Adresse mit `/player` schicken.
 
+## Spielleiter-PIN
+
+Beim ersten Start fragt `start.bat` im Fenster nach der Spielleiter-PIN (mindestens 4 Zeichen). Geschrieben wird sie von Node (`tools\slpin.js`) nach `data\sl.pin`, nicht von cmd. Steht dort noch ein Rest wie „ECHO ist ausgeschaltet (OFF).“ von einem älteren Stand, erkennt `start.bat` das beim nächsten Start und fragt neu. Leere Eingabe zählt nicht. Eine neue PIN gilt nach dem Neustart auch als SL-Schlüssel; offene SL-Seiten einmal neu laden.
+
+PIN später ändern: `data\sl.pin` löschen und `start.bat` neu starten.
+
+## Ember.bat gibt es nicht mehr
+
+`Ember.bat` hat `start.bat` nur minimiert gestartet und Edge geöffnet. Minimiert sieht man die PIN-Frage beim ersten Start nicht, und der Browser der Wahl ist Brave. Deshalb: immer `start.bat` (oder `erststart.bat` beim allerersten Mal), Browser selbst öffnen. QuickEdit im Konsolenfenster ausschalten (Fenster → Eigenschaften), sonst hält ein Klick ins Fenster den Server an.
+
 Daten liegen in `data/`. Die ist nicht im Repo. Ein Update zieht nur den Code.
