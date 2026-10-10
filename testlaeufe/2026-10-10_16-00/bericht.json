@@ -1,0 +1,410 @@
+{
+  "schema": 1,
+  "name": "2026-10-10_16-00",
+  "createdAt": "2026-10-10T14:00:34.671Z",
+  "startedAt": "2026-10-10T13:24:47.314Z",
+  "tester": "",
+  "geraet": "",
+  "version": {
+    "version": "v0.4.0-10-g5498d77",
+    "source": "git"
+  },
+  "summary": {
+    "total": 41,
+    "done": 41,
+    "ok": 7,
+    "fehler": 0,
+    "eigen": 34,
+    "offen": 0,
+    "ms": 1408314,
+    "timed": 39
+  },
+  "sections": [
+    {
+      "id": "vorbereitung",
+      "title": "Vorbereitung",
+      "items": [
+        {
+          "id": "vorbereitung-5ychsw",
+          "text": "`node -v` zeigt eine LTS-Version (20 oder neuer): ______",
+          "mark": "eigen",
+          "note": "Das kann raus. Klappte sofort wieder.",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "vorbereitung-3cyaum",
+          "text": "`git pull` im Ember-Ordner, keine Fehlermeldung",
+          "mark": "eigen",
+          "note": "kann auch raus. Weil ich immer Mit der Erstlung einer Virtuellen Instanz beginne.",
+          "ms": 3216,
+          "zeit": "00:03"
+        },
+        {
+          "id": "vorbereitung-1k23b0g",
+          "text": "Größe von `data\\ember.json` notiert: ______ KB",
+          "mark": "eigen",
+          "note": "kann man hier simpler weise einen button einrichten der zum prüfen eine befehlskette nutzt um selbständig in dem moment zu schauen?",
+          "ms": 7144,
+          "zeit": "00:07"
+        },
+        {
+          "id": "vorbereitung-142trmr",
+          "text": "Alte Ember-Tabs und -Fenster in allen Browsern geschlossen",
+          "mark": "eigen",
+          "note": "kann auch raus. wie oben erwähnmt. Ich starte immer clean rein.",
+          "ms": 7663,
+          "zeit": "00:08"
+        },
+        {
+          "id": "vorbereitung-dji21q",
+          "text": "Konsole: QuickEdit aus (Fenster → Eigenschaften)",
+          "mark": "eigen",
+          "note": "klappt auch  jedes mal iun der neuen instanz. kann auch aus der checkliste.",
+          "ms": 5064,
+          "zeit": "00:05"
+        },
+        {
+          "id": "vorbereitung-11mgnc",
+          "text": "Uhrzeit beim Start notiert: ______",
+          "mark": "eigen",
+          "note": "würde sinvoller sein als manueller timer wenn ich in dieses menü reingehe und die basis steht: Aktualiesiertes Repo into \"start.bat\" into \"Pin Wahl des Tages\" into kleine Animation zum Hochfahren into Browser und Öffnen\"",
+          "ms": 4624,
+          "zeit": "00:05"
+        }
+      ],
+      "ms": 27711
+    },
+    {
+      "id": "start",
+      "title": "Start",
+      "items": [
+        {
+          "id": "start-x7z9ns",
+          "text": "`start.bat`: Zeit bis `/ember` am PC lädt: ______ s",
+          "mark": "eigen",
+          "note": "kann man eine art Dummy erzeugen und somit denn prozess virtuell tracken. hier bei muss der 2the Server es schaffen in eine bestimmte datei hier im testlauf zu editiren. das wäre auch die möglich keit quasi \"veränderung der datei = Timer Stop = eintragen als X. Run",
+          "ms": 501521,
+          "zeit": "08:22"
+        },
+        {
+          "id": "start-bmzsmn",
+          "text": "Tunnel-Adresse erscheint in der Titelleiste nach ______ s (keine alte Adresse vom letzten Mal)",
+          "mark": "eigen",
+          "note": "Lassen wir mal die title sauber mit \"DYE.TV = (ON/OFF)\" so zeigt es auch simple per alt+tab was phase ist. hilft mir mit Mehr Personen Tests in der zukunpft.",
+          "ms": 208528,
+          "zeit": "03:29"
+        },
+        {
+          "id": "start-1n47mxz",
+          "text": "`data\\tunnel.log`: keine Zeilen „Failed to dial a quic connection“, Protokoll http2",
+          "mark": "eigen",
+          "note": "ich klinge wie ein idiot aber wäre auch local automatisierbar vielleicht? also wenn es oben klappt dann ja hier auch aber ich habe keinen plan.",
+          "ms": 142168,
+          "zeit": "02:22"
+        },
+        {
+          "id": "start-jv94a5",
+          "text": "Erststart: `start.bat` fragt die PIN, `data\\sl.pin` enthält sie (ein alter Rest „ECHO ist ausgeschaltet“ wird erkannt und neu abgefragt)",
+          "mark": "eigen",
+          "note": "Mach einfach ( \"Wähle dein \"KEY of the Day\": ) hat beim kurzen live edit sofort geklappt.",
+          "ms": 55327,
+          "zeit": "00:55"
+        }
+      ],
+      "ms": 907544
+    },
+    {
+      "id": "pc-seiten",
+      "title": "PC-Seiten",
+      "items": [
+        {
+          "id": "pc-seiten-1yv36ut",
+          "text": "`/` Startseite lädt, Kacheln klickbar",
+          "mark": "o",
+          "note": "",
+          "ms": 118872,
+          "zeit": "01:59"
+        },
+        {
+          "id": "pc-seiten-1yyxikx",
+          "text": "`/ember` Spielleitung lädt, Session starten geht",
+          "mark": "eigen",
+          "note": "-NULL Teste ich jetzt nicht viel zu viele änderungen sonst glaube ich. icxh komme sonst nicht hinter her.",
+          "ms": 8447,
+          "zeit": "00:08"
+        },
+        {
+          "id": "pc-seiten-thbuci",
+          "text": "`/token` Tokenatelier lädt",
+          "mark": "o",
+          "note": "",
+          "ms": 975,
+          "zeit": "00:01"
+        },
+        {
+          "id": "pc-seiten-1hn3qtg",
+          "text": "`/pixelstube` zeichnen, PNG speichern, 5× schnell neu laden: kein Absturz",
+          "mark": "o",
+          "note": "",
+          "ms": 85785,
+          "zeit": "01:26"
+        },
+        {
+          "id": "pc-seiten-1mlfhr6",
+          "text": "Mediathek: Video abspielen, vor- und zurückspulen",
+          "mark": "eigen",
+          "note": "Wir sollten irgendwie über Dynamische Checklisten Punkte nachdenken. Sowas wie \"letzter commit gibt Nächsten Testlauf\"",
+          "ms": 60448,
+          "zeit": "01:00"
+        },
+        {
+          "id": "pc-seiten-ymyqce",
+          "text": "Mediathek: kleines Video (< 50 MB) hochladen, Prozentanzeige läuft",
+          "mark": "eigen",
+          "note": "Könnte Raus. Aber wenn wir es irgend wann wieder einbinden muss ess auch kontroliert werden.",
+          "ms": 23608,
+          "zeit": "00:24"
+        },
+        {
+          "id": "pc-seiten-11jqey9",
+          "text": "Mediathek: großes Video (> 1 GB) am PC hochladen, danach abspielen und spulen",
+          "mark": "eigen",
+          "note": "Same as above.",
+          "ms": 920,
+          "zeit": "00:01"
+        },
+        {
+          "id": "pc-seiten-fkixgp",
+          "text": "`/heft` neue Notiz, löschen, „Rückgängig“; Editor füllt die ganze Höhe",
+          "mark": "o",
+          "note": "",
+          "ms": 78816,
+          "zeit": "01:19"
+        },
+        {
+          "id": "pc-seiten-qol48w",
+          "text": "`/solo` ohne Bogen: Hinweis „Noch kein Bogen“, Knöpfe aus",
+          "mark": "eigen",
+          "note": "-NULL Teste ich jetzt nicht viel zu viele änderungen sonst glaube ich. icxh komme sonst nicht hinter her.",
+          "ms": 4224,
+          "zeit": "00:04"
+        },
+        {
+          "id": "pc-seiten-y4kwb8",
+          "text": "`/solo` mit Bogen: Solo öffnen, Bot setzen, Bot zieht, Meldungen oben sichtbar",
+          "mark": "eigen",
+          "note": "-NULL Teste ich jetzt nicht viel zu viele änderungen sonst glaube ich. icxh komme sonst nicht hinter her.",
+          "ms": 2728,
+          "zeit": "00:03"
+        },
+        {
+          "id": "pc-seiten-1hh2ics",
+          "text": "`/bibliothek` zeigt DH-SRD (öffnet als PDF) und die Karten",
+          "mark": "o",
+          "note": "",
+          "ms": 2983,
+          "zeit": "00:03"
+        },
+        {
+          "id": "pc-seiten-1hsk1c5",
+          "text": "`/karten` lädt",
+          "mark": "o",
+          "note": "",
+          "ms": 3024,
+          "zeit": "00:03"
+        },
+        {
+          "id": "pc-seiten-13huuvm",
+          "text": "Einstellungen (Startseite): Schrift/Kacheln ändern, bleibt nach Neuladen",
+          "mark": "o",
+          "note": "",
+          "ms": 2008,
+          "zeit": "00:02"
+        },
+        {
+          "id": "pc-seiten-g2yssc",
+          "text": "Ereignis-Seiten über die Kachel „Ereignisse“ (oder `/ember` → Ereignisse): Leitungsparcours, Fallwerk, Pastellpfad, Scharfschuss, Puls laden",
+          "mark": "eigen",
+          "note": "-NULL Teste ich jetzt nicht viel zu viele änderungen sonst glaube ich. icxh komme sonst nicht hinter her.",
+          "ms": 6240,
+          "zeit": "00:06"
+        }
+      ],
+      "ms": 399078
+    },
+    {
+      "id": "spieler-lokal-lan",
+      "title": "Spieler lokal (LAN)",
+      "items": [
+        {
+          "id": "spieler-lokal-lan-4qcqxi",
+          "text": "`http://<PC-IP>:3478/player` am Handy/TV: Ladezeit ______ s",
+          "mark": "eigen",
+          "note": "-NULL Teste ich jetzt nicht viel zu viele änderungen sonst glaube ich. icxh komme sonst nicht hinter her.",
+          "ms": 4935,
+          "zeit": "00:05"
+        },
+        {
+          "id": "spieler-lokal-lan-i0a7iv",
+          "text": "Profil anlegen, mit PIN eintreten, Bogen wählen",
+          "mark": "eigen",
+          "note": "-NULL Teste ich jetzt nicht viel zu viele änderungen sonst glaube ich. icxh komme sonst nicht hinter her.",
+          "ms": 1603,
+          "zeit": "00:02"
+        },
+        {
+          "id": "spieler-lokal-lan-1et92no",
+          "text": "Würfeln, SL sieht den Wurf im Log",
+          "mark": "eigen",
+          "note": "-NULL Teste ich jetzt nicht viel zu viele änderungen sonst glaube ich. icxh komme sonst nicht hinter her.",
+          "ms": 1780,
+          "zeit": "00:02"
+        }
+      ],
+      "ms": 8318
+    },
+    {
+      "id": "spieler-von-aussen-handy-hotspot-ueber-tunnel",
+      "title": "Spieler von außen (Handy-Hotspot über Tunnel)",
+      "items": [
+        {
+          "id": "spieler-von-aussen-handy-hotspot-ueber-tunnel-abz11w",
+          "text": "Tunnel-Adresse `/player`: Ladezeit ______ s",
+          "mark": "eigen",
+          "note": "-NULL Teste ich jetzt nicht viel zu viele änderungen sonst glaube ich. icxh komme sonst nicht hinter her.",
+          "ms": 19305,
+          "zeit": "00:19"
+        },
+        {
+          "id": "spieler-von-aussen-handy-hotspot-ueber-tunnel-utufct",
+          "text": "Profil + PIN eintreten",
+          "mark": "eigen",
+          "note": "-NULL Teste ich jetzt nicht viel zu viele änderungen sonst glaube ich. icxh komme sonst nicht hinter her.",
+          "ms": 1863,
+          "zeit": "00:02"
+        },
+        {
+          "id": "spieler-von-aussen-handy-hotspot-ueber-tunnel-am34v5",
+          "text": "Würfeln, SL sieht den Wurf nach ______ s",
+          "mark": "eigen",
+          "note": "-NULL Teste ich jetzt nicht viel zu viele änderungen sonst glaube ich. icxh komme sonst nicht hinter her.",
+          "ms": 976,
+          "zeit": "00:01"
+        },
+        {
+          "id": "spieler-von-aussen-handy-hotspot-ueber-tunnel-1d981yr",
+          "text": "Sitz-Punkt beim SL wird grün/grau, wenn der Spieler kommt/geht",
+          "mark": "eigen",
+          "note": "-NULL Teste ich jetzt nicht viel zu viele änderungen sonst glaube ich. icxh komme sonst nicht hinter her.",
+          "ms": 0,
+          "zeit": ""
+        }
+      ],
+      "ms": 22144
+    },
+    {
+      "id": "mehrere-gleichzeitig",
+      "title": "Mehrere gleichzeitig",
+      "items": [
+        {
+          "id": "mehrere-gleichzeitig-1kir6rb",
+          "text": "PC (`/ember`) + TV (`/player`) + Handy (`/player`) gleichzeitig offen",
+          "mark": "eigen",
+          "note": "-NULL Teste ich jetzt nicht viel zu viele änderungen sonst glaube ich. icxh komme sonst nicht hinter her.",
+          "ms": 10119,
+          "zeit": "00:10"
+        },
+        {
+          "id": "mehrere-gleichzeitig-1rpyqtc",
+          "text": "Am PC 4+ Ember-Tabs offen: neue Seiten laden weiter, Würfe kommen an",
+          "mark": "eigen",
+          "note": "-NULL Teste ich jetzt nicht viel zu viele änderungen sonst glaube ich. icxh komme sonst nicht hinter her.",
+          "ms": 1736,
+          "zeit": "00:02"
+        },
+        {
+          "id": "mehrere-gleichzeitig-15uqw57",
+          "text": "Ein Gerät lädt neu: die anderen laufen weiter",
+          "mark": "eigen",
+          "note": "-NULL Teste ich jetzt nicht viel zu viele änderungen sonst glaube ich. icxh komme sonst nicht hinter her.",
+          "ms": 4681,
+          "zeit": "00:05"
+        }
+      ],
+      "ms": 16536
+    },
+    {
+      "id": "sicherheit-ueber-die-tunnel-adresse-nicht-am-pc",
+      "title": "Sicherheit (über die Tunnel-Adresse, nicht am PC)",
+      "items": [
+        {
+          "id": "sicherheit-ueber-die-tunnel-adresse-nicht-am-pc-1c7fmmy",
+          "text": "`<Tunnel>/api/sl-pin` → „Nur dieser Rechner.“ (keine PIN)",
+          "mark": "eigen",
+          "note": "-NULL Teste ich jetzt nicht viel zu viele änderungen sonst glaube ich. icxh komme sonst nicht hinter her.",
+          "ms": 16183,
+          "zeit": "00:16"
+        },
+        {
+          "id": "sicherheit-ueber-die-tunnel-adresse-nicht-am-pc-szx50z",
+          "text": "`<Tunnel>/api/profiles` → „Nur dieser Rechner.“",
+          "mark": "eigen",
+          "note": "-NULL Teste ich jetzt nicht viel zu viele änderungen sonst glaube ich. icxh komme sonst nicht hinter her.",
+          "ms": 768,
+          "zeit": "00:01"
+        },
+        {
+          "id": "sicherheit-ueber-die-tunnel-adresse-nicht-am-pc-1872636",
+          "text": "Neustart / Update von außen → abgelehnt",
+          "mark": "eigen",
+          "note": "-NULL Teste ich jetzt nicht viel zu viele änderungen sonst glaube ich. icxh komme sonst nicht hinter her.",
+          "ms": 1096,
+          "zeit": "00:01"
+        }
+      ],
+      "ms": 18047
+    },
+    {
+      "id": "stoerfaelle",
+      "title": "Störfälle",
+      "items": [
+        {
+          "id": "stoerfaelle-1rcofzw",
+          "text": "Seiten schnell hintereinander neu laden: Server läuft weiter",
+          "mark": "eigen",
+          "note": "-NULL Teste ich jetzt nicht viel zu viele änderungen sonst glaube ich. icxh komme sonst nicht hinter her.",
+          "ms": 5480,
+          "zeit": "00:05"
+        },
+        {
+          "id": "stoerfaelle-2np0lu",
+          "text": "Tunnel-Fenster schließen: PC-Seiten laufen weiter, Spieler von außen sehen Fehler",
+          "mark": "eigen",
+          "note": "-NULL Teste ich jetzt nicht viel zu viele änderungen sonst glaube ich. icxh komme sonst nicht hinter her.",
+          "ms": 1120,
+          "zeit": "00:01"
+        },
+        {
+          "id": "stoerfaelle-1x7t6yw",
+          "text": "Server neu starten (Knopf oder Strg+C und `start.bat`): Seiten verbinden sich wieder",
+          "mark": "eigen",
+          "note": "-NULL Teste ich jetzt nicht viel zu viele änderungen sonst glaube ich. icxh komme sonst nicht hinter her.",
+          "ms": 1064,
+          "zeit": "00:01"
+        },
+        {
+          "id": "stoerfaelle-1ig0etj",
+          "text": "`data\\crash.log` geprüft: leer / Einträge: ______",
+          "mark": "eigen",
+          "note": "-NULL Teste ich jetzt nicht viel zu viele änderungen sonst glaube ich. icxh komme sonst nicht hinter her.",
+          "ms": 1272,
+          "zeit": "00:01"
+        }
+      ],
+      "ms": 8936
+    }
+  ],
+  "notizen": "",
+  "images": []
+}
