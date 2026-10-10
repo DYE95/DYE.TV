@@ -9,7 +9,7 @@ const BUILTIN = [
   { id: "media", title: "Mediathek", sub: "Videos lokal abspielen", panel: "panelMedia" },
   { id: "bibliothek", title: "Bibliothek", sub: "PDFs und Regeln", href: "/bibliothek" },
   { id: "karten", title: "Karten", sub: "Print and Play", href: "/karten" },
-  { id: "solo", title: "Solo", sub: "Übung, keine Runde", href: "/solo" },
+  { id: "solo", title: "Solo", sub: "Dungeon-Lauf allein", href: "/solo" },
   { id: "heft", title: "Heft", sub: "Notizen · Markdown", href: "/heft" },
   { id: "settings", title: "Einstellungen", sub: "Seitenleiste ein/aus", toggle: true },
 ];
