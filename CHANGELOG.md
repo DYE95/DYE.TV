@@ -4,6 +4,7 @@ Neueste oben. Die Leitstelle auf der Startseite liest diese Datei, wenn
 kein git da ist (z. B. bei einem ZIP-Download).
 
 ## Unveröffentlicht
+- Testlauf hochladen: Knopf „Hochladen & Legion Bescheid geben“ schiebt den Lauf auf den Zweig testlaeufe und meldet ihn per Webhook
 - Testlauf-Kachel: Checkliste aus docs/TESTLAUF.md mit O/X/Eigen, Bildern und Bericht unter data/testlaeufe/
 - Leitstelle auf der Startseite: Status, QR-Code für Spieler, Adressen zum Kopieren, Patchnotes
 

@@ -70,6 +70,15 @@ Schnittstelle antwortet nur am SL-Rechner selbst, nie über den Tunnel. Die
 Patchnotes stammen aus git oder, ohne git, aus `CHANGELOG.md`. Wie man ein
 eigenes Modul ergänzt, steht in [`docs/MODULE.md`](docs/MODULE.md).
 
+## Testlauf (`/testlauf`)
+
+Kachel „Testlauf“ auf der Startseite (nur SL-Rechner): Checkliste aus
+`docs/TESTLAUF.md` mit O/X/Eigen und Notizen, Bilder bis 50 MB, Entwurf
+mit Autosave. „Alles ablegen“ schreibt `data/testlaeufe/<Datum_Uhrzeit>/`
+mit `bericht.md`, `bericht.json` und `bilder/`. „Hochladen & Legion
+Bescheid geben“ schiebt den Lauf auf den Zweig `testlaeufe` und meldet ihn
+per Webhook, siehe [`docs/TESTLAUF-UPLOAD.md`](docs/TESTLAUF-UPLOAD.md).
+
 ## Solo-Spiel (`/solo`)
 
 Ein Held, ein kurzer Dungeon (sieben Räume, fünf davon auf dem Weg, zuletzt der
