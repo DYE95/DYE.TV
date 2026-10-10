@@ -36,10 +36,11 @@ test("recordGmKey setzt nur beim GM-Ping vom SL-Rechner", () => {
   assert.equal(state.settings.gmKey, "gm_1");
 });
 
-test("recordGmKey ueberschreibt den Schluessel nicht", () => {
+test("recordGmKey folgt am SL-Rechner der aktuellen PIN", () => {
   const state = { settings: { gmKey: "gm_alt" } };
+  assert.equal(recordGmKey(state, { role: "gm", gmKey: "gm_neu" }, "127.0.0.1"), true);
+  assert.equal(state.settings.gmKey, "gm_neu");
   assert.equal(recordGmKey(state, { role: "gm", gmKey: "gm_neu" }, "127.0.0.1"), false);
-  assert.equal(state.settings.gmKey, "gm_alt");
 });
 
 test("Localhost-Adressen werden erkannt", () => {

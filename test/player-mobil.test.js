@@ -93,5 +93,28 @@ test("Spieler hochkant: Seite scrollt statt Karte über den Knöpfen, 16px-Felde
   const narrow = html.slice(html.indexOf("@media (max-width: 959px)"), html.indexOf("@media (min-width: 960px)"));
   assert.match(narrow, /overflow: visible/);
   assert.match(narrow, /font-size: 16px/);
-  assert.match(html, /\/js\/map\.js\?v=13/);
+  assert.match(html, /\/js\/map\.js\?v=14/);
+});
+
+test("Ping: Anzeige haengt an der Empfangszeit, nicht an der Serveruhr", () => {
+  const js = read("public", "js", "map.js");
+  assert.match(js, /PING_MS\s*=\s*8000/);
+  assert.match(js, /pingSeenAt/);
+  assert.match(js, /MapKit\.pingSig/);
+});
+
+test("Spieler: Sitz wird nach Entsperren aus dem Speicher geholt und neu angemeldet", () => {
+  const js = read("public", "js", "player.js");
+  assert.match(js, /function restoreSeatFromStorage/);
+  assert.match(js, /function claimSeatIfNeeded/);
+  assert.match(js, /visibilitychange/);
+  assert.match(js, /ember:sit/);
+  assert.match(js, /img:/);
+});
+
+test("Spieler: map.js und CSS-Versionen sind hochgezählt", () => {
+  const html = read("public", "player.html");
+  assert.match(html, /\/js\/map\.js\?v=14/);
+  assert.match(html, /\/css\/ember\.css\?v=14/);
+  assert.match(html, /\/js\/player\.js\?v=20/);
 });

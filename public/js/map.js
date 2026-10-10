@@ -70,6 +70,9 @@ function bindView(stage) {
   }, { passive: false });
   stage.addEventListener("pointerdown", (ev) => {
     if (ev.target.closest(".map-zoom, .token, .door")) return;
+    // Frage/Hope/Fear-Felder: Finger soll die Karte nicht verschieben.
+    const focus = document.activeElement;
+    if (focus && /^(INPUT|TEXTAREA|SELECT)$/.test(focus.tagName)) return;
     const pan = ev.button === 1 || ev.button === 2 || ev.altKey || (ev.button === 0 && MapKit.tool === "move");
     if (!pan) return;
     if (ev.button === 0 && MapKit.tool === "move" && ev.target.closest(".token")) return;
@@ -158,19 +161,31 @@ function renderMap(stage, state, opts = {}) {
   drawRanges(world, stage, ses, state, opts);
   bindFieldTools(stage, opts);
 }
+// Ping-Dauer ab dem Moment, in dem DIESER Client den Ping zum ersten Mal sieht.
+// So stoeren Uhr-Differenzen und Tunnel-Verzoegerung die Anzeige nicht.
+const PING_MS = 8000;
 function drawPing(stage, ses) {
-  const old = stage.querySelector(".ping");
-  if (old) old.remove();
+  const world = worldOf(stage);
   const ping = ses?.ping;
-  if (!ping || Date.now() - ping.at > 4000) return;
-  const el = document.createElement("div");
-  el.className = "ping";
+  let el = world.querySelector(".ping");
+  if (!ping) { if (el) el.remove(); MapKit.pingSig = ""; return; }
+  const sig = String(ping.at) + ":" + ping.x + ":" + ping.y + ":" + (ping.name || "");
+  if (MapKit.pingSig !== sig) {
+    MapKit.pingSig = sig;
+    MapKit.pingSeenAt = Date.now();
+  }
+  if (Date.now() - (MapKit.pingSeenAt || 0) > PING_MS) { if (el) el.remove(); return; }
+  if (!el) {
+    el = document.createElement("div");
+    el.className = "ping";
+    world.appendChild(el);
+  }
   el.style.left = ping.x + "%";
   el.style.top = ping.y + "%";
-  el.textContent = ping.name;
-  worldOf(stage).appendChild(el);
-  const left = Math.max(200, 4000 - (Date.now() - ping.at));
-  setTimeout(() => el.remove(), left);
+  el.textContent = ping.name || "Ping";
+  clearTimeout(MapKit.pingTimer);
+  const left = Math.max(200, PING_MS - (Date.now() - MapKit.pingSeenAt));
+  MapKit.pingTimer = setTimeout(() => { if (el && el.parentNode) el.remove(); }, left);
 }
 function segments(map) {
   const lines = (map.walls || []).map((w) => [w.x1, w.y1, w.x2, w.y2]);

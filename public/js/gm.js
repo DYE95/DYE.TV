@@ -634,8 +634,13 @@ $("#btnAddPin")?.addEventListener("click", () => {
   const label = prompt("Pin?", "Die Kiste");
   if (label) api("/api/session/map/token", { as: "gm", kind: "marker", label, color: "#e9c46a", x: 48, y: 48 });
 });
-$("#mapPick")?.addEventListener("change", (ev) => {
-  if (ev.target.value) api("/api/session/map/image", { as: "gm", image: ev.target.value });
+$("#mapPick")?.addEventListener("change", async (ev) => {
+  if (!ev.target.value) return;
+  try {
+    await api("/api/session/map/image", { as: "gm", image: ev.target.value });
+  } catch (err) {
+    alert("Boden nicht gesetzt: " + (err.message || "Unbekannter Fehler"));
+  }
 });
 $("#btnJournal")?.addEventListener("click", () => api("/api/session/journal", {
   as: "gm",
@@ -794,5 +799,12 @@ function claimSeat(id, name) {
 }
 
 fetch("/api/sl-pin").then((r) => r.ok ? r.json() : null).then((row) => {
-  if (row && row.pin) localStorage.setItem("ember.gmKey", row.pin);
+  if (row && row.pin) {
+    localStorage.setItem("ember.gmKey", row.pin);
+    // Sofort Presence mit der PIN, damit Einstellungen und Browser denselben Schluessel haben.
+    fetch("/api/presence", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key: gmSeat, role: "gm", name: "SL", gmKey: row.pin, status: "online" }),
+    }).catch(() => {});
+  }
 }).catch(() => {});
