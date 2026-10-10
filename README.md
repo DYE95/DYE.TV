@@ -21,7 +21,8 @@ Wer die `.bat` nicht kennt, liest zuerst `docs/ERSTSTART.md` und öffnet `erstst
 | Datei        | Was sie tut                                                        |
 | ------------ | ------------------------------------------------------------------ |
 | `start.bat`  | Prüft Node, fragt beim ersten Mal die SL-PIN, startet Server und Tunnel, Neustart-Schleife |
-| `test.bat`   | Syntax-Check von `server.js` + komplette Testsuite                  |
+
+Tests laufen auch unter Windows mit `npm test`.
 
 ### Überall sonst
 
@@ -124,7 +125,7 @@ docs/ERSTSTART.md, docs/TESTLAUF.md   Ersteinrichtung, Checkliste Testlauf
 ## Tests
 
 ```bash
-npm test          # oder: test.bat
+npm test
 ```
 
 Abgedeckt sind die Kernlogik und ein echter Server-Start:
