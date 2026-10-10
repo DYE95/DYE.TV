@@ -1,6 +1,6 @@
 /* Solo-Spiel. Farben aus Daves Sprite-Bogen gemessen.
    Alles in rem, die Wurzel waechst mit der Breite: 1080p und 4K sehen gleich aus. */
-html { font-size: clamp(14px, 1vw, 48px); }
+html { font-size: calc(clamp(14px, 1vw, 48px) * var(--sg-scale, 1)); }
 html, body { height: 100%; margin: 0; }
 * { box-sizing: border-box; }
 
@@ -126,7 +126,7 @@ a { color: var(--lantern); }
 .sg-item b { color: var(--lantern); }
 
 /* Raum */
-.sg-room { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto auto auto; gap: 0.7rem; min-height: 0; }
+.sg-room { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto auto auto auto; gap: 0.7rem; min-height: 0; }
 .sg-text { margin: 0; font-size: 1.1rem; color: var(--text); max-width: 60rem; }
 .sg-stage {
   position: relative; min-height: 8rem; display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem;
@@ -136,11 +136,11 @@ a { color: var(--lantern); }
     linear-gradient(to top, #151b28, #10151c);
   overflow: hidden;
 }
-.sg-props { display: flex; align-items: flex-end; gap: 1.2rem; }
+.sg-props { display: flex; align-items: flex-end; gap: 1.2rem; flex: 0 1 auto; min-width: 0; overflow: hidden; }
 .sg-props img { height: 8rem; width: auto; }
 .sg-foe {
   display: grid; grid-template-columns: auto 1fr; gap: 0.3rem 0.9rem; align-items: center;
-  min-width: 22rem; padding: 0.8rem 1.1rem; border: var(--hair) solid var(--orange); border-radius: 0.35rem;
+  flex: 0 0 auto; min-width: 22rem; max-width: 100%; padding: 0.8rem 1.1rem; border: var(--hair) solid var(--orange); border-radius: 0.35rem;
   background: rgba(16, 21, 28, 0.85);
 }
 .sg-foe img { grid-row: span 3; height: 6rem; width: auto; }
@@ -148,6 +148,29 @@ a { color: var(--lantern); }
 .sg-start-art { display: flex; justify-content: center; align-items: flex-end; gap: 1.5rem; }
 .sg-start-art img { height: 6rem; width: auto; }
 .sg-foe.down { border-color: var(--line-dim); opacity: 0.6; }
+
+/* Gegenzug (solo-game.js playFoeTurn) */
+.sg-foe.strike { animation: foeStrike 0.9s ease-out 1; }
+@keyframes foeStrike {
+  0% { transform: none; }
+  25% { transform: translateX(-2.5rem) scale(1.06); box-shadow: 0 0 1.5rem rgba(240, 74, 2, 0.8); }
+  45% { transform: translateX(-2.5rem) scale(1.06); }
+  100% { transform: none; }
+}
+.sg-hero.hit { animation: heroHit 0.7s ease-out 1; }
+@keyframes heroHit {
+  0%, 100% { transform: none; box-shadow: none; }
+  15% { transform: translateX(-0.4rem); box-shadow: inset 0 0 0 0.3rem var(--heart); }
+  35% { transform: translateX(0.4rem); }
+  55% { transform: translateX(-0.2rem); }
+}
+.sg-foe-turn {
+  margin: 0; padding: 0.6rem 0.9rem; border-left: 0.3rem solid var(--orange);
+  background: rgba(240, 74, 2, 0.12); font-size: 1.1rem;
+}
+.sg-foe-turn.bad { color: var(--bad); }
+.sg-foe-turn.good { color: var(--good); border-left-color: var(--good); background: rgba(127, 209, 161, 0.1); }
+@media (prefers-reduced-motion: reduce) { .sg-foe.strike, .sg-hero.hit { animation: none; } }
 
 /* Wuerfel */
 .sg-dice { display: flex; align-items: center; gap: 1.2rem; min-height: 5.6rem; }
@@ -237,3 +260,17 @@ a { color: var(--lantern); }
   min-height: 3rem; padding: 0.4rem 0.8rem; font: inherit; font-size: 1.1rem;
   background: var(--bg); color: var(--text); border: var(--hair) solid var(--line); border-radius: 0.35rem;
 }
+
+/* Menü: grosse Ziele für Wii-Zeiger und TV */
+.sg-menu-btn {
+  display: inline-flex; align-items: center; gap: 0.5rem; min-height: 3.2rem; padding: 0 1.2rem;
+  border: var(--hair) solid var(--lantern); border-radius: 1.6rem;
+  background: var(--panel); color: var(--lantern); font: inherit; font-size: 1.15rem; cursor: pointer;
+}
+.sg-menu-btn:hover, .sg-menu-btn:focus-visible { background: var(--blue-hi); outline: none; }
+.sg-overlay.sg-menu { z-index: 20; }
+.sg-menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); gap: 0.8rem; }
+.sg-btn.big { min-height: 4.2rem; font-size: 1.25rem; justify-content: center; text-decoration: none; }
+.sg-font-row { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+.sg-font-row .sg-btn.big { min-width: 5rem; }
+.sg-font-row b { min-width: 4.5rem; text-align: center; font-size: 1.2rem; }

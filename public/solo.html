@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Ember · Solo</title>
   <link rel="icon" href="/img/ember-icon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="/solo/solo-game.css?v=1" />
+  <link rel="stylesheet" href="/solo/solo-game.css?v=2" />
 </head>
 <body class="sg">
   <header class="sg-top">
@@ -13,7 +13,7 @@
     <img class="px sg-lantern" src="/solo/sprites/lantern.png" alt="" />
     <ol class="sg-log" id="log" aria-live="polite"></ol>
     <div class="sg-fear" title="Fear des Dungeons"><span>Fear</span><b id="fear">0</b></div>
-    <button class="sg-round" id="btnMenu" type="button" title="Menü" aria-label="Menü">☰</button>
+    <button class="sg-menu-btn" id="btnMenu" type="button" title="Menü und Einstellungen (M)" aria-label="Menü und Einstellungen"><span aria-hidden="true">☰</span> Menü</button>
   </header>
 
   <main class="sg-main" id="game" hidden>
@@ -43,6 +43,7 @@
         <div class="die fear" id="dieFear"><b>–</b><small>Fear</small></div>
         <p class="sg-result" id="result">Noch kein Wurf.</p>
       </div>
+      <p class="sg-foe-turn" id="foeTurn" aria-live="assertive" hidden></p>
       <div class="sg-mods" id="mods" hidden></div>
       <div class="sg-actions" id="actions"></div>
     </section>
@@ -64,6 +65,10 @@
         <span class="sg-sub" id="continueText"></span>
       </div>
       <div class="sg-heroes" id="heroes"></div>
+      <div class="sg-row">
+        <button class="sg-btn" id="btnStartMenu" type="button">☰ Menü &amp; Einstellungen</button>
+        <a class="sg-btn" href="/">⌂ Startseite</a>
+      </div>
       <p class="sg-sub"><a href="/solo/werkstatt">Solo-Werkstatt</a> (Bots, Übungskarte, Level-Up für Kampagnen-Bögen)</p>
     </div>
   </div>
@@ -99,19 +104,28 @@
     </div>
   </div>
 
-  <div class="sg-overlay" id="menuScreen" hidden>
-    <div class="frame sg-dialog">
-      <h2>Menü</h2>
-      <div class="sg-grid2">
-        <button class="sg-btn" id="btnMenuHero" type="button">Anderer Held / neues Spiel</button>
-        <button class="sg-btn" id="btnMenuFull" type="button">Vollbild</button>
-        <a class="sg-btn" href="/solo/werkstatt">Solo-Werkstatt</a>
-        <button class="sg-btn" id="btnMenuClose" type="button">Weiter</button>
+  <div class="sg-overlay sg-menu" id="menuScreen" hidden>
+    <div class="frame sg-dialog wide" role="dialog" aria-labelledby="menuTitle">
+      <h2 id="menuTitle">Menü &amp; Einstellungen</h2>
+      <div class="sg-menu-grid">
+        <button class="sg-btn big primary" id="btnMenuClose" type="button">▶ Weiter</button>
+        <button class="sg-btn big" id="btnMenuFull" type="button">⛶ Vollbild</button>
+        <a class="sg-btn big" id="btnMenuHome" href="/">⌂ Startseite</a>
+        <button class="sg-btn big" id="btnMenuHero" type="button">⇄ Held wechseln</button>
+        <button class="sg-btn big danger" id="btnMenuReset" type="button">↺ Spiel zurücksetzen</button>
+        <a class="sg-btn big" href="/solo/werkstatt">⚒ Solo-Werkstatt</a>
       </div>
-      <p class="sg-sub">Tasten: 1–9 für die Knöpfe unten, R Rast, Esc schließt.</p>
+      <div class="sg-font-row" aria-label="Schriftgröße">
+        <span>Schriftgröße</span>
+        <button class="sg-btn big" id="btnFontDown" type="button" aria-label="Schrift kleiner">A−</button>
+        <b id="fontValue">100 %</b>
+        <button class="sg-btn big" id="btnFontUp" type="button" aria-label="Schrift größer">A+</button>
+        <span class="sg-sub">gilt auch für die Startseite</span>
+      </div>
+      <p class="sg-sub">Tasten: 1–9 für die Knöpfe unten, R Rast, M Menü, Esc schließt.</p>
     </div>
   </div>
 
-  <script src="/solo/solo-game.js?v=1"></script>
+  <script src="/solo/solo-game.js?v=2"></script>
 </body>
 </html>

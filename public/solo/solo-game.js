@@ -3,6 +3,7 @@
 const $ = (sel) => document.querySelector(sel);
 const SPRITES = "/solo/sprites/";
 const ROLL_MS = 900;
+const FOE_MS = 900;
 
 let game = null;
 let busy = false;
@@ -298,17 +299,58 @@ async function animate(roll) {
   renderDice(roll);
 }
 
+// Gegenzug sichtbar spielen: Gegner springt vor, Held blinkt rot bei Treffer,
+// eine Zeile unter den Würfeln sagt, was passiert ist.
+function foeLine(turn) {
+  return turn.rows.map((r) => {
+    const head = `${r.label}: W20 ${r.d20} → ${r.total} gegen Evasion ${r.evasion}`;
+    if (!r.hit) return `${head} — daneben.`;
+    const hurt = r.marks ? `${r.marks} Hit Point${r.marks === 1 ? "" : "s"}` : "kein Hit Point";
+    return `${head} — Treffer, ${r.damage} Schaden${r.armor ? ", Armor fängt eine Stufe" : ""}, ${hurt}.`;
+  }).join(" ");
+}
+
+async function playFoeTurn(turn) {
+  const box = $("#foeTurn");
+  const foe = $("#foe");
+  const hero = document.querySelector(".sg-hero");
+  const hit = turn.rows.some((r) => r.hit);
+  box.hidden = false;
+  box.className = `sg-foe-turn ${hit ? "bad" : "good"}`;
+  box.textContent = `Gegenzug · ${foeLine(turn)}`;
+  foe.classList.remove("strike");
+  void foe.offsetWidth;
+  foe.classList.add("strike");
+  if (hit && hero) {
+    hero.classList.remove("hit");
+    void hero.offsetWidth;
+    hero.classList.add("hit");
+  }
+  await wait(FOE_MS);
+  foe.classList.remove("strike");
+}
+
 async function act(action) {
   if (busy) return;
   busy = true;
   renderActions();
+  const seqBefore = run() && run().foeTurn ? run().foeTurn.seq : 0;
+  let turn = null;
   try {
     const data = await call("/api/solo/game/act", { action });
     if (data.roll && data.roll.hopeDie) await animate(data.roll);
     game = data;
+    const ft = run() && run().foeTurn;
+    if (ft && ft.seq !== seqBefore) turn = ft;
     if (action.id === "attack") mods = { experiences: [], allIn: false };
   } catch (err) {
     say(err.message);
+  }
+  if (!turn) $("#foeTurn").hidden = true;
+  if (turn) {
+    // Erst der Raum mit dem Stand vor dem Treffer sichtbar, dann der Gegenzug.
+    render();
+    await playFoeTurn(turn);
   }
   busy = false;
   render();
@@ -383,9 +425,61 @@ $("#btnRestCancel").addEventListener("click", () => { $("#restScreen").hidden = 
 $("#btnContinue").addEventListener("click", () => { $("#startScreen").hidden = true; render(); });
 $("#btnNextRun").addEventListener("click", nextRun);
 $("#btnNewHero").addEventListener("click", () => { $("#endScreen").hidden = true; renderStart(); });
-$("#btnMenu").addEventListener("click", () => { $("#menuScreen").hidden = false; });
-$("#btnMenuClose").addEventListener("click", () => { $("#menuScreen").hidden = true; });
-$("#btnMenuHero").addEventListener("click", () => { $("#menuScreen").hidden = true; renderStart(); });
+// ---------- Menü & Einstellungen ----------
+// Schriftgrösse teilt sich das Solo mit der Startseite (ember.home.desk.v3,
+// fontSize in px, Standard 18). Hier wirkt sie als Faktor auf die rem-Wurzel.
+const DESK = "ember.home.desk.v3";
+const FONT_BASE = 18;
+function deskFont() {
+  try {
+    const n = Number((JSON.parse(localStorage.getItem(DESK) || "null") || {}).fontSize);
+    return n >= 12 && n <= 28 ? n : FONT_BASE;
+  } catch { return FONT_BASE; }
+}
+function setDeskFont(px) {
+  let desk = {};
+  try { desk = JSON.parse(localStorage.getItem(DESK) || "null") || {}; } catch {}
+  desk.fontSize = Math.max(12, Math.min(28, px));
+  localStorage.setItem(DESK, JSON.stringify(desk));
+  applyFont();
+}
+function applyFont() {
+  const px = deskFont();
+  document.documentElement.style.setProperty("--sg-scale", String(px / FONT_BASE));
+  const out = $("#fontValue");
+  if (out) out.textContent = `${Math.round((px / FONT_BASE) * 100)} %`;
+}
+applyFont();
+window.addEventListener("storage", (ev) => { if (ev.key === DESK) applyFont(); });
+
+function openMenu() {
+  $("#menuScreen").hidden = false;
+  $("#btnMenuClose").focus();
+}
+function closeMenu() {
+  $("#menuScreen").hidden = true;
+}
+$("#btnMenu").addEventListener("click", openMenu);
+$("#btnStartMenu").addEventListener("click", openMenu);
+$("#btnMenuClose").addEventListener("click", closeMenu);
+$("#btnMenuHero").addEventListener("click", () => { closeMenu(); $("#endScreen").hidden = true; renderStart(); });
+$("#btnFontDown").addEventListener("click", () => setDeskFont(deskFont() - 2));
+$("#btnFontUp").addEventListener("click", () => setDeskFont(deskFont() + 2));
+$("#btnMenuReset").addEventListener("click", async () => {
+  if (!confirm("Spiel zurücksetzen? Held, Lauf und Bilanz werden gelöscht.")) return;
+  try {
+    game = await call("/api/solo/game/reset", {});
+    closeMenu();
+    $("#endScreen").hidden = true;
+    $("#game").hidden = true;
+    resetDice();
+    $("#log").replaceChildren();
+    say("Spiel zurückgesetzt. Wähle einen Helden.", "good");
+    renderStart();
+  } catch (err) {
+    say(err.message);
+  }
+});
 $("#btnMenuFull").addEventListener("click", () => {
   if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
   else document.documentElement.requestFullscreen().catch(() => {});
@@ -395,6 +489,10 @@ document.addEventListener("keydown", (ev) => {
   if (ev.target.closest("input")) return;
   if (ev.key === "Escape") {
     document.querySelectorAll("#menuScreen, #restScreen").forEach((n) => { n.hidden = true; });
+    return;
+  }
+  if (ev.key.toLowerCase() === "m") {
+    if ($("#menuScreen").hidden) openMenu(); else closeMenu();
     return;
   }
   const open = [...document.querySelectorAll(".sg-overlay")].some((n) => !n.hidden);
