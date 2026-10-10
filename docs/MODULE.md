@@ -63,6 +63,7 @@ Ein Fehler in `mount` oder `update` legt nur diese eine Box lahm.
 | `ctx.bytes(n)` | „1.2 MB“ |
 | `ctx.copy(text)` | In die Zwischenablage, auf http mit Ersatzweg; gibt `true/false` |
 | `ctx.version` | Antwort von `/api/leitstelle/version` |
+| `ctx.restart(meldung)` | Server neu starten, danach lädt die Seite neu |
 | `ctx.offline` | `true`, wenn der Server nicht antwortet |
 
 ## Daten
@@ -74,6 +75,7 @@ Tunnel oder im WLAN):
 - `tunnel`: `up`, `url`, `since`, `ageSec`
 - `people`: `players`, `gm`, `names`
 - `data`: `size`, `savedAt`, `backupAt`
+- `code`: `restartNeeded`, `changed`, `startedHead`, `currentHead`, `since` (neuer Code seit dem Start?)
 - `crash`: letzter Eintrag aus `data/crash.log` (`at`, `kind`, `message`) oder `null`
 - `urls`: `tunnel`, `lan`, `gm`, `player`
 - `lan`: Liste der LAN-Adressen
