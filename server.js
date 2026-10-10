@@ -30,6 +30,11 @@ const LIBRARY = path.join(__dirname, "docs", "bibliothek");
 const RULES = path.join(__dirname, "docs", "regeln");
 const DATA = store.ROOT;
 const STARTED_AT = Date.now();
+// Neuer Code auf der Platte (git pull bei laufendem Server)? Siehe lib/codestand.js.
+const codestand = require("./lib/codestand").createWatcher({
+  root: process.env.EMBER_CODE_ROOT || __dirname,
+  ttl: Number(process.env.EMBER_CODE_TTL || 10000),
+});
 const UPLOADS = path.join(DATA, "uploads");
 const VIDEO_EXT = ["mp4", "m4v", "webm", "mkv", "mov", "ogv"];
 const clients = new Set();
@@ -367,7 +372,7 @@ async function handleApi(req, res, url) {
     if (!isLocalRequest(req)) return send(res, 403, { error: "Nur dieser Rechner." });
     if (p === "/api/leitstelle/version") return send(res, 200, leitstelle.version());
     return send(res, 200, leitstelle.status({
-      dataDir: DATA, startedAt: STARTED_AT, port: PORT, presence: presenceList(), lan: addresses(), remote: remoteUrl(),
+      dataDir: DATA, startedAt: STARTED_AT, port: PORT, presence: presenceList(), lan: addresses(), remote: remoteUrl(), code: codestand.check(),
     }));
   }
 
@@ -1619,7 +1624,35 @@ async function handleApi(req, res, url) {
     return send(res, 200, { ok: true, result: line || "" });
   }
 
+  if (isLocalRequest(req) && codestand.check().restartNeeded) {
+    return send(res, 404, { error: "Unbekannte Route. Neuer Code liegt bereit – Server neu starten?", restartNeeded: true });
+  }
   return send(res, 404, { error: "Unbekannte Route." });
+}
+
+// Fehlt eine Seite, obwohl public/<name>.html neuer ist als der Serverstart,
+// laeuft vermutlich noch alter Code: Hinweis mit Neustart-Knopf statt
+// "Nicht gefunden." (nur am SL-Rechner).
+function newerPageHint(res, rel, file) {
+  const name = rel.replace(/\/+$/, "");
+  if (!/^[a-z0-9-]+$/i.test(name) || fs.existsSync(file)) return false;
+  let st;
+  try { st = fs.statSync(path.join(PUBLIC, `${name}.html`)); } catch { return false; }
+  if (st.mtimeMs <= STARTED_AT && !codestand.check().restartNeeded) return false;
+  const html = `<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><title>Server neu starten?</title>
+<style>body{font:20px/1.5 Georgia,serif;background:#10151c;color:#e3eaf4;display:grid;place-items:center;min-height:100vh;margin:0}
+main{max-width:34em;padding:1.5em 2em;border:2px solid #768eb1;background:#20283d}h1{color:#fcbd36;font-weight:normal}
+button{font:inherit;padding:.5em 1.2em;min-height:2.8em;background:#172d5e;color:#fff;border:2px solid #fcbd36;border-radius:.3em;cursor:pointer}</style></head>
+<body><main><h1>Server neu starten?</h1><p>Die Seite <code>/${name}</code> ist neu, der laufende Server kennt sie aber noch nicht.
+Vermutlich wurde neuer Code geladen (z.&nbsp;B. per GitHub Desktop), während Ember lief.</p>
+<p><button id="b">Jetzt neu starten</button> <span id="s"></span></p></main>
+<script>document.getElementById("b").onclick=async()=>{const s=document.getElementById("s");s.textContent="Neustart …";
+try{await fetch("/api/restart",{method:"POST"})}catch{}let down=false;for(let i=0;i<90;i++){await new Promise(r=>setTimeout(r,1000));
+try{const r=await fetch("/api/state",{cache:"no-store"});if(r.ok&&(down||i>2)){location.reload();return}}catch{down=true}}
+s.textContent="Server kommt nicht wieder. Läuft start.bat?"};</script></body></html>`;
+  res.writeHead(404, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" });
+  res.end(html);
+  return true;
 }
 
 const server = http.createServer(async (req, res) => {
@@ -1713,6 +1746,7 @@ if (url.pathname.startsWith("/docs/bibliothek/")) {
     const rel = url.pathname.replace(/^\/+/, "");
     const file = safeJoin(PUBLIC, rel);
     if (!file) { res.writeHead(403); return res.end(); }
+    if (isLocalRequest(req) && newerPageHint(res, rel, file)) return;
     return serveFile(res, file, req);
   } catch (err) {
     if (err && err.badJson) return send(res, 400, { error: err.message });
