@@ -7,13 +7,35 @@ ist der Server, die Daten liegen in `data/ember.json`.
 
 ## Voraussetzungen
 
-- [Node.js](https://nodejs.org) (LTS, getestet mit Node 20 und 24)
+- Windows 10 oder 11 für die `.bat`, sonst `npm start`
+- [Node.js](https://nodejs.org) (LTS, getestet mit Node 20 und 24) von der Seite, nicht aus einer zufälligen Quelle
 - Ein Browser (Brave, Chrome, Edge …); `http://127.0.0.1:3478/` selbst öffnen
+- Für Spieler zu Hause zusätzlich [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/)
 - Keine `npm install`-Schritte nötig — das Projekt hat **null Abhängigkeiten**
 
 ## Erststart
 
-Wer die `.bat` nicht kennt, liest zuerst `docs/ERSTSTART.md` und öffnet `erststart.bat` im Editor. Erst danach der Doppelklick. Die Datei wartet auf eine Taste und startet nur den lokalen Server.
+Lies das, bevor du eine `.bat` doppelklickst. Eine Batch-Datei ist ein Skript, sie kann Programme starten. Öffne `start.bat` deshalb zuerst im Editor und lies sie, erst danach der Doppelklick. Sie lädt nichts herunter. Sie startet aber nicht nur den lokalen Server: Ist cloudflared installiert, öffnet sie über `tools\tunnel.js` gleich beim ersten Start auch einen Cloudflare-Tunnel, also einen Weg ins Netz, über den Spieler von zu Hause `/player` erreichen. Ohne cloudflared bleibt es beim lokalen Server für Spieler im selben WLAN.
+
+### Reihenfolge
+
+1. `start.bat` im Editor öffnen und lesen.
+2. Doppelklick. Beim ersten Start fragt das Fenster nach der Spielleiter-PIN.
+3. Im Browser `http://127.0.0.1:3478/` öffnen. Das ist der Technik-Tisch.
+4. Ember ist die Glut. Spieler im selben WLAN nehmen die Adresse aus der Leiste.
+5. Zu Hause: das Fenster von `start.bat` offen lassen. Sobald der Tunnel steht, zeigt die Titelleiste die Adresse mit `/player`. Die an die Spieler schicken.
+
+### Spielleiter-PIN
+
+Beim ersten Start fragt `start.bat` im Fenster nach der Spielleiter-PIN (mindestens 4 Zeichen). Geschrieben wird sie von Node (`tools\slpin.js`) nach `data\sl.pin`, nicht von cmd. Steht dort noch ein Rest wie „ECHO ist ausgeschaltet (OFF).“ von einem älteren Stand, erkennt `start.bat` das beim nächsten Start und fragt neu. Leere Eingabe zählt nicht. Eine neue PIN gilt nach dem Neustart auch als SL-Schlüssel; offene SL-Seiten einmal neu laden.
+
+PIN später ändern: `data\sl.pin` löschen und `start.bat` neu starten.
+
+### Ember.bat gibt es nicht mehr
+
+`Ember.bat` hat `start.bat` nur minimiert gestartet und Edge geöffnet. Minimiert sieht man die PIN-Frage beim ersten Start nicht, und der Browser der Wahl ist Brave. Deshalb: immer `start.bat`, Browser selbst öffnen. QuickEdit im Konsolenfenster ausschalten (Fenster → Eigenschaften), sonst hält ein Klick ins Fenster den Server an.
+
+Daten liegen in `data/`. Die ist nicht im Repo. Ein Update zieht nur den Code.
 
 
 ### Windows (Doppelklick)
@@ -112,13 +134,13 @@ public/              Statisches Frontend (Vanilla JS, kein Build-Schritt)
   index.html         SL-Tisch (gm.js, map.js, …)
   player.html        Spieler-Ansicht (player.js)
   js/, css/, maps/, icons/, data/
-tools/tunnel.js      Cloudflare-Tunnel fuer Spieler von zu Hause
+tools/tunnel.js      Cloudflare-Tunnel fuer Spieler von zu Hause (startet mit start.bat)
 test/                node:test-Suiten (Logik + Server-Tests ueber HTTP)
 data/                Laufzeitdaten (gitignored): ember.json, ember.json.bak, uploads/
                      anderer Ordner per Umgebungsvariable EMBER_DATA
 docs/bibliothek/     PDFs für die Bibliotheksseite (index.json, maps/, errata.json)
 docs/regeln/         Regel-PDFs (z. B. DH-SRD.pdf), ebenfalls in der Bibliothek
-docs/ERSTSTART.md, docs/TESTLAUF.md   Ersteinrichtung, Checkliste Testlauf
+docs/TESTLAUF.md     Checkliste Testlauf
 .github/workflows/   CI: Syntax-Check + Tests bei push/PR
 ```
 
@@ -156,7 +178,7 @@ Für Testläufe von Hand: [docs/TESTLAUF.md](docs/TESTLAUF.md) — Checkliste zu
 - **GM-Schlüssel:** Der SL-Rechner erzeugt beim ersten Presence-Ping einen `gmKey` (nur von
   localhost). Sobald der Schlüssel bekannt ist, müssen alle `as:"gm"`-Routen ihn mitsenden —
   Spieler im LAN können die SL-Routen dann nicht mehr aufrufen.
-- **Spieler zu Hause:** `tunnel.bat` neben der Glut starten. Dafür [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) installieren. Die Adresse steht in der Leiste und endet auf `/player`. Eine feste Adresse kann als `DYE_PUBLIC_URL` gesetzt werden.
+- **Spieler zu Hause:** `start.bat` startet den Tunnel (`tools\tunnel.js`) neben der Glut gleich mit. Dafür [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) installieren; fehlt es, meldet das Fenster „cloudflared fehlt.“ und der Server läuft ohne Tunnel weiter. Läuft der Server schon ohne Tunnel, reicht `node tools\tunnel.js` in einem zweiten Fenster. Die Adresse steht in der Leiste und endet auf `/player`. Eine feste Adresse kann als `DYE_PUBLIC_URL` gesetzt werden.
 
 
 ## Regeln
