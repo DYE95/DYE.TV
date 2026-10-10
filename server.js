@@ -17,6 +17,7 @@ const initiative = require("./lib/initiative");
 const compendium = require("./lib/compendium");
 const solo = require("./lib/solo");
 const soloGame = require("./lib/solo-game");
+const leitstelle = require("./lib/leitstelle");
 const spur = require("./lib/spur");
 const { isGm, recordGmKey, isLocalRequest, requestAddress } = require("./lib/auth");
 const { parseRange } = require("./lib/range");
@@ -27,6 +28,7 @@ const PUBLIC = path.join(__dirname, "public");
 const LIBRARY = path.join(__dirname, "docs", "bibliothek");
 const RULES = path.join(__dirname, "docs", "regeln");
 const DATA = store.ROOT;
+const STARTED_AT = Date.now();
 const UPLOADS = path.join(DATA, "uploads");
 const VIDEO_EXT = ["mp4", "m4v", "webm", "mkv", "mov", "ogv"];
 const clients = new Set();
@@ -340,6 +342,15 @@ const PLAYER_FIELDS = ["hope", "stressMarked", "hpMarked", "armorMarked", "notes
 async function handleApi(req, res, url) {
   const method = req.method;
   const p = url.pathname;
+
+  // Leitstelle der Startseite: nur dieser Rechner, nie ueber den Tunnel.
+  if (method === "GET" && (p === "/api/leitstelle" || p === "/api/leitstelle/version")) {
+    if (!isLocalRequest(req)) return send(res, 403, { error: "Nur dieser Rechner." });
+    if (p === "/api/leitstelle/version") return send(res, 200, leitstelle.version());
+    return send(res, 200, leitstelle.status({
+      dataDir: DATA, startedAt: STARTED_AT, port: PORT, presence: presenceList(), lan: addresses(), remote: remoteUrl(),
+    }));
+  }
 
   if (method === "GET" && p === "/api/sl-pin") {
     if (!isLocalRequest(req)) return send(res, 403, { error: "Nur dieser Rechner." });
