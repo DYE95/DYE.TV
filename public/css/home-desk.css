@@ -1,61 +1,207 @@
+/* Startseite fuer den TV. Alles in rem: die Wurzel waechst mit der
+   Bildschirmbreite, so sieht es bei 1920 CSS-px (4K mit 200 %) und bei
+   3840 CSS-px (4K mit 100 %) gleich aus. */
+html { font-size: clamp(14px, 1vw, 48px); }
+html, body { height: 100%; }
+
 .desk-body {
-  display: flex;
-  flex-direction: column;
+  --blue: #7ea0c4;
+  --ember: #c45c26;
+  --line: max(1px, 0.06rem);
+  --fs: 18;
+  margin: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  font: calc(var(--fs) / 16 * 1rem) / 1.4 Georgia, serif;
   place-items: stretch;
 }
+.hidden { display: none !important; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+/* Streifen: blaue und glutfarbene Linie, oben und unten gleich. */
+.stripe { position: relative; }
+.stripe::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--line);
+  border-top: var(--line) solid var(--ember);
+  border-bottom: var(--line) solid rgba(126, 160, 196, 0.6);
+  pointer-events: none;
+}
+.desk-top.stripe::after { bottom: 0; }
+/* unten gespiegelt: blau aussen zur Seite hin, Glut zum Rand */
+.desk-foot.stripe::after {
+  top: 0;
+  border-top-color: rgba(126, 160, 196, 0.6);
+  border-bottom-color: var(--ember);
+}
+
 .desk-top {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 18px 16px 8px;
+  justify-content: space-between;
+  min-height: 3.2rem;
+  padding: 0.5rem 1.5rem 0.7rem;
 }
-.brand-lock {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
+.logo-slot { display: flex; align-items: center; height: 2.4rem; min-width: 2.4rem; }
+.logo-slot img { height: 100%; width: auto; }
+.top-status { display: flex; align-items: center; gap: 1rem; color: #8aa0b5; font-size: 1rem; }
+.top-status time { font-variant-numeric: tabular-nums; color: #d7e1ec; font-size: 1.15rem; }
+.pill {
+  padding: 0.15rem 0.7rem;
+  border: var(--line) solid #334556;
+  border-radius: 999px;
+  font-size: 0.85rem;
 }
-.desk-top .sigil {
-  margin: 0;
-  width: 18px;
-  height: 18px;
-  flex: 0 0 18px;
+.pill.on { border-color: var(--blue); color: #d7e1ec; }
+
+/* Kacheln links, Einstellungen rechts: etwa 60/40. */
+.desk-main {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 1.2rem;
+  min-height: 0;
+  padding: 1rem 1.5rem;
 }
-.desk-top h1 { margin: 0; line-height: 1; }
+.desk-body.panel-off .desk-main { grid-template-columns: minmax(0, 1fr) 0; gap: 0; }
+.desk-body.panel-off .side-panel { display: none; }
 .desk-body.locked .desk { border-style: solid; }
 .desk {
   position: relative;
-  flex: 1;
   min-height: 0;
-  margin: 8px 24px 24px;
-  border: 1px dashed rgba(126, 160, 196, 0.25);
+  border: var(--line) dashed rgba(126, 160, 196, 0.25);
   background-image:
     linear-gradient(to right, rgba(126,160,196,0.06) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(126,160,196,0.06) 1px, transparent 1px);
   background-size: var(--grid, 24px) var(--grid, 24px);
-  overflow: hidden;
+  overflow: auto;
 }
 .desk-tile {
   position: absolute;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 4px;
-  padding: 14px 16px;
-  border: 1px solid #2c3a48;
-  border-radius: 12px;
+  gap: 0.3em;
+  padding: 0.8em 1em;
+  border: var(--line) solid #2c3a48;
+  border-radius: 0.75rem;
   background: #16202a;
   color: inherit;
   text-align: left;
   cursor: grab;
   user-select: none;
-  transition: border-color .15s ease;
+  transition: border-color .15s ease, background .15s ease;
 }
-.desk-tile:hover { border-color: #7ea0c4; }
+.desk-tile:hover, .desk-tile:focus-visible {
+  border-color: var(--blue);
+  background: #1b2835;
+  outline: none;
+  box-shadow: 0 0 0 calc(var(--line) * 2) rgba(126, 160, 196, 0.35);
+}
 .desk-tile:active { cursor: grabbing; }
-.desk-tile b { font-size: 1.05em; }
+.desk-tile b { font-size: 1.2em; }
 .desk-tile span { color: #8aa0b5; font-size: 0.85em; }
-.desk-tile, .desk-panel-card, .desk-top { font-size: inherit; }
+.desk-tile.on { border-color: var(--ember); }
+
+.side-panel {
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  align-content: start;
+  gap: 0.7rem;
+  padding: 1rem 1.2rem;
+  border: var(--line) solid #2c3a48;
+  border-radius: 0.75rem;
+  background: rgba(20, 28, 36, 0.92);
+  font-size: 1rem;
+}
+.side-panel h2 { margin: 0; font-size: 1.4rem; }
+.side-panel h3 { margin: 0.6rem 0 0; font-size: 1.15rem; }
+.side-panel label { display: grid; gap: 0.3rem; }
+.side-panel label.row { display: flex; align-items: center; gap: 0.6rem; }
+.side-panel .row { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.desk-body .btn, .desk-body input, .desk-body select {
+  font: inherit;
+  font-size: 1rem;
+  min-height: 2.6rem;
+  padding: 0.45rem 0.9rem;
+  border-width: var(--line);
+  border-radius: 0.5rem;
+  box-sizing: border-box;
+}
+.desk-body .hint { font-size: 0.85rem; }
+/* Schieberegler mit grossem Griff fuer den Wii-Zeiger */
+.desk-body input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 2.2rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.desk-body input[type=range]::-webkit-slider-runnable-track { height: 0.4rem; border-radius: 1rem; background: #2c3a48; }
+.desk-body input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 1.6rem;
+  height: 1.6rem;
+  margin-top: -0.6rem;
+  border-radius: 50%;
+  background: var(--blue);
+  border: var(--line) solid #d7e1ec;
+}
+.desk-body input[type=range]::-moz-range-track { height: 0.4rem; border-radius: 1rem; background: #2c3a48; }
+.desk-body input[type=range]::-moz-range-thumb {
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  background: var(--blue);
+  border: var(--line) solid #d7e1ec;
+}
+.desk-body input[type=checkbox] { min-height: 0; width: 1.4rem; height: 1.4rem; accent-color: var(--blue); }
+.desk-body .btn.tiny { font-size: 0.85rem; min-height: 2.2rem; }
+
+/* Fusszeile: Status links, Spieler-Adresse mittig, runde Knoepfe rechts. */
+.desk-foot {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.7rem 1.5rem 0.6rem;
+  color: #8aa0b5;
+  font-size: 1rem;
+}
+.foot-left { display: flex; align-items: center; gap: 0.5rem; }
+.foot-center { display: flex; align-items: center; gap: 0.6rem; color: #d7e1ec; font-size: 1.1rem; }
+.foot-center .sep { color: #556b80; }
+.foot-right { display: flex; justify-content: flex-end; gap: 0.7rem; }
+.dot { width: 0.7rem; height: 0.7rem; border-radius: 50%; background: #556b80; }
+.dot.ok { background: #5fbf8f; box-shadow: 0 0 0.5rem rgba(95, 191, 143, 0.6); }
+.dot.bad { background: var(--ember); }
+.round {
+  width: 3.2rem;
+  height: 3.2rem;
+  display: grid;
+  place-items: center;
+  border: var(--line) solid #334556;
+  border-radius: 50%;
+  background: #16202a;
+  color: #d7e1ec;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.round:hover, .round:focus-visible { border-color: var(--blue); background: #1f2e3c; outline: none; }
+
+/* Overlays (Mediathek, Server) */
 .desk-panel {
   position: fixed;
   inset: 0;
@@ -63,23 +209,20 @@
   display: grid;
   place-items: center;
   z-index: 20;
-  padding: 20px;
+  padding: 1.2rem;
 }
 .desk-panel.hidden { display: none; }
 .desk-panel-card {
-  width: min(420px, 94vw);
+  width: min(28rem, 94vw);
   max-height: 90vh;
   overflow: auto;
   background: #141c24;
-  border: 1px solid #2c3a48;
-  padding: 18px;
+  border: var(--line) solid #2c3a48;
+  border-radius: 0.75rem;
+  padding: 1.2rem;
   display: grid;
-  gap: 10px;
+  gap: 0.7rem;
 }
-.desk-panel-card.wide { width: min(720px, 94vw); }
-.desk-panel-card video {
-  width: 100%;
-  max-height: 320px;
-  background: #0b1016;
-}
-.desk-panel-card .house-tile { display: block; }
+.desk-panel-card.wide { width: min(48rem, 94vw); }
+.desk-panel-card video { width: 100%; max-height: 50vh; background: #0b1016; }
+.desk-panel-card pre { white-space: pre-wrap; max-height: 12rem; overflow: auto; margin: 0; }

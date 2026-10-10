@@ -7,62 +7,25 @@
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="icon" href="/img/ember-icon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="/css/ember.css?v=16" />
-  <link rel="stylesheet" href="/css/home-desk.css?v=8" />
-  <style>
-    body.desk-body { margin: 0; background: #101820; color: #e7eef6; font: 16px/1.4 Georgia, serif; }
-    .hidden { display: none !important; }
-    .desk-top { padding: 18px 22px; border-bottom: 2px solid #c45c26; }
-    .house-tile, a.house-tile { display: flex; gap: 10px; align-items: center; margin: 8px; padding: 10px 12px; border: 1px solid #3a2a24; background: #161410; color: #f4d6a0; text-decoration: none; }
-    .desk-panel-card { max-width: 880px; margin: 24px auto; padding: 16px; }
-  </style>
+  <link rel="stylesheet" href="/css/home-desk.css?v=10" />
 </head>
 <body class="house-body desk-body">
-  <header class="desk-top">
-    <div class="brand-lock">
-      <span class="sigil slate"></span>
-      <h1 id="houseTitle">DYE.TV</h1>
+  <h1 id="houseTitle" class="sr-only">Ember</h1>
+  <header class="desk-top stripe" aria-label="Kopfzeile">
+    <div class="logo-slot"><img id="logo" src="/icons/ember-logo.png" alt="Logo" hidden /></div>
+    <div class="top-status">
+      <span class="pill" id="tunnelState">Tunnel …</span>
+      <time id="clock" aria-label="Uhrzeit"></time>
     </div>
   </header>
-  <div class="desk" id="desk"></div>
 
-  <section class="desk-panel hidden" id="panelEmber">
-    <div class="desk-panel-card">
-      <h2>Ember</h2>
-      <p class="hint">Technik am Tisch. Minispiele wirft der SL als Ereignis in die Runde.</p>
-      <a class="house-tile" href="/ember"><img src="/icons/spotlight.svg" alt="" width="28" height="28" /><b>Die Glut</b><span>SL-Werkstatt · Session, Events</span></a>
-      <a class="house-tile" href="/player"><img src="/icons/hope.svg" alt="" width="28" height="28" /><b>Spieler</b><span>Bogen wählen und mitspielen</span></a>
-      <a class="house-tile" href="/token"><img src="/icons/fear.svg" alt="" width="28" height="28" /><b>Tokenatelier</b><span>Pixel-Maker</span></a>
-      <a class="house-tile" href="/pixelstube"><img src="/icons/map.svg" alt="" width="28" height="28" /><b>Pixelstube</b><span>Raster, Palette, PNG</span></a>
-      <a class="house-tile" href="/solo"><img src="/icons/map.svg" alt="" width="28" height="28" /><b>Solo</b><span>Bots, Karte, Dungeon</span></a>
-      <a class="house-tile" href="/karten"><img src="/icons/cards.svg" alt="" width="28" height="28" /><b>Karten</b><span>Dread, neue Regeln</span></a>
-      <a class="house-tile" href="/bibliothek"><img src="/icons/book.svg" alt="" width="28" height="28" /><b>Bibliothek</b><span>Karten, Bögen, Errata</span></a>
-      <a class="house-tile" href="/ember"><img src="/icons/book.svg" alt="" width="28" height="28" /><b>Handouts</b><span>Zettel an den Tisch</span></a>
-      <a class="house-tile" href="/ember#tunnel"><img src="/icons/spotlight.svg" alt="" width="28" height="28" /><b>Tunnel</b><span>Adresse zu Hause</span></a>
-      <h3>Update</h3>
-<button class="btn primary" id="btnUpdate">Jetzt prüfen &amp; ziehen</button>
-<pre class="hint" id="updateLog" style="white-space:pre-wrap;max-height:180px;overflow:auto;"></pre>
-      <button class="btn" data-close>Zurück</button>
-    </div>
-  </section>
-  <button class="btn hidden" id="btnRestart" type="button">Server neu starten</button>
-  <section class="desk-panel hidden" id="panelMedia">
-    <div class="desk-panel-card wide">
-      <h2>Mediathek</h2>
-      <p class="hint">mp4, webm, mkv oder mov, auch große Dateien. Bild ↑ ein Frame vor, Bild ↓ eins zurück.</p>
-      <video id="homeVideo" controls playsinline></video>
-      <div class="list" id="clipList"></div>
-      <label class="btn">Video laden <input id="clipFile" type="file" accept="video/*,.mp4,.m4v,.webm,.mkv,.mov" hidden /></label>
-      <p class="hint" id="clipStatus" aria-live="polite"></p>
-      <button class="btn" data-close>Zurück</button>
-    </div>
-  </section>
-
-  <section class="desk-panel hidden" id="panelSettings">
-    <div class="desk-panel-card wide">
+  <main class="desk-main">
+    <div class="desk" id="desk"></div>
+    <aside class="side-panel" id="panelSettings" aria-label="Einstellungen">
       <h2>Einstellungen</h2>
-      <label>Schriftgröße <input id="fontSize" type="range" min="12" max="22" /></label>
+      <label>Schriftgröße <input id="fontSize" type="range" min="12" max="28" /></label>
       <label>Kachelbreite <input id="tileW" type="range" min="160" max="420" /></label>
-      <label>Kachelhöhe <input id="tileH" type="range" min="64" max="180" /></label>
+      <label>Kachelhöhe <input id="tileH" type="range" min="64" max="200" /></label>
       <label>Raster <input id="grid" type="range" min="8" max="48" /></label>
       <p class="hint" id="layoutReadout"></p>
       <label>Profilname <input id="profileName" placeholder="Tisch 1" /></label>
@@ -83,11 +46,42 @@
         <button class="btn" id="btnExport">Paket (.zip) exportieren</button>
         <label class="btn">Paket laden <input id="packFile" type="file" accept=".zip,.json" hidden /></label>
       </div>
+    </aside>
+  </main>
+
+  <footer class="desk-foot stripe" aria-label="Status">
+    <div class="foot-left"><span class="dot" id="serverDot"></span><span id="serverState">Server …</span></div>
+    <div class="foot-center"><span id="playerUrl">Spieler-Adresse …</span><span class="sep">·</span><span id="playerCount">0 Spieler</span></div>
+    <div class="foot-right">
+      <button class="round" id="btnFullscreen" type="button" title="Vollbild" aria-label="Vollbild">⛶</button>
+      <button class="round" id="btnReload" type="button" title="Neu laden" aria-label="Seite neu laden">↻</button>
+      <button class="round" id="btnServer" type="button" title="Server: Update und Neustart" aria-label="Server">⏻</button>
+    </div>
+  </footer>
+
+  <section class="desk-panel hidden" id="panelEmber">
+    <div class="desk-panel-card">
+      <h2>Server</h2>
+      <p class="hint">Update holen und Ember neu starten. Nur an diesem Rechner.</p>
+      <button class="btn primary" id="btnUpdate">Jetzt prüfen &amp; ziehen</button>
+      <button class="btn" id="btnRestart" type="button">Server neu starten</button>
+      <pre class="hint" id="updateLog"></pre>
+      <button class="btn" data-close>Zurück</button>
+    </div>
+  </section>
+  <section class="desk-panel hidden" id="panelMedia">
+    <div class="desk-panel-card wide">
+      <h2>Mediathek</h2>
+      <p class="hint">mp4, webm, mkv oder mov, auch große Dateien. Bild ↑ ein Frame vor, Bild ↓ eins zurück.</p>
+      <video id="homeVideo" controls playsinline></video>
+      <div class="list" id="clipList"></div>
+      <label class="btn">Video laden <input id="clipFile" type="file" accept="video/*,.mp4,.m4v,.webm,.mkv,.mov" hidden /></label>
+      <p class="hint" id="clipStatus" aria-live="polite"></p>
       <button class="btn" data-close>Zurück</button>
     </div>
   </section>
 
   <script src="/js/video-deck.js?v=6"></script>
-  <script src="/js/home-desk.js?v=14"></script>
+  <script src="/js/home-desk.js?v=15"></script>
 </body>
 </html>
