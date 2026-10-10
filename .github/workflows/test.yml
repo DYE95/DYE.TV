@@ -13,13 +13,13 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           fetch-depth: 1
 
       - name: Node-Toolcache
         id: node-cache
-        uses: actions/cache@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           path: ${{ runner.tool_cache }}/node
           key: node-20-${{ runner.os }}-${{ runner.arch }}
@@ -30,7 +30,7 @@ jobs:
 
       - name: npm-Cache
         if: hashFiles('package-lock.json') != ''
-        uses: actions/cache@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           path: ~/.npm
           key: npm-${{ runner.os }}-node20-${{ hashFiles('package-lock.json') }}
