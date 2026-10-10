@@ -99,7 +99,7 @@ test("Entwurf, Bild, Ablegen: Ordner mit bericht.md, bericht.json und bilder/", 
     assert.equal(fs.statSync(path.join(out.folder, "bilder", "01_fehler-bild.png")).size, 1000);
 
     const json = JSON.parse(fs.readFileSync(path.join(out.folder, "bericht.json"), "utf8"));
-    assert.deepEqual(json.summary, { total: 4, done: 3, ok: 1, fehler: 1, eigen: 1, offen: 1 });
+    assert.deepEqual(json.summary, { total: 4, done: 3, ok: 1, fehler: 1, eigen: 1, offen: 1, ms: 0, timed: 0 });
     assert.equal(json.images[0].itemText, "git pull");
     assert.equal(json.version.version, "v0.5.0");
 
@@ -128,4 +128,56 @@ test("Entwurf, Bild, Ablegen: Ordner mit bericht.md, bericht.json und bilder/", 
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
+});
+
+// Testlauf 2026-10-10: „Bemesse trotzdem Timer pro Checklisten-Punkt.“
+test("Zeit pro Punkt: Entwurf hält ms, Bericht zeigt mm:ss, Abschnitt und Summe", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "ember-tl-zeit-"));
+  try {
+    assert.equal(tl.duration(0), "00:00");
+    assert.equal(tl.duration(75000), "01:15");
+    assert.equal(tl.duration(3725000), "1:02:05");
+    const list = tl.parseChecklist(SAMPLE);
+    const [a, b, c] = list.sections[0].items;
+    const d = list.sections[1].items[0];
+    tl.saveDraft(dir, { answers: {
+      [a.id]: { mark: "o", ms: 75400 },
+      [b.id]: { mark: "x", note: "Konflikt", ms: 30000 },
+      [c.id]: { mark: "", ms: 5000 }, // läuft noch, kein Ergebnis: Zeit bleibt trotzdem
+      [d.id]: { mark: "o", ms: -5 },
+    } });
+    const draft = tl.readDraft(dir);
+    assert.equal(draft.answers[a.id].ms, 75400);
+    assert.equal(draft.answers[c.id].ms, 5000);
+    assert.equal(draft.answers[d.id].ms, undefined, "negative Zeit fliegt raus");
+    tl.saveDraft(dir, { answers: { ...draft.answers, [a.id]: { mark: "o", ms: 1e12 } } });
+    assert.equal(tl.readDraft(dir).answers[a.id].ms, 24 * 60 * 60 * 1000, "höchstens 24 h");
+    tl.saveDraft(dir, { answers: { ...draft.answers } });
+
+    const out = tl.finalize(dir, { list, version: null, now: new Date(2026, 9, 10, 14, 43) });
+    const json = JSON.parse(fs.readFileSync(path.join(out.folder, "bericht.json"), "utf8"));
+    assert.equal(json.summary.ms, 110400);
+    assert.equal(json.summary.timed, 3);
+    assert.equal(json.sections[0].ms, 110400);
+    assert.equal(json.sections[0].items[0].zeit, "01:15");
+    assert.equal(json.sections[1].items[0].ms, 0);
+    const md = fs.readFileSync(path.join(out.folder, "bericht.md"), "utf8");
+    assert.match(md, /- Zeit gemessen: 01:50 \(an 3 von 4 Punkten\)/);
+    assert.match(md, /## Vorbereitung \(01:50\)/);
+    assert.match(md, /- \[O\] `node -v` zeigt eine LTS-Version: ______ · ⏱ 01:15\n/);
+    assert.match(md, /- \[X\] git pull · ⏱ 00:30 — Notiz: Konflikt/);
+    assert.match(md, /- \[O\] Server neu starten[^\n⏱]*\n/, "ohne Zeit kein ⏱");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("Seite: Uhr-Knopf je Punkt, Gesamtzeit oben, Zeit geht mit in den Entwurf", () => {
+  const js = fs.readFileSync(path.join(__dirname, "..", "public", "js", "testlauf.js"), "utf8");
+  const html = fs.readFileSync(path.join(__dirname, "..", "public", "testlauf.html"), "utf8");
+  assert.match(js, /class="tl-timer" data-timer/);
+  assert.match(js, /answers: liveAnswers\(\)/, "laufende Zeit wird mitgespeichert");
+  assert.match(js, /stopTimer\(\);\n\s*await saveNow\(\);/, "vor dem Ablegen wird die Uhr gestoppt");
+  assert.match(html, /id="timeTotal"/);
+  assert.match(html, /testlauf\.js\?v=\d+/);
 });

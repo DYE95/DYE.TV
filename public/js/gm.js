@@ -286,12 +286,15 @@ function renderSession() {
     readyList.innerHTML = "<p class='hint'>Wer ist on</p><p class='hint'>Bereit für die Geschichte</p>" + (seated.map((c) => `<div class="card seat-claim" data-id="${c.id}"><div class="name">${c.name}</div><div class="meta">${ready[c.id] ? "bereit" : "wartet"}</div></div>`).join("") || "<p class='hint'>Noch niemand sitzt.</p>");
     readyList.querySelectorAll(".seat-claim").forEach((card) => card.addEventListener("click", () => claimSeat(card.dataset.id, card.querySelector(".name").textContent)));
   }
-  const allReady = seated.length > 0 && seated.every((c) => ready[c.id]);
   const enter = $("#btnEnter");
-  if (enter) {
-    enter.disabled = !allReady;
-    enter.textContent = allReady ? "Alle ready. Rein." : "Rein, wenn alle ready sind";
-    if (allReady) {
+  if (enter && window.hubEnter) {
+    const how = window.hubEnter({ hasCampaign: Boolean(camp), seated: seated.length, ready: seated.filter((c) => ready[c.id]).length });
+    enter.disabled = how.disabled;
+    enter.dataset.action = how.action;
+    enter.textContent = how.label;
+    const hint = $("#hubHint");
+    if (hint) hint.textContent = how.hint;
+    if (how.auto) {
       $("#sessionHub")?.classList.add("hidden");
       $("#sessionLive")?.classList.remove("hidden");
     }
@@ -723,12 +726,18 @@ $("#photoInput")?.addEventListener("change", async (ev) => {
 });
 $("#rollCharacter")?.addEventListener("change", fillExperiences);
 
-const gmSeat = localStorage.getItem("ember.gmKey") || ("gm_" + Math.random().toString(16).slice(2));
-localStorage.setItem("ember.gmKey", gmSeat);
+// Alte start.bat-Staende schrieben "ECHO ist ausgeschaltet" in sl.pin; so ein
+// Rest im Browser ist kein Schluessel.
+if (/^ECHO\s/i.test(localStorage.getItem("ember.gmKey") || "")) localStorage.removeItem("ember.gmKey");
+if (!localStorage.getItem("ember.gmKey")) localStorage.setItem("ember.gmKey", "gm_" + Math.random().toString(16).slice(2));
+// Sitz bleibt fest, der Schluessel wird jedes Mal frisch gelesen: /api/sl-pin
+// kann ihn nach dem Laden noch auf die PIN aus data/sl.pin setzen.
+const gmSeat = localStorage.getItem("ember.gmKey");
 setInterval(() => {
+  const key = localStorage.getItem("ember.gmKey") || gmSeat;
   fetch("/api/presence", {
     method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ key: gmSeat, role: "gm", name: "SL", gmKey: gmSeat, status: activeSession()?.narrating ? "narrating" : "online" }),
+    body: JSON.stringify({ key: gmSeat, role: "gm", name: "SL", gmKey: key, status: activeSession()?.narrating ? "narrating" : "online" }),
   }).catch(() => {});
 }, 4000);
 

@@ -16,6 +16,7 @@ const spark = require("./lib/spark");
 const initiative = require("./lib/initiative");
 const compendium = require("./lib/compendium");
 const solo = require("./lib/solo");
+const slpin = require("./lib/slpin");
 const soloGame = require("./lib/solo-game");
 const leitstelle = require("./lib/leitstelle");
 const testlauf = require("./lib/testlauf");
@@ -378,9 +379,8 @@ async function handleApi(req, res, url) {
 
   if (method === "GET" && p === "/api/sl-pin") {
     if (!isLocalRequest(req)) return send(res, 403, { error: "Nur dieser Rechner." });
-    const pinPath = path.join(DATA, "sl.pin");
-    const pin = fs.existsSync(pinPath) ? fs.readFileSync(pinPath, "utf8").trim() : "";
-    return send(res, 200, { pin });
+    // Nur eine brauchbare PIN; cmd-Reste wie "ECHO ist ausgeschaltet" zaehlen als keine.
+    return send(res, 200, { pin: slpin.read(DATA) });
   }
 
   if (method === "GET" && p === "/api/profiles") {
@@ -1722,6 +1722,9 @@ if (url.pathname.startsWith("/docs/bibliothek/")) {
       if (!file) { res.writeHead(403); return res.end(); }
       return serveFile(res, file, req);
     }
+    if (url.pathname === "/ereignisse" || url.pathname === "/ereignisse/") {
+      return serveFile(res, path.join(PUBLIC, "ereignisse.html"), req);
+    }
     if (url.pathname === "/runner" || url.pathname === "/runner/") {
       return serveFile(res, path.join(PUBLIC, "runner.html"), req);
     }
@@ -1771,15 +1774,12 @@ store.backup();
 server.listen(PORT, HOST, async () => {
   await spark.ignite({ label: "Ember zündet" });
   try {
-    const pinPath = path.join(DATA, "sl.pin");
-    if (fs.existsSync(pinPath)) {
-      const pin = fs.readFileSync(pinPath, "utf8").trim();
-      const state = store.read();
-      if (pin && state.settings && !state.settings.gmKey) {
-        state.settings.gmKey = pin;
-        store.write(state);
-      }
-    }
+    // data/sl.pin ist die Quelle des SL-Schluessels. Eine neue PIN gilt nach dem
+    // Neustart; ein alter cmd-Rest als Schluessel wird verworfen.
+    const state = store.read();
+    const changed = slpin.syncGmKey(state, DATA);
+    if (changed) store.write(state);
+    if (changed === "junk-weg") console.log("  data\\sl.pin war ein cmd-Rest. Neue PIN beim nächsten Start von start.bat.");
   } catch {}
   console.log("");
   console.log("  Spielleiter   http://127.0.0.1:" + PORT + "/ember");

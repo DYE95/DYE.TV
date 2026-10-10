@@ -12,6 +12,7 @@ const BUILTIN = [
   { id: "solo", title: "Solo", sub: "Dungeon-Lauf allein", href: "/solo" },
   { id: "heft", title: "Heft", sub: "Notizen · Markdown", href: "/heft" },
   { id: "testlauf", title: "Testlauf", sub: "Checkliste · Bilder · Bericht", href: "/testlauf" },
+  { id: "ereignisse", title: "Ereignisse", sub: "Parcours, Fallwerk, Puls …", href: "/ereignisse" },
   { id: "settings", title: "Einstellungen", sub: "Leitstelle ⇄ Einstellungen", toggle: true },
 ];
 
@@ -38,6 +39,7 @@ function defaults() {
       heft: { x: 616, y: 312 },
       settings: { x: 24, y: 456 },
       testlauf: { x: 320, y: 456 },
+      ereignisse: { x: 616, y: 456 },
     },
     custom: [],
     profiles: {},

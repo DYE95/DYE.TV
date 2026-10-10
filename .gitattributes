@@ -1,2 +1,5 @@
-# Auto detect text files and perform LF normalization
+# Zeilenenden: Git normalisiert Text auf LF, Batch-Dateien bekommen CRLF.
+# cmd.exe liest LF-Batchdateien bei goto/call und Sprungmarken fehlerhaft.
 * text=auto
+*.bat text eol=crlf
+*.cmd text eol=crlf

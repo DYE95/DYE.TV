@@ -130,13 +130,31 @@
 body:has(#view-menu.on) .ember-topbar { display: none; }
 body:has(#view-menu.on) .app { height: 100dvh; }
 
-.hub { display:grid; grid-template-rows:auto minmax(220px,1fr) auto auto; gap:20px; min-height:0; height:100%; padding:12px 4vw 16px; box-sizing:border-box; overflow:hidden; }
+/* Tisch-Hub (/ember → Die Glut zünden). Kinder: .table-layout, #btnEnter, .duel.
+   Der Tisch passt sich der Höhe an; Kampagne und „Rein“ bleiben immer sichtbar.
+   Früher: erste Zeile "auto" + overflow:hidden → Tisch 1046 px hoch, Knöpfe abgeschnitten. */
+.hub { display:grid; grid-template-rows:auto auto auto; align-content:start; gap:14px; min-height:0; height:100%; padding:12px 4vw 16px; box-sizing:border-box; overflow:auto; }
+.table-layout { display:grid; grid-template-columns:minmax(160px,240px) minmax(0,1fr); gap:16px; min-height:0; }
+.who-on { min-height:0; overflow:auto; }
+.fire-table { min-height:0; display:flex; flex-direction:column; }
+.fire-figure { position:relative; min-height:0; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:stretch; gap:10px 14px; }
+/* Tisch = Bild (1872:1056) + Sitzleiste darunter; Breite folgt der freien Höhe. */
+.fire-figure #tableIndicator { grid-column:1 / -1; justify-self:center; width:min(100%, max(320px, calc((100dvh - 440px) * 1.7727))); margin:0; }
+.fire-figure .beside { justify-self:end; }
+.fire-figure .beside + .beside { justify-self:start; }
+.fire-figure .beside { display:inline-flex; flex-direction:column; align-items:flex-start; gap:2px; padding:10px 16px; min-width:220px; border:1px solid #c45c26; border-radius:10px; background:#1a120e; color:#f4efe4; font:inherit; text-align:left; }
+.fire-figure button.beside { cursor:pointer; }
+.fire-figure button.beside:hover, .fire-figure button.beside:focus-visible { border-color:#ffb703; outline:none; }
+.fire-figure .beside span { font-size:.8em; color:#d9c7b8; }
+.hub-hint { margin:0; text-align:center; color:#d9c7b8; font-size:.9em; }
+@media (max-width: 760px) { .table-layout { grid-template-columns:1fr; } }
 .hub-banner { display:flex; justify-content:space-between; align-items:end; gap:16px; padding:12px 16px; border:1px solid #c45c26; }
 .hub-table { max-width:720px; margin:0 auto; width:100%; min-height:0; overflow:hidden; display:flex; flex-direction:column; }
 .hub-table .plate { flex:1; min-height:0; aspect-ratio:auto; }
 .hub-ready { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; min-height:0; }
 .hub-ready .card { min-height:88px; padding:12px; }
-.hub #btnEnter { justify-self:center; min-width:280px; }
+.hub-actions { display:flex; flex-direction:column; align-items:center; gap:6px; }
+.hub #btnEnter { min-width:280px; min-height:48px; font-size:1.05em; }
 .measure-line { position:absolute; border:1px dashed #e9c46a; color:#e9c46a; font-size:12px; pointer-events:none; z-index:4; }
 .wall { position:absolute; background:#1a120e; border:1px solid #c45c26; pointer-events:none; z-index:3; }
 .door { position:absolute; z-index:4; font-size:10px; }

@@ -9,7 +9,7 @@ Datum: ________ Version (`git log --oneline -1`): ________________
 - [ ] `git pull` im Ember-Ordner, keine Fehlermeldung
 - [ ] Größe von `data\ember.json` notiert: ______ KB
 - [ ] Alte Ember-Tabs und -Fenster in allen Browsern geschlossen
-- [ ] Konsole: QuickEdit aus (Fenster → Eigenschaften) oder Start über `Ember.bat` (minimiert)
+- [ ] Konsole: QuickEdit aus (Fenster → Eigenschaften)
 - [ ] Uhrzeit beim Start notiert: ______
 
 ## Start
@@ -17,7 +17,7 @@ Datum: ________ Version (`git log --oneline -1`): ________________
 - [ ] `start.bat`: Zeit bis `/ember` am PC lädt: ______ s
 - [ ] Tunnel-Adresse erscheint in der Titelleiste nach ______ s (keine alte Adresse vom letzten Mal)
 - [ ] `data\tunnel.log`: keine Zeilen „Failed to dial a quic connection“, Protokoll http2
-- [ ] Erststart: `data\sl.pin` enthält die eingegebene PIN (nicht „ECHO ist ausgeschaltet“)
+- [ ] Erststart: `start.bat` fragt die PIN, `data\sl.pin` enthält sie (ein alter Rest „ECHO ist ausgeschaltet“ wird erkannt und neu abgefragt)
 
 ## PC-Seiten
 
@@ -34,7 +34,7 @@ Datum: ________ Version (`git log --oneline -1`): ________________
 - [ ] `/bibliothek` zeigt DH-SRD (öffnet als PDF) und die Karten
 - [ ] `/karten` lädt
 - [ ] Einstellungen (Startseite): Schrift/Kacheln ändern, bleibt nach Neuladen
-- [ ] Ereignis-Seiten: `/runner`, `/fallwerk`, `/pastellpfad`, `/scharfschuss`, `/puls` laden
+- [ ] Ereignis-Seiten über die Kachel „Ereignisse“ (oder `/ember` → Ereignisse): Leitungsparcours, Fallwerk, Pastellpfad, Scharfschuss, Puls laden
 
 ## Spieler lokal (LAN)
 

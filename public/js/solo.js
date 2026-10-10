@@ -35,7 +35,15 @@ async function refresh() {
   const pc = pcs.find((c) => c.id === sel.value);
   $("#who").textContent = pc ? pc.name + (pc.subclass ? " · " + pc.subclass : "") : "kein Bogen";
   $("#soloEmpty").classList.toggle("hidden", pcs.length > 0);
-  NEEDS_PC.forEach((id) => { const b = $("#" + id); if (b) b.disabled = !pcs.length; });
+  // Nicht "disabled": ein toter Knopf sieht auf dem TV aus wie ein kaputter.
+  // aria-disabled + Hinweis beim Klick (siehe explainOff).
+  NEEDS_PC.forEach((id) => {
+    const b = $("#" + id);
+    if (!b) return;
+    b.disabled = false;
+    if (pcs.length) b.removeAttribute("aria-disabled");
+    else b.setAttribute("aria-disabled", "true");
+  });
   fillSubs(pc);
   if (pc) {
     api("/api/solo/subclasses?class=" + encodeURIComponent(pc.class || "")).then((data) => {
@@ -48,19 +56,18 @@ async function refresh() {
   $("#maps").querySelectorAll("[data-map]").forEach((b) => b.addEventListener("click", () => api("/api/maps/load", { id: b.dataset.map }).then(note)));
 }
 
-// Ohne Bogen geht hier nichts. Die Knoepfe sind dann aus, statt still zu scheitern.
+// Ohne Bogen geht hier nichts. Die Knoepfe sind dann gedimmt und erklaeren sich beim Klick.
 const NEEDS_PC = ["btnSubclass", "btnStart", "btnLevel", "btnLevelGo", "btnBot", "btnAct", "btnDungeon"];
 
 // SL-Schluessel wie auf /ember: am SL-Rechner kommt er aus data/sl.pin.
+// Die PIN gewinnt gegen einen alten Wert im Browser (sonst 403 "Nur der SL").
+let pinAsked = null;
 async function gmBody(body) {
+  if (!pinAsked) pinAsked = fetch("/api/sl-pin").then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  const row = await pinAsked;
+  if (row && row.pin) localStorage.setItem("ember.gmKey", row.pin);
   let key = localStorage.getItem("ember.gmKey") || "";
-  if (!key) {
-    const row = await fetch("/api/sl-pin").then((r) => (r.ok ? r.json() : null)).catch(() => null);
-    if (row && row.pin) {
-      key = row.pin;
-      localStorage.setItem("ember.gmKey", key);
-    }
-  }
+  if (/^ECHO\s/i.test(key)) key = "";
   return { ...body, as: "gm", gmKey: key };
 }
 
@@ -76,6 +83,22 @@ function note(text) {
 function run(fn) {
   fn().catch((err) => note(err.message || "Fehler"));
 }
+
+// Klick auf einen Knopf, der einen Bogen braucht: sagen warum, statt nichts zu tun.
+document.addEventListener("click", (ev) => {
+  const b = ev.target.closest("button[aria-disabled='true']");
+  if (!b) return;
+  ev.preventDefault();
+  ev.stopImmediatePropagation();
+  note("Noch kein Bogen. Erst oben „Asche unter der Schwelle laden“ oder in der Spielleitung einen Charakter anlegen.");
+  const box = $("#soloEmpty");
+  if (box) {
+    box.classList.remove("hidden", "flash");
+    void box.offsetWidth;
+    box.classList.add("flash");
+    box.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+}, true);
 
 $("#grid").addEventListener("pointerdown", (ev) => {
   const box = $("#grid").getBoundingClientRect();

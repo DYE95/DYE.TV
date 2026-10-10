@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="/css/table-indicator.css?v=1" />
   <link rel="stylesheet" href="/css/topbar.css?v=11" />
   <link rel="stylesheet" href="/css/float.css?v=1" />
-  <link rel="stylesheet" href="/css/start.css?v=14" />
+  <link rel="stylesheet" href="/css/start.css?v=15" />
   <script>
     var emberStack = ["menu"];
     var emberNames = { menu: "Start", session: "Am Tisch", encounter: "Karte", tunnel: "Tunnel", chats: "Chats", "campaign-manager": "Kampagne", "character-manager": "Charakter" };
@@ -115,8 +115,12 @@
                 <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M4 20V10l8-6 8 6v10h-6v-6H10v6z"/></svg>
                 <span class="start-copy"><b>Unter die Schwelle</b><span>Solo, vier Räume</span></span>
               </a>
+              <a class="start-item" href="/ereignisse">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>
+                <span class="start-copy"><b>Ereignisse</b><span>Parcours, Fallwerk, Puls …</span></span>
+              </a>
             </nav>
-            <p class="start-note">Drei Eingänge, auch nach dem Neuladen. Der Tisch bleibt auf diesem Rechner.</p>
+            <p class="start-note">Vier Eingänge, auch nach dem Neuladen. Der Tisch bleibt auf diesem Rechner.</p>
             <button class="start-leave" id="btnLeave" type="button">Glut löschen</button>
           </div>
         </section>
@@ -161,7 +165,7 @@
             </div>
           </div>
         </div>
-        <button class="btn primary" id="btnEnter" type="button" disabled>Rein, wenn alle ready sind</button>
+        <div class="hub-actions"><button class="btn primary" id="btnEnter" type="button">Rein</button><p class="hub-hint" id="hubHint"></p></div>
         <div class="duel hidden" id="seatDuel"><p>Zwei wollen denselben Stuhl.</p><button class="btn" id="btnDuel" type="button">Duell</button><p id="duelOut"></p></div>
       </div>
       <div class="workspace hidden" id="sessionLive">
@@ -174,7 +178,7 @@
           <button class="btn" id="btnUmbra" style="width:100%;margin-bottom:8px;">Die Krone ohne Flamme</button>
           <button class="btn ghost" id="btnEndSession" style="width:100%;">Session schließen</button>
           <h2 style="margin-top:18px;">Ereignis</h2>
-          <p class="hint">Kurz ins Spiel werfen. Danach zurück an den Tisch.</p>
+          <p class="hint">Kurz ins Spiel werfen. Danach zurück an den Tisch. <a href="/ereignisse" target="_blank" rel="noopener">Einzeln öffnen</a></p>
           <label>Spiel
             <select id="spurGame">
               <option value="runner">Leitungsparcours</option>
@@ -542,12 +546,14 @@
       </button>
     </footer>
   <script src="/js/table-indicator.js?v=2"></script>
+  <script src="/js/hub-enter.js?v=1"></script>
   <script src="/js/map.js?v=14"></script>
   <script src="/js/token.js?v=4"></script>
   <script src="/js/float-panels.js?v=1"></script>
-  <script src="/js/gm.js?v=18"></script>
+  <script src="/js/gm.js?v=19"></script>
   <script>
-    document.getElementById("btnEnter")?.addEventListener("click", () => {
+    document.getElementById("btnEnter")?.addEventListener("click", (ev) => {
+      if (ev.currentTarget.dataset.action === "campaign") return emberGo("campaign-manager");
       document.getElementById("sessionHub")?.classList.add("hidden");
       document.getElementById("sessionLive")?.classList.remove("hidden");
     });

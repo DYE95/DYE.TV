@@ -4,7 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Ember · Solo-Werkstatt</title>
-  <link rel="stylesheet" href="/css/ember.css?v=9" />
+  <link rel="stylesheet" href="/css/ember.css?v=17" />
+  <style>
+    /* Knopf braucht einen Bogen: sichtbar gedimmt, Klick erklaert es (solo.js). */
+    .btn[aria-disabled="true"] { opacity: .45; filter: grayscale(.6); cursor: not-allowed; }
+    #soloEmpty.flash { animation: soloFlash 1.2s ease-out 1; }
+    @keyframes soloFlash { 0%, 40% { box-shadow: 0 0 0 3px #e9c46a; } 100% { box-shadow: none; } }
+  </style>
 </head>
 <body class="house-body">
   <div class="player-shell">
@@ -65,6 +71,6 @@
       </div>
     </div>
   </div>
-  <script src="/js/solo.js?v=3"></script>
+  <script src="/js/solo.js?v=4"></script>
 </body>
 </html>

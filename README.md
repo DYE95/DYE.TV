@@ -8,7 +8,7 @@ ist der Server, die Daten liegen in `data/ember.json`.
 ## Voraussetzungen
 
 - [Node.js](https://nodejs.org) (LTS, getestet mit Node 20 und 24)
-- Ein Browser (Edge/Chrome wird von `Ember.bat` automatisch geöffnet)
+- Ein Browser (Brave, Chrome, Edge …); `http://127.0.0.1:3478/` selbst öffnen
 - Keine `npm install`-Schritte nötig — das Projekt hat **null Abhängigkeiten**
 
 ## Erststart
@@ -20,8 +20,7 @@ Wer die `.bat` nicht kennt, liest zuerst `docs/ERSTSTART.md` und öffnet `erstst
 
 | Datei        | Was sie tut                                                        |
 | ------------ | ------------------------------------------------------------------ |
-| `Ember.bat`  | Prüft Node, startet den Server minimiert und öffnet die Spielleitung (`/ember`) |
-| `start.bat`  | Startet den Server und hält das Fenster offen (Neustart-Schleife)   |
+| `start.bat`  | Prüft Node, fragt beim ersten Mal die SL-PIN, startet Server und Tunnel, Neustart-Schleife |
 | `test.bat`   | Syntax-Check von `server.js` + komplette Testsuite                  |
 
 ### Überall sonst
