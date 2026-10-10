@@ -48,10 +48,11 @@
   <section class="desk-panel hidden" id="panelMedia">
     <div class="desk-panel-card wide">
       <h2>Mediathek</h2>
-      <p class="hint">mp4 oder webm. Bild ↑ ein Frame vor, Bild ↓ eins zurück.</p>
+      <p class="hint">mp4, webm, mkv oder mov, auch große Dateien. Bild ↑ ein Frame vor, Bild ↓ eins zurück.</p>
       <video id="homeVideo" controls playsinline></video>
       <div class="list" id="clipList"></div>
-      <label class="btn">mp4 laden <input id="clipFile" type="file" accept="video/mp4,video/webm,.mp4,.webm" hidden /></label>
+      <label class="btn">Video laden <input id="clipFile" type="file" accept="video/*,.mp4,.m4v,.webm,.mkv,.mov" hidden /></label>
+      <p class="hint" id="clipStatus" aria-live="polite"></p>
       <button class="btn" data-close>Zurück</button>
     </div>
   </section>
@@ -87,6 +88,6 @@
   </section>
 
   <script src="/js/video-deck.js?v=6"></script>
-  <script src="/js/home-desk.js?v=13"></script>
+  <script src="/js/home-desk.js?v=14"></script>
 </body>
 </html>

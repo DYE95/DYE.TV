@@ -142,9 +142,13 @@
         } : null,
       }));
     };
+    window.addEventListener("ember:state", (ev) => apply(ev.detail));
+    if (window.emberFeed) return;
+    // Seite ohne map.js: eigener Stream, aber nur dieser eine.
     fetch("/api/state").then((r) => r.json()).then(apply).catch(() => {});
     const es = new EventSource("/api/events");
     es.addEventListener("message", (ev) => { try { apply(JSON.parse(ev.data)); } catch {} });
+    window.addEventListener("pagehide", () => es.close());
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();

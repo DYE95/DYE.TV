@@ -380,13 +380,35 @@ function startDrag(ev, el, token, opts) {
 function statusLabel(code) {
   return ({ online: "am Tisch", queued: "Want Spotlight", spotlight: "im Spotlight", rolling: "würfelt", narrating: "lauscht" })[code] || "fort";
 }
+// Ein Stream pro Seite. Andere Skripte hoeren auf "ember:state" statt einen eigenen zu oeffnen,
+// sonst sind die sechs Verbindungen pro Adresse schnell weg.
 function startStateFeed(apply) {
   let last = 0;
-  const pull = () => fetch("/api/state").then((r) => r.json()).then((s) => { last = Date.now(); apply(s); }).catch(() => {});
+  let current = null;
+  window.emberFeed = true;
+  const share = (s) => {
+    last = Date.now();
+    current = s;
+    apply(s);
+    window.dispatchEvent(new CustomEvent("ember:state", { detail: s }));
+  };
+  const pull = () => fetch("/api/state").then((r) => r.json()).then(share).catch(() => {});
   pull();
   const es = new EventSource("/api/events");
-  es.addEventListener("message", (ev) => { last = Date.now(); try { apply(JSON.parse(ev.data)); } catch {} });
-  setInterval(() => { if (Date.now() - last > 4000) pull(); }, 2500);
+  es.addEventListener("message", (ev) => {
+    let next = null;
+    try { next = JSON.parse(ev.data); } catch { return; }
+    share(next);
+  });
+  // Der Server schickt "presence" nur, wenn jemand kommt, geht oder den Status wechselt.
+  es.addEventListener("presence", (ev) => {
+    let data = null;
+    try { data = JSON.parse(ev.data); } catch { return; }
+    if (current) share({ ...current, presence: data.presence || [] });
+  });
+  window.addEventListener("pagehide", () => es.close());
+  // Nur noch Notnagel, falls der Stream still haengt.
+  setInterval(() => { if (Date.now() - last > 45000) pull(); }, 10000);
 }
 
 const RANGE_CELL = 100 / 24;

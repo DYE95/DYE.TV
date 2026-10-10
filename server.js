@@ -4,6 +4,8 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const { URL } = require("url");
+const { pipeline } = require("stream");
+const { pipeline: pipelineAsync } = require("stream/promises");
 const store = require("./lib/store");
 const { resolveActionRoll, applyPools } = require("./lib/dice");
 const { addresses } = require("./lib/lan");
@@ -14,16 +16,39 @@ const initiative = require("./lib/initiative");
 const compendium = require("./lib/compendium");
 const solo = require("./lib/solo");
 const spur = require("./lib/spur");
-const { isGm, recordGmKey, isLocalAddress } = require("./lib/auth");
+const { isGm, recordGmKey, isLocalRequest, requestAddress } = require("./lib/auth");
+const { parseRange } = require("./lib/range");
 
 const PORT = Number(process.env.EMBER_PORT || 3478);
 const HOST = process.env.EMBER_HOST || "0.0.0.0";
 const PUBLIC = path.join(__dirname, "public");
 const LIBRARY = path.join(__dirname, "docs", "bibliothek");
+const RULES = path.join(__dirname, "docs", "regeln");
 const UPLOADS = path.join(__dirname, "data", "uploads");
+const VIDEO_EXT = ["mp4", "m4v", "webm", "mkv", "mov", "ogv"];
 const clients = new Set();
 const presence = new Map();
-let presenceEmitAt = 0;
+let presenceSent = "";
+
+const CRASH_LOG = path.join(__dirname, "data", "crash.log");
+
+// Absturz festhalten. Laeuft der Server schon eine Weile, Exit 42: start.bat
+// startet dann neu. Stirbt er gleich beim Start, Exit 1, sonst dreht die Schleife durch.
+function logCrash(kind, err) {
+  const text = `${new Date().toISOString()} ${kind}\n${(err && err.stack) || String(err)}\n\n`;
+  try {
+    fs.mkdirSync(path.dirname(CRASH_LOG), { recursive: true });
+    fs.appendFileSync(CRASH_LOG, text);
+  } catch {}
+  try { process.stderr.write(`\n  Absturz (${kind}), Details in data/crash.log\n`); } catch {}
+}
+process.on("uncaughtException", (err) => {
+  logCrash("uncaughtException", err);
+  process.exit(process.uptime() > 10 ? 42 : 1);
+});
+process.on("unhandledRejection", (err) => {
+  logCrash("unhandledRejection", err);
+});
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -39,6 +64,10 @@ const MIME = {
   ".mp4": "video/mp4",
   ".webm": "video/webm",
   ".m4v": "video/mp4",
+  ".mkv": "video/x-matroska",
+  ".mov": "video/quicktime",
+  ".ogv": "video/ogg",
+  ".pdf": "application/pdf",
 };
 
 function presenceList() {
@@ -54,15 +83,45 @@ function remoteUrl() {
     return process.env.DYE_PUBLIC_URL || "";
   }
 }
-function snapshot() {
-  return { ...store.publicView(store.read()), presence: presenceList(), lan: { port: PORT, addresses: addresses(), remote: remoteUrl() } };
+const STREAM_LOG = 100;
+
+// Alle Seiten lesen nur die aktive Session. Alte Sessions gehen schlank raus,
+// sonst waechst jede Nachricht mit jedem Spielabend (bis 500 Logzeilen pro Session).
+function leanSessions(view) {
+  const activeId = view.active && view.active.sessionId;
+  view.sessions = (view.sessions || []).map((s) => {
+    if (s.id !== activeId) return { id: s.id, campaignId: s.campaignId, startedAt: s.startedAt, endedAt: s.endedAt, solo: s.solo };
+    if ((s.log || []).length > STREAM_LOG) s.log = s.log.slice(-STREAM_LOG);
+    return s;
+  });
+  return view;
 }
 
-function emitState() {
-  const payload = `data: ${JSON.stringify(snapshot())}\n\n`;
+function snapshot() {
+  return { ...leanSessions(store.publicView(store.read())), presence: presenceList(), lan: { port: PORT, addresses: addresses(), remote: remoteUrl() } };
+}
+
+function broadcast(payload) {
   for (const res of clients) {
     try { res.write(payload); } catch { clients.delete(res); }
   }
+}
+
+function emitState() {
+  broadcast(`data: ${JSON.stringify(snapshot())}\n\n`);
+  presenceSent = presenceKey(presenceList());
+}
+
+// Nur wer da ist, als kleines Ereignis. Kein ganzer Stand pro Ping.
+function presenceKey(list) {
+  return list.map((row) => `${row.key}:${row.status}:${row.characterId || ""}`).sort().join("|");
+}
+function emitPresence() {
+  const list = presenceList();
+  const key = presenceKey(list);
+  if (key === presenceSent) return;
+  presenceSent = key;
+  broadcast(`event: presence\ndata: ${JSON.stringify({ presence: list })}\n\n`);
 }
 
 function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
@@ -144,27 +203,72 @@ function serveFile(res, filePath, req) {
     }
     const ext = path.extname(filePath).toLowerCase();
     const type = MIME[ext] || "application/octet-stream";
-    const range = req && req.headers.range;
-    if (range && /^bytes=/.test(range)) {
-      const [startStr, endStr] = range.replace("bytes=", "").split("-");
-      const start = Math.max(0, Number(startStr) || 0);
-      let end = endStr ? Number(endStr) : st.size - 1;
-      if (end > st.size - 1) end = st.size - 1;
-      if (start > end) {
-        res.writeHead(416, { "Content-Type": "text/plain; charset=utf-8", "Content-Range": `bytes */${st.size}` });
-        return res.end("Bereich ungueltig.");
-      }
+    const range = parseRange(req && req.headers.range, st.size);
+    if (range && range.invalid) {
+      res.writeHead(416, { "Content-Type": "text/plain; charset=utf-8", "Content-Range": `bytes */${st.size}` });
+      return res.end("Bereich ungueltig.");
+    }
+    if (range) {
       res.writeHead(206, {
         "Content-Type": type,
-        "Content-Range": `bytes ${start}-${end}/${st.size}`,
+        "Content-Range": `bytes ${range.start}-${range.end}/${st.size}`,
         "Accept-Ranges": "bytes",
-        "Content-Length": end - start + 1,
+        "Content-Length": range.end - range.start + 1,
       });
-      return fs.createReadStream(filePath, { start, end }).pipe(res);
+      return streamTo(res, fs.createReadStream(filePath, { start: range.start, end: range.end }));
     }
     res.writeHead(200, { "Content-Type": type, "Accept-Ranges": "bytes", "Content-Length": st.size });
-    fs.createReadStream(filePath).pipe(res);
+    streamTo(res, fs.createReadStream(filePath));
   });
+}
+
+// pipeline schliesst die Datei, wenn der Browser abbricht (Spulen, Neuladen),
+// und ein Lesefehler beendet nur diese Antwort, nicht den Server.
+function streamTo(res, source) {
+  pipeline(source, res, () => {});
+}
+
+function readJsonFile(file, fallback) {
+  try {
+    return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function filesIn(dir, pattern) {
+  try {
+    return fs.readdirSync(dir).filter((f) => pattern.test(f)).sort((a, b) => a.localeCompare(b, "de"));
+  } catch {
+    return [];
+  }
+}
+
+// index.json darf fehlen oder kaputt sein. PDFs in docs/bibliothek und
+// docs/regeln tauchen auch ohne Eintrag auf, Karten aus public/maps ebenso.
+function libraryIndex() {
+  const listed = readJsonFile(path.join(LIBRARY, "index.json"), []);
+  const rows = Array.isArray(listed) ? listed.filter((b) => b && typeof b.file === "string") : [];
+  const books = rows.map((b) => ({
+    ...b,
+    title: b.title || b.file,
+    kind: b.kind || "PDF",
+    href: `/docs/bibliothek/${encodeURI(b.file)}`,
+    missing: !safeJoin(LIBRARY, b.file) || !fs.existsSync(safeJoin(LIBRARY, b.file)),
+  }));
+  const known = new Set(rows.map((b) => b.file));
+  for (const f of filesIn(LIBRARY, /\.pdf$/i)) {
+    if (!known.has(f)) books.push({ title: f.replace(/\.pdf$/i, ""), kind: "PDF", file: f, href: `/docs/bibliothek/${encodeURIComponent(f)}`, missing: false });
+  }
+  for (const f of filesIn(RULES, /\.pdf$/i)) {
+    books.push({ title: f.replace(/\.pdf$/i, ""), kind: "Regeln", file: f, href: `/docs/regeln/${encodeURIComponent(f)}`, missing: false });
+  }
+  const image = /\.(jpg|jpeg|png|webp)$/i;
+  const maps = [
+    ...filesIn(path.join(LIBRARY, "maps"), image).map((f) => ({ title: f, href: `/docs/bibliothek/maps/${encodeURIComponent(f)}` })),
+    ...filesIn(path.join(PUBLIC, "maps"), image).map((f) => ({ title: f, href: `/maps/${encodeURIComponent(f)}` })),
+  ];
+  return { books, maps };
 }
 
 function checkTriggers(session, enc, token) {
@@ -205,16 +309,14 @@ async function handleApi(req, res, url) {
   const p = url.pathname;
 
   if (method === "GET" && p === "/api/sl-pin") {
-    const remote = req.socket.remoteAddress || "";
-    if (!remote.endsWith("127.0.0.1") && remote !== "::1") return send(res, 403, { error: "Nur dieser Rechner." });
+    if (!isLocalRequest(req)) return send(res, 403, { error: "Nur dieser Rechner." });
     const pinPath = path.join(__dirname, "data", "sl.pin");
     const pin = fs.existsSync(pinPath) ? fs.readFileSync(pinPath, "utf8").trim() : "";
     return send(res, 200, { pin });
   }
 
   if (method === "GET" && p === "/api/profiles") {
-    const remote = req.socket.remoteAddress || "";
-    if (!isLocalAddress(remote)) return send(res, 403, { error: "Nur dieser Rechner." });
+    if (!isLocalRequest(req)) return send(res, 403, { error: "Nur dieser Rechner." });
     const state = store.read();
     return send(res, 200, { profiles: state.profiles || [], characters: (state.characters || []).map((c) => ({ id: c.id, name: c.name, class: c.class || "" })) });
   }
@@ -244,9 +346,8 @@ async function handleApi(req, res, url) {
   }
   if (method === "POST" && p === "/api/profiles/bind") {
     const body = await readJson(req);
-    const remote = req.socket.remoteAddress || "";
     const state = store.read();
-    const local = isLocalAddress(remote);
+    const local = isLocalRequest(req);
     const name = String(body.name || "").trim().toLowerCase();
     const pin = String(body.pin || "").trim();
     const profile = (state.profiles || []).find((row) => row.name.toLowerCase() === name && (local || row.pin === pin));
@@ -280,12 +381,19 @@ async function handleApi(req, res, url) {
   if (method === "GET" && p === "/api/events") {
     res.writeHead(200, {
       "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
+      "Cache-Control": "no-cache, no-transform",
+      "X-Accel-Buffering": "no",
       Connection: "keep-alive",
     });
-    res.write("data: " + JSON.stringify(snapshot()) + "\n\n");
+    res.flushHeaders();
+    res.write(`data: ${JSON.stringify(snapshot())}\n\n`);
     clients.add(res);
-    req.on("close", () => clients.delete(res));
+    // Kommentarzeile alle 20 s, damit Tunnel und Proxys die Leitung nicht als tot schliessen.
+    const beat = setInterval(() => res.write(":\n\n"), 20000);
+    req.on("close", () => {
+      clearInterval(beat);
+      clients.delete(res);
+    });
     return;
   }
 
@@ -425,7 +533,7 @@ async function handleApi(req, res, url) {
   if (method === "POST" && p === "/api/settings") {
     const body = await readJson(req);
     const state = store.read();
-    if (!isGm(state, body) && !isLocalAddress(req.socket.remoteAddress || "")) return send(res, 403, { error: "Nur der SL." });
+    if (!isGm(state, body) && !isLocalRequest(req)) return send(res, 403, { error: "Nur der SL." });
     delete body.as;
     delete body.gmKey;
     state.settings = { ...(state.settings || {}), ...body };
@@ -434,22 +542,46 @@ async function handleApi(req, res, url) {
   }
 
   if (method === "POST" && p === "/api/media") {
-    const body = await readJson(req);
+    const raw = !String(req.headers["content-type"] || "").includes("application/json");
+    // Neu: Datei kommt roh im Body und geht direkt auf die Platte, egal wie gross.
+    // Alt: JSON mit base64 bleibt fuer kleine Clips erhalten.
+    const body = raw ? { as: "gm", gmKey: String(req.headers["x-ember-gmkey"] || "") } : await readJson(req);
     const state = store.read();
-    if (!isGm(state, body) && !isLocalAddress(req.socket.remoteAddress || "")) return send(res, 403, { error: "Nur der SL." });
+    if (!isGm(state, body) && !isLocalRequest(req)) {
+      req.resume();
+      return send(res, 403, { error: "Nur der SL." });
+    }
     if (!state.media) state.media = [];
     fs.mkdirSync(UPLOADS, { recursive: true });
-    const ext = body.ext === "webm" ? "webm" : "mp4";
-    const filename = id("vid") + "." + ext;
-    fs.writeFileSync(path.join(UPLOADS, filename), Buffer.from(body.data, "base64"));
+    const name = raw ? String(url.searchParams.get("name") || "") : String(body.name || "");
+    const wanted = String((raw ? url.searchParams.get("ext") : body.ext) || path.extname(name).slice(1)).toLowerCase();
+    const ext = VIDEO_EXT.includes(wanted) ? wanted : "mp4";
+    const filename = `${id("vid")}.${ext}`;
+    const target = path.join(UPLOADS, filename);
+    if (raw) {
+      const part = `${target}.part`;
+      try {
+        await pipelineAsync(req, fs.createWriteStream(part));
+        fs.renameSync(part, target);
+      } catch (err) {
+        fs.rm(part, { force: true }, () => {});
+        if (!res.headersSent && !res.destroyed) send(res, 500, { error: "Upload abgebrochen." });
+        return;
+      }
+    } else {
+      if (typeof body.data !== "string" || !body.data) return send(res, 400, { error: "Keine Datei." });
+      fs.writeFileSync(target, Buffer.from(body.data, "base64"));
+    }
     const clip = {
       id: id("vid"),
       file: filename,
-      name: body.name || filename,
+      name: name || filename,
       addedAt: new Date().toISOString(),
     };
-    state.media.unshift(clip);
-    store.write(state); emitState();
+    const fresh = store.read();
+    if (!fresh.media) fresh.media = [];
+    fresh.media.unshift(clip);
+    store.write(fresh); emitState();
     return send(res, 200, clip);
   }
 
@@ -596,7 +728,6 @@ async function handleApi(req, res, url) {
   if (method === "POST" && p === "/api/presence") {
     const body = await readJson(req);
     const key = body.key || id("seat");
-    const prev = presence.get(key);
     const row = {
       key, role: body.role || "player", name: body.name || "Unbekannt",
       characterId: body.characterId || null, status: body.status || "online",
@@ -606,14 +737,11 @@ async function handleApi(req, res, url) {
     const state = store.read();
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     const settled = closeSpur(state, session);
-    if (recordGmKey(state, body, req.socket.remoteAddress || "") || settled) {
+    if (recordGmKey(state, body, requestAddress(req)) || settled) {
       store.write(state);
     }
-    const changed = !prev || prev.status !== row.status;
-    if (changed || Date.now() - presenceEmitAt > 2500) {
-      presenceEmitAt = Date.now();
-      emitState();
-    }
+    if (settled) emitState();
+    else emitPresence();
     return send(res, 200, { key });
   }
 
@@ -1028,16 +1156,14 @@ async function handleApi(req, res, url) {
     return send(res, 200, token);
   }
   if (method === "POST" && p === "/api/restart") {
-    const remote = req.socket.remoteAddress || "";
-    const local = ["127.0.0.1", "::1", "::ffff:127.0.0.1", "localhost"].includes(remote);
+    const local = isLocalRequest(req);
     if (!local) return send(res, 403, { error: "Neustart nur am SL-Rechner." });
     send(res, 200, { restarting: true });
     setTimeout(() => process.exit(42), 250);
     return;
   }
   if (method === "POST" && p === "/api/update") {
-    const remote = req.socket.remoteAddress || "";
-    const local = ["127.0.0.1", "::1", "::ffff:127.0.0.1", "localhost"].includes(remote);
+    const local = isLocalRequest(req);
     if (!local) return send(res, 403, { error: "Update nur am SL-Rechner." });
 
     try {
@@ -1230,11 +1356,7 @@ async function handleApi(req, res, url) {
   }
 
   if (method === "GET" && p === "/api/bibliothek") {
-    const indexPath = path.join(LIBRARY, "index.json");
-    const books = fs.existsSync(indexPath) ? JSON.parse(fs.readFileSync(indexPath, "utf8")) : [];
-    const mapsDir = path.join(LIBRARY, "maps");
-    const maps = fs.existsSync(mapsDir) ? fs.readdirSync(mapsDir).filter((f) => /\.(jpg|png|webp)$/i.test(f)).map((f) => ({ title: f, href: "/docs/bibliothek/maps/" + f })) : [];
-    return send(res, 200, { books: books.map((b) => ({ ...b, href: "/docs/bibliothek/" + b.file, missing: !fs.existsSync(path.join(LIBRARY, b.file)) })), maps });
+    return send(res, 200, libraryIndex());
   }
   if (method === "GET" && p === "/api/errata") {
     const file = path.join(LIBRARY, "errata.json");
@@ -1465,6 +1587,13 @@ if (url.pathname.startsWith("/docs/bibliothek/")) {
       if (!file) { res.writeHead(403); return res.end(); }
       return serveFile(res, file, req);
     }
+    if (url.pathname.startsWith("/docs/regeln/")) {
+      let rel = "";
+      try { rel = decodeURIComponent(url.pathname.slice("/docs/regeln/".length)); } catch { rel = ""; }
+      const file = rel && safeJoin(RULES, rel);
+      if (!file) { res.writeHead(403); return res.end(); }
+      return serveFile(res, file, req);
+    }
     if (url.pathname === "/runner" || url.pathname === "/runner/") {
       return serveFile(res, path.join(PUBLIC, "runner.html"), req);
     }
@@ -1494,6 +1623,14 @@ if (url.pathname.startsWith("/docs/bibliothek/")) {
     if (err && err.badJson) return send(res, 400, { error: err.message });
     send(res, 500, { error: err.message || "Serverfehler" });
   }
+});
+
+server.on("error", (err) => {
+  if (err && err.code === "EADDRINUSE") {
+    console.log(`  Port ${PORT} ist belegt. Laeuft Ember schon in einem anderen Fenster?`);
+    process.exit(1);
+  }
+  logCrash("server", err);
 });
 
 server.listen(PORT, HOST, async () => {

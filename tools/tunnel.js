@@ -21,10 +21,13 @@ function writeUrl(url) {
   paintTitle(url.trim());
 }
 
+// Die Adresse vom letzten Start ist tot. Weg damit, sonst zeigt die Titelleiste sie an.
+try { fs.unlinkSync(file); } catch {}
+
 const bin = process.platform === "win32" ? "cloudflared.exe" : "cloudflared";
 fs.mkdirSync(path.dirname(logFile), { recursive: true });
 const log = fs.createWriteStream(logFile, { flags: "a" });
-const child = spawn(bin, ["tunnel", "--url", "http://127.0.0.1:" + port], { stdio: ["ignore", "pipe", "pipe"] });
+const child = spawn(bin, ["tunnel", "--protocol", "http2", "--url", `http://127.0.0.1:${port}`], { stdio: ["ignore", "pipe", "pipe"] });
 let buf = "";
 function take(chunk) {
   const text = chunk.toString();

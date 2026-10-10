@@ -16,6 +16,9 @@
 
 * { box-sizing: border-box; }
 
+/* display:flex weiter unten wuerde das hidden-Attribut sonst ueberstimmen. */
+[hidden] { display: none !important; }
+
 html, body {
   height: 100%;
   margin: 0;
@@ -44,6 +47,7 @@ button:disabled { cursor: default; opacity: 0.4; }
 
 .heft {
   display: flex;
+  height: 100%;
   height: 100dvh;
   overflow: hidden;
 }

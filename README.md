@@ -95,7 +95,10 @@ Abgedeckt sind die Kernlogik ohne laufenden Server:
 - `test/initiative.test.js` — Seed, Runden, Gegenseite, Spotlight-Vorrücken, auto=aus
 - `test/solo.test.js` — Bots, Dungeon, Level-Ups, Subklassen
 - `test/store.test.js` — Fog-of-War-Standards, `patchById`, Encounter-/Bogen-Erzeugung
-- `test/auth.test.js` — GM-Key-Logik (`isGm`, `recordGmKey`)
+- `test/auth.test.js` — GM-Key-Logik (`isGm`, `recordGmKey`), Tunnel gilt nicht als lokal
+- `test/range.test.js` — Range-Header für Video-Streaming (Suffix, 416 bei Unsinn)
+
+Für Testläufe von Hand: [docs/TESTLAUF.md](docs/TESTLAUF.md) — Checkliste zum Ausdrucken.
 
 ## Daten & Betrieb
 

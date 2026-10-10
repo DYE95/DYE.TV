@@ -433,19 +433,35 @@ fetch("/api/state").then((r) => r.json()).then((s) => {
 });
 
 attachVideoDeck(document.getElementById("homeVideo"));
+// Die Datei geht roh an den Server, der sie direkt auf die Platte schreibt.
+// Kein base64 mehr: das hat bei grossen Videos Browser und Server ueberfordert.
 document.getElementById("clipFile").addEventListener("change", (ev) => {
   const file = ev.target.files && ev.target.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = async () => {
-    const data = String(reader.result).split(",")[1] || "";
-    const ext = /webm/i.test(file.type || file.name) ? "webm" : "mp4";
-    await fetch("/api/media", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ data, ext, name: file.name }),
-    });
-    location.reload();
-  };
-  reader.readAsDataURL(file);
+  const status = document.getElementById("clipStatus");
+  const say = (text) => { if (status) status.textContent = text; };
+  const ext = (file.name.split(".").pop() || "mp4").toLowerCase();
+  const q = new URLSearchParams({ name: file.name, ext });
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `/api/media?${q}`);
+  xhr.setRequestHeader("Content-Type", "application/octet-stream");
+  xhr.setRequestHeader("X-Ember-GmKey", localStorage.getItem("ember.gmKey") || "");
+  xhr.upload.addEventListener("progress", (e) => {
+    if (e.lengthComputable) say(`Lädt hoch … ${Math.round((e.loaded / e.total) * 100)} %`);
+  });
+  xhr.addEventListener("load", () => {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      say("Fertig.");
+      location.reload();
+      return;
+    }
+    let msg = `Fehler ${xhr.status}`;
+    try { msg = JSON.parse(xhr.responseText).error || msg; } catch {}
+    if (xhr.status === 413) msg = "Zu groß für den Tunnel. Große Videos direkt am SL-Rechner hochladen.";
+    say(`Upload fehlgeschlagen: ${msg}`);
+  });
+  xhr.addEventListener("error", () => say("Upload fehlgeschlagen: keine Verbindung zum Server."));
+  say("Lädt hoch …");
+  xhr.send(file);
+  ev.target.value = "";
 });

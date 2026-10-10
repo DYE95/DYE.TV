@@ -34,16 +34,34 @@ async function refresh() {
   if (current) sel.value = current;
   const pc = pcs.find((c) => c.id === sel.value);
   $("#who").textContent = pc ? pc.name + (pc.subclass ? " · " + pc.subclass : "") : "kein Bogen";
+  $("#soloEmpty").classList.toggle("hidden", pcs.length > 0);
+  NEEDS_PC.forEach((id) => { const b = $("#" + id); if (b) b.disabled = !pcs.length; });
   fillSubs(pc);
   if (pc) {
     api("/api/solo/subclasses?class=" + encodeURIComponent(pc.class || "")).then((data) => {
       window.emberSubs = data.subclasses || [];
       fillSubs(pc);
-    });
+    }).catch(() => {});
   }
   const maps = await api("/api/maps");
   $("#maps").innerHTML = (maps.maps || []).map((m) => `<button class="btn tiny" data-map="${m.id}">${m.name}</button>`).join("");
   $("#maps").querySelectorAll("[data-map]").forEach((b) => b.addEventListener("click", () => api("/api/maps/load", { id: b.dataset.map }).then(note)));
+}
+
+// Ohne Bogen geht hier nichts. Die Knoepfe sind dann aus, statt still zu scheitern.
+const NEEDS_PC = ["btnSubclass", "btnStart", "btnLevel", "btnLevelGo", "btnBot", "btnAct", "btnDungeon"];
+
+// SL-Schluessel wie auf /ember: am SL-Rechner kommt er aus data/sl.pin.
+async function gmBody(body) {
+  let key = localStorage.getItem("ember.gmKey") || "";
+  if (!key) {
+    const row = await fetch("/api/sl-pin").then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    if (row && row.pin) {
+      key = row.pin;
+      localStorage.setItem("ember.gmKey", key);
+    }
+  }
+  return { ...body, as: "gm", gmKey: key };
 }
 
 function note(text) {
@@ -52,6 +70,7 @@ function note(text) {
   line.className = "log-item note";
   line.textContent = typeof text === "string" ? text : (text.text || text.spoken || JSON.stringify(text));
   log.prepend(line);
+  while (log.children.length > 6) log.lastElementChild.remove();
 }
 
 function run(fn) {
@@ -79,22 +98,23 @@ function fillSubs(pc) {
   }
 }
 $("#pc")?.addEventListener("change", () => fillSubs((state.characters || []).find((c) => c.id === $("#pc").value)));
-$("#btnSubclass").addEventListener("click", async () => {
+$("#btnSubclass").addEventListener("click", () => run(async () => {
   const res = await api("/api/solo/subclass", { characterId: $("#pc").value, subclass: $("#subPick").value });
   note(res.text);
-  refresh();
-});
+  await refresh();
+}));
 $("#btnLevel").addEventListener("click", () => {
   const pc = (state.characters || []).find((c) => c.id === $("#pc").value);
   const box = $("#levelBox");
-  if (!pc || !box) return;
+  if (!pc) return note("Erst einen Bogen wählen.");
+  if (!box) return;
   const next = Math.min(10, Number(pc.level || 1) + 1);
   const prof = [2, 5, 8].includes(next) ? " Proficiency +1." : "";
   $("#levelPreview").textContent = pc.name + " wird Level " + next + "." + prof;
   $("#levelUpgrade").innerHTML = `<option value="">—</option>` + (pc.experiences || []).map((e) => `<option value="${e.id || e.name}">${e.name} +${e.bonus}</option>`).join("");
   box.classList.toggle("hidden");
 });
-$("#btnLevelGo").addEventListener("click", async () => {
+$("#btnLevelGo").addEventListener("click", () => run(async () => {
   const res = await api("/api/solo/level", {
     characterId: $("#pc").value,
     experience: $("#levelXp").value,
@@ -106,8 +126,8 @@ $("#btnLevelGo").addEventListener("click", async () => {
   note(res.text);
   $("#levelOut").textContent = res.text;
   $("#levelBox").classList.add("hidden");
-  refresh();
-});
+  await refresh();
+}));
 $("#btnStart").addEventListener("click", () => run(async () => {
   const res = await api("/api/solo/start", { characterId: $("#pc").value });
   note(res.text);
@@ -120,17 +140,20 @@ $("#btnAct").addEventListener("click", () => run(async () => {
   const res = await api("/api/solo/act", { characterId: $("#pc").value });
   note(res.text);
 }));
-$("#btnSaveMap").addEventListener("click", async () => {
+$("#btnSaveMap").addEventListener("click", () => run(async () => {
   const res = await api("/api/maps", { name: $("#mapName").value, tokens: pins });
-  note("Karte " + res.name);
+  note(`Karte ${res.name}`);
   pins = [];
   paint();
-  refresh();
-});
-$("#btnSchwelle")?.addEventListener("click", () => run(async () => {
-  await api("/api/campaigns/import-schwelle", {});
   await refresh();
 }));
+const loadSchwelle = () => run(async () => {
+  await api("/api/campaigns/import-schwelle", await gmBody({}));
+  note("Asche unter der Schwelle liegt bereit.");
+  await refresh();
+});
+$("#btnSchwelle")?.addEventListener("click", loadSchwelle);
+$("#btnSchwelleEmpty")?.addEventListener("click", loadSchwelle);
 $("#btnDungeon").addEventListener("click", () => run(async () => {
   const res = await api("/api/dungeon", { characterId: $("#pc").value });
   const box = $("#rooms");
@@ -150,8 +173,13 @@ $("#btnDungeon").addEventListener("click", () => run(async () => {
   note(res.text);
 }));
 
-api("/api/solo/subclasses").then((data) => { window.emberSubs = data.subclasses || []; fillSubs((state.characters || []).find((c) => c.id === $("#pc").value)); });
-api("/api/solo/bots").then((data) => {
+run(async () => {
+  const data = await api("/api/solo/subclasses");
+  window.emberSubs = data.subclasses || [];
+  fillSubs((state.characters || []).find((c) => c.id === $("#pc").value));
+});
+run(async () => {
+  const data = await api("/api/solo/bots");
   $("#bot").innerHTML = (data.bots || []).map((b) => `<option value="${b.id}">${b.name} · Diff ${b.difficulty}</option>`).join("");
 });
-refresh();
+run(refresh);
