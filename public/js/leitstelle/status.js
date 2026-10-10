@@ -32,9 +32,22 @@ Leitstelle.register({
       [s.lan.length ? "" : "warn", "LAN", s.lan.length ? s.lan.map((a) => a.address).join(", ") : "kein Netzwerk"],
       ["", "Node", `${s.server.node} · ${s.server.platform}`],
     ];
-    this.list.replaceChildren(...rows.flatMap(([cls, k, val]) => [
+    const nodes = rows.flatMap(([cls, k, val]) => [
       ctx.el("dt", { class: cls }, ctx.el("i", { class: "ls-dot" }), k),
       ctx.el("dd", { text: val, title: val }),
-    ]));
+    ]);
+    // Neuer Code auf der Platte: ganz oben, mit Knopf.
+    const code = s.code;
+    if (code && code.restartNeeded) {
+      const files = code.changed && code.changed.length ? code.changed.join(", ") : "Code";
+      const head = code.headChanged ? ` · ${code.startedHead} → ${code.currentHead}` : "";
+      const btn = ctx.el("button", { class: "ls-btn ls-restart", type: "button" }, "Jetzt neu starten");
+      btn.addEventListener("click", () => ctx.restart((t) => { btn.textContent = t; btn.disabled = true; }));
+      nodes.unshift(
+        ctx.el("dt", { class: "lantern" }, ctx.el("i", { class: "ls-dot" }), "Neustart"),
+        ctx.el("dd", { class: "ls-restart-row", title: files }, ctx.el("span", { text: `nötig – neuer Code geladen${head}` }), btn),
+      );
+    }
+    this.list.replaceChildren(...nodes);
   },
 });

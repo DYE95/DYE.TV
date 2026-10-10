@@ -539,10 +539,27 @@ function renderCount(presence) {
   document.getElementById("playerCount").textContent = n === 1 ? "1 Spieler" : `${n} Spieler`;
 }
 
+// Fusszeile: laeuft der Server, und laeuft er noch mit altem Code?
+let serverOk = false;
+let restartNeeded = false;
 function serverState(ok) {
-  document.getElementById("serverDot").className = `dot ${ok ? "ok" : "bad"}`;
-  document.getElementById("serverState").textContent = ok ? "Server läuft" : "Server nicht erreichbar";
+  serverOk = ok;
+  const need = ok && restartNeeded;
+  document.getElementById("serverDot").className = `dot ${need ? "lantern" : ok ? "ok" : "bad"}`;
+  document.getElementById("serverState").textContent = need ? "Neustart nötig – neuer Code geladen" : ok ? "Server läuft" : "Server nicht erreichbar";
+  document.querySelector(".foot-left").classList.toggle("restart", need);
+  document.getElementById("btnRestartNow").hidden = !need;
 }
+window.addEventListener("ember:leitstelle", (ev) => {
+  const s = ev.detail && ev.detail.state;
+  restartNeeded = Boolean(s && !ev.detail.offline && s.code && s.code.restartNeeded);
+  serverState(!ev.detail.offline || serverOk);
+});
+document.getElementById("btnRestartNow").addEventListener("click", (ev) => {
+  const btn = ev.currentTarget;
+  btn.disabled = true;
+  if (window.Leitstelle) window.Leitstelle.ctx.restart((t) => { btn.textContent = t; });
+});
 
 let current = null;
 const feed = new EventSource("/api/events");

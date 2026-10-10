@@ -109,7 +109,35 @@
     return ok;
   }
 
-  Object.assign(ctx, { el, duration, ago, clock, bytes, copy });
+  // Neustart ueber die lokale Route; start.bat startet bei Exit 42 neu.
+  // Danach warten, bis der Server wieder antwortet, und die Seite neu laden.
+  let restarting = false;
+  async function restart(onStatus) {
+    if (restarting) return;
+    restarting = true;
+    const say = typeof onStatus === "function" ? onStatus : () => {};
+    say("Neustart …");
+    try { await fetch("/api/restart", { method: "POST" }); } catch {}
+    let down = false;
+    for (let i = 0; i < 90; i += 1) {
+      await new Promise((r) => setTimeout(r, 1000));
+      try {
+        const res = await fetch("/api/leitstelle", { cache: "no-store" });
+        if (res.ok) {
+          const s = await res.json();
+          const fresh = ctx.state && s.server && s.server.startedAt !== ctx.state.server.startedAt;
+          if (fresh || down) { location.reload(); return; }
+        }
+      } catch {
+        down = true;
+        say("Server startet neu …");
+      }
+    }
+    restarting = false;
+    say("Server kommt nicht wieder. Läuft start.bat?");
+  }
+
+  Object.assign(ctx, { el, duration, ago, clock, bytes, copy, restart });
 
   // ---------- Aufbau und Daten ----------
   function build() {
@@ -150,7 +178,9 @@
 
   async function poll() {
     clearTimeout(timer);
-    if (!root || document.hidden || root.closest("[hidden]") || root.offsetParent === null) {
+    // Auch bei ausgeblendeter Leitstelle (Einstellungen) weiter fragen:
+    // die Fusszeile braucht den Stand fuer "Neustart nötig".
+    if (!root || document.hidden) {
       timer = setTimeout(poll, POLL_MS);
       return;
     }
@@ -164,6 +194,7 @@
       ctx.offline = true;
     }
     push();
+    window.dispatchEvent(new CustomEvent("ember:leitstelle", { detail: { state: ctx.state, offline: ctx.offline } }));
     timer = setTimeout(poll, POLL_MS);
   }
 
