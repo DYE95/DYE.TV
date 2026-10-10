@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="/css/table-indicator.css?v=1" />
   <link rel="stylesheet" href="/css/topbar.css?v=11" />
   <link rel="stylesheet" href="/css/float.css?v=1" />
-  <link rel="stylesheet" href="/css/start.css?v=14" />
+  <link rel="stylesheet" href="/css/start.css?v=15" />
   <script>
     var emberStack = ["menu"];
     var emberNames = { menu: "Start", session: "Am Tisch", encounter: "Karte", tunnel: "Tunnel", chats: "Chats", "campaign-manager": "Kampagne", "character-manager": "Charakter" };
@@ -161,7 +161,7 @@
             </div>
           </div>
         </div>
-        <button class="btn primary" id="btnEnter" type="button" disabled>Rein, wenn alle ready sind</button>
+        <div class="hub-actions"><button class="btn primary" id="btnEnter" type="button">Rein</button><p class="hub-hint" id="hubHint"></p></div>
         <div class="duel hidden" id="seatDuel"><p>Zwei wollen denselben Stuhl.</p><button class="btn" id="btnDuel" type="button">Duell</button><p id="duelOut"></p></div>
       </div>
       <div class="workspace hidden" id="sessionLive">
@@ -542,12 +542,14 @@
       </button>
     </footer>
   <script src="/js/table-indicator.js?v=2"></script>
+  <script src="/js/hub-enter.js?v=1"></script>
   <script src="/js/map.js?v=14"></script>
   <script src="/js/token.js?v=4"></script>
   <script src="/js/float-panels.js?v=1"></script>
-  <script src="/js/gm.js?v=18"></script>
+  <script src="/js/gm.js?v=19"></script>
   <script>
-    document.getElementById("btnEnter")?.addEventListener("click", () => {
+    document.getElementById("btnEnter")?.addEventListener("click", (ev) => {
+      if (ev.currentTarget.dataset.action === "campaign") return emberGo("campaign-manager");
       document.getElementById("sessionHub")?.classList.add("hidden");
       document.getElementById("sessionLive")?.classList.remove("hidden");
     });
