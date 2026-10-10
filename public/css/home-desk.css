@@ -188,6 +188,14 @@ html, body { height: 100%; }
 .dot { width: 0.7rem; height: 0.7rem; border-radius: 50%; background: #556b80; }
 .dot.ok { background: #5fbf8f; box-shadow: 0 0 0.5rem rgba(95, 191, 143, 0.6); }
 .dot.bad { background: var(--ember); }
+.dot.lantern { background: #fcbd36; box-shadow: 0 0 0.5rem rgba(252, 189, 54, 0.8); }
+.foot-left.restart #serverState { color: #fcbd36; }
+.foot-restart {
+  min-height: 2.4rem; padding: 0.2rem 0.9rem; margin-left: 0.4rem;
+  border: var(--line) solid #fcbd36; border-radius: 0.3rem;
+  background: #172d5e; color: #fff; font: inherit; cursor: pointer;
+}
+.foot-restart:hover, .foot-restart:focus-visible { background: #24427f; outline: none; }
 .round {
   width: 3.2rem;
   height: 3.2rem;
