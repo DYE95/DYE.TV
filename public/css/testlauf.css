@@ -233,3 +233,17 @@ html, body { height: 100%; }
 .tl-upload pre { white-space: pre-wrap; font-size: 0.8rem; max-height: 12rem; overflow: auto; margin: 0.3rem 0 0; color: var(--muted); }
 .tl-viewer-box > .tl-upload { margin: 0.6rem 1.5rem 0; }
 .tl-up { justify-self: start; font-size: 0.8rem; color: var(--ok); border: var(--line) solid var(--ok); border-radius: 1rem; padding: 0 0.5rem; }
+
+/* Uhr pro Punkt */
+.tl-timer {
+  min-width: 4.6rem; min-height: 2.6rem; padding: 0.2rem 0.6rem; border: var(--line) solid rgba(118, 142, 177, 0.35);
+  border-radius: 0.35rem; background: transparent; color: var(--muted); font: inherit; font-variant-numeric: tabular-nums; cursor: pointer;
+}
+.tl-timer.zero { opacity: 0.45; }
+.tl-timer.on { color: var(--lantern); border-color: var(--lantern); background: rgba(252, 189, 54, 0.1); }
+.tl-timer.on::before { content: "● "; animation: tlBlink 1s steps(2) infinite; }
+.tl-timer.paused::before { content: "❚❚ "; }
+.tl-timer:hover, .tl-timer:focus-visible { border-color: var(--lantern); outline: none; }
+.tl-time { font-variant-numeric: tabular-nums; color: var(--muted); padding: 0.2rem 0.7rem; border: var(--line) solid rgba(118, 142, 177, 0.35); border-radius: 1rem; }
+.tl-time.on { color: var(--lantern); border-color: var(--lantern); }
+@keyframes tlBlink { 50% { opacity: 0.2; } }

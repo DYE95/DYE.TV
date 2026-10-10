@@ -48,7 +48,7 @@
   // ---------- Entwurf speichern ----------
   function payload() {
     return {
-      tester: draft.tester, geraet: draft.geraet, notizen: draft.notizen, answers: draft.answers,
+      tester: draft.tester, geraet: draft.geraet, notizen: draft.notizen, answers: liveAnswers(),
       images: draft.images.map((i) => ({ id: i.id, caption: i.caption || "", itemId: i.itemId || "" })),
     };
   }
@@ -97,6 +97,7 @@
     row.innerHTML = `
       <div class="tl-text">${inline(item.text)}</div>
       <div class="tl-marks" role="group" aria-label="Ergebnis">
+        <button type="button" class="tl-timer" data-timer title="Zeit für diesen Punkt. Läuft ab dem ersten Klick, stoppt bei O/X/Eigen. Klick: Pause/Weiter">00:00</button>
         <button type="button" class="tl-mark m-o" data-m="o" title="ja / ok">O</button>
         <button type="button" class="tl-mark m-x" data-m="x" title="nein / Fehler">X</button>
         <button type="button" class="tl-mark m-eigen" data-m="eigen" title="eigene Angabe">Eigen</button>
@@ -136,20 +137,110 @@
     const show = a.mark === "x" || a.mark === "eigen" || Boolean(a.note) || openNotes.has(id) || Boolean(item && hasBlank(item.text));
     input.hidden = !show;
     row.querySelector("[data-note]").setAttribute("aria-pressed", String(show));
+    paintTimer(row);
   }
   function syncRows() { document.querySelectorAll(".tl-item").forEach(syncRow); renderProgress(); }
 
   function setAnswer(id, patch) {
     const cur = { mark: "", note: "", ...(draft.answers[id] || {}), ...patch };
-    if (!cur.mark && !cur.note) delete draft.answers[id];
+    if (!cur.mark && !cur.note && !cur.ms) delete draft.answers[id];
     else draft.answers[id] = cur;
   }
+
+  // ---------- Uhr pro Punkt ----------
+  // Immer nur ein Punkt läuft. Start beim ersten Klick/Fokus in der Zeile
+  // (oder automatisch für den nächsten offenen Punkt, sobald einer O/X/Eigen
+  // bekommt), Stopp bei O/X/Eigen. Gespeichert wird die Summe in ms.
+  let running = null; // { id, since }
+  let paused = false;
+  const fmt = (ms) => {
+    const sec = Math.max(0, Math.round(ms / 1000));
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    return h ? `${h}:${pad(m)}:${pad(sec % 60)}` : `${pad(m)}:${pad(sec % 60)}`;
+  };
+  const elapsed = (id) => (Number((draft.answers[id] || {}).ms) || 0) + (running && running.id === id ? Date.now() - running.since : 0);
+  function liveAnswers() {
+    if (!running) return draft.answers;
+    const out = { ...draft.answers };
+    out[running.id] = { mark: "", note: "", ...(out[running.id] || {}), ms: elapsed(running.id) };
+    return out;
+  }
+  function stopTimer() {
+    if (!running) return;
+    const { id } = running;
+    setAnswer(id, { ms: elapsed(id) });
+    running = null;
+    const row = document.querySelector(`.tl-item[data-id="${CSS.escape(id)}"]`);
+    if (row) paintTimer(row);
+  }
+  function startTimer(id) {
+    if (locked || (draft.answers[id] || {}).mark) return;
+    if (running && running.id === id) return;
+    stopTimer();
+    paused = false;
+    running = { id, since: Date.now() };
+    const row = document.querySelector(`.tl-item[data-id="${CSS.escape(id)}"]`);
+    if (row) paintTimer(row);
+    renderTotal();
+  }
+  function nextOpen(afterId) {
+    const rows = [...document.querySelectorAll(".tl-item")];
+    const i = rows.findIndex((r) => r.dataset.id === afterId);
+    const next = rows.slice(i + 1).find((r) => !(draft.answers[r.dataset.id] || {}).mark);
+    return next ? next.dataset.id : "";
+  }
+  function paintTimer(row) {
+    const chip = row.querySelector(".tl-timer");
+    if (!chip) return;
+    const id = row.dataset.id;
+    const ms = elapsed(id);
+    const on = Boolean(running && running.id === id);
+    chip.textContent = fmt(ms);
+    chip.classList.toggle("on", on);
+    chip.classList.toggle("paused", !on && paused && pausedId === id);
+    chip.classList.toggle("zero", !ms && !on);
+    chip.setAttribute("aria-pressed", String(on));
+  }
+  let pausedId = "";
+  function renderTotal() {
+    let total = 0;
+    for (const sec of checklist.sections) for (const it of sec.items) total += elapsed(it.id);
+    const el = $("timeTotal");
+    if (el) {
+      el.textContent = `⏱ ${fmt(total)}`;
+      el.classList.toggle("on", Boolean(running));
+    }
+  }
+  setInterval(() => {
+    if (!running) return;
+    const row = document.querySelector(`.tl-item[data-id="${CSS.escape(running.id)}"]`);
+    if (row) paintTimer(row);
+    renderTotal();
+  }, 1000);
+  // Klick oder Fokus irgendwo in der Zeile: dieser Punkt ist jetzt dran.
+  $("checklist").addEventListener("focusin", (ev) => {
+    const row = ev.target.closest(".tl-item");
+    if (row && !ev.target.closest("[data-timer]") && !ev.target.closest("[data-m]")) startTimer(row.dataset.id);
+  });
+  $("checklist").addEventListener("pointerdown", (ev) => {
+    const row = ev.target.closest(".tl-item");
+    if (row && !ev.target.closest("[data-timer]") && !ev.target.closest("[data-m]")) startTimer(row.dataset.id);
+  });
 
   $("checklist").addEventListener("click", (ev) => {
     const btn = ev.target.closest("button");
     const row = ev.target.closest(".tl-item");
     if (!btn || !row || locked) return;
     const id = row.dataset.id;
+    if (btn.hasAttribute("data-timer")) {
+      if (running && running.id === id) { stopTimer(); paused = true; pausedId = id; }
+      else startTimer(id);
+      paintTimer(row);
+      renderTotal();
+      changed();
+      return;
+    }
     if (btn.hasAttribute("data-note")) {
       if (openNotes.has(id)) openNotes.delete(id); else openNotes.add(id);
       syncRow(row);
@@ -158,8 +249,18 @@
     }
     const mark = btn.dataset.m;
     const cur = (draft.answers[id] || {}).mark;
+    if (!cur && running && running.id !== id && !elapsed(id)) {
+      // Direkt O/X/Eigen ohne vorher zu klicken: die Zeit seit dem letzten Punkt gehört hierher.
+      running.id = id;
+    }
     setAnswer(id, { mark: cur === mark ? "" : mark });
+    if (cur !== mark) {
+      if (running && running.id === id) stopTimer();
+      const next = nextOpen(id);
+      if (next && !paused) startTimer(next);
+    } else startTimer(id);
     syncRow(row);
+    renderTotal();
     if (mark === "eigen" && cur !== mark) row.querySelector(".tl-note").focus();
     changed();
   });
@@ -183,6 +284,7 @@
     return c;
   }
   function renderProgress() {
+    renderTotal();
     const c = counts();
     $("progressText").textContent = `${c.done} von ${c.total} erledigt`;
     $("errorText").textContent = `${c.fehler} Fehler`;
@@ -351,6 +453,7 @@
     $("btnFinishUpload").disabled = true;
     btn.textContent = "Lege ab …";
     try {
+      stopTimer();
       await saveNow();
       await queue;
       const res = await postJson("/api/testlauf/ablegen", {});
