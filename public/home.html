@@ -8,6 +8,7 @@
   <link rel="icon" href="/img/ember-icon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="/css/ember.css?v=16" />
   <link rel="stylesheet" href="/css/home-desk.css?v=10" />
+  <link rel="stylesheet" href="/css/leitstelle.css?v=1" />
 </head>
 <body class="house-body desk-body">
   <h1 id="houseTitle" class="sr-only">Ember</h1>
@@ -21,8 +22,10 @@
 
   <main class="desk-main">
     <div class="desk" id="desk"></div>
-    <aside class="side-panel" id="panelSettings" aria-label="Einstellungen">
-      <h2>Einstellungen</h2>
+    <aside class="side-panel has-leitstelle" id="panelSettings" aria-label="Leitstelle und Einstellungen">
+      <div class="panel-view leitstelle-view"><div class="ls-grid" id="leitstelle"></div></div>
+      <div class="panel-view settings-view">
+      <div class="row"><h2 style="flex:1">Einstellungen</h2><button class="btn" id="btnToLeitstelle" type="button">Zur Leitstelle</button></div>
       <label>Schriftgröße <input id="fontSize" type="range" min="12" max="28" /></label>
       <label>Kachelbreite <input id="tileW" type="range" min="160" max="420" /></label>
       <label>Kachelhöhe <input id="tileH" type="range" min="64" max="200" /></label>
@@ -45,6 +48,7 @@
       <div class="row">
         <button class="btn" id="btnExport">Paket (.zip) exportieren</button>
         <label class="btn">Paket laden <input id="packFile" type="file" accept=".zip,.json" hidden /></label>
+      </div>
       </div>
     </aside>
   </main>
@@ -82,6 +86,14 @@
   </section>
 
   <script src="/js/video-deck.js?v=6"></script>
-  <script src="/js/home-desk.js?v=15"></script>
+  <script src="/js/home-desk.js?v=16"></script>
+  <script src="/js/qr.js?v=1"></script>
+  <script src="/js/leitstelle/registry.js?v=1"></script>
+  <script src="/js/leitstelle/status.js?v=1"></script>
+  <script src="/js/leitstelle/kurz.js?v=1"></script>
+  <script src="/js/leitstelle/qr.js?v=1"></script>
+  <script src="/js/leitstelle/adressen.js?v=1"></script>
+  <script src="/js/leitstelle/notizen.js?v=1"></script>
+  <script>Leitstelle.start(document.getElementById("leitstelle"));</script>
 </body>
 </html>
