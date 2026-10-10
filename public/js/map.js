@@ -421,25 +421,55 @@ function startStateFeed(apply) {
     apply(s);
     window.dispatchEvent(new CustomEvent("ember:state", { detail: s }));
   };
-  const pull = () => fetch("/api/state").then((r) => r.json()).then(share).catch(() => {});
+  const pull = () => fetch("/api/state", { cache: "no-store" }).then((r) => r.json()).then(share).catch(() => {});
   pull();
-  const es = new EventSource("/api/events");
-  es.addEventListener("message", (ev) => {
-    let next = null;
-    try { next = JSON.parse(ev.data); } catch { return; }
-    share(next);
-  });
-  // Der Server schickt "presence" nur, wenn jemand kommt, geht oder den Status wechselt.
-  es.addEventListener("presence", (ev) => {
-    let data = null;
-    try { data = JSON.parse(ev.data); } catch { return; }
-    if (current) share({ ...current, presence: data.presence || [] });
-  });
   const lost = connectionBadge();
-  es.addEventListener("open", lost.hide);
-  es.addEventListener("message", lost.hide);
-  es.addEventListener("error", () => { if (es.readyState !== EventSource.OPEN) lost.show(); });
-  window.addEventListener("pagehide", () => es.close());
+  let es = null;
+  let retry = 0;
+  let retryTimer = 0;
+  let hiddenAt = 0;
+  const connect = () => {
+    clearTimeout(retryTimer);
+    retryTimer = 0;
+    if (es) es.close();
+    const src = new EventSource("/api/events");
+    es = src;
+    src.addEventListener("message", (ev) => {
+      let next = null;
+      try { next = JSON.parse(ev.data); } catch { return; }
+      lost.hide();
+      share(next);
+    });
+    // Der Server schickt "presence" nur, wenn jemand kommt, geht oder den Status wechselt.
+    src.addEventListener("presence", (ev) => {
+      let data = null;
+      try { data = JSON.parse(ev.data); } catch { return; }
+      if (current) share({ ...current, presence: data.presence || [] });
+    });
+    src.addEventListener("open", () => { retry = 0; lost.hide(); });
+    src.addEventListener("error", () => {
+      if (src !== es || src.readyState === EventSource.OPEN) return;
+      lost.show();
+      // CLOSED heisst: der Browser gibt auf (z. B. Tunnel antwortet kurz mit 502).
+      // Dann selbst neu verbinden, mit wachsender Pause bis 30 s.
+      if (src.readyState === EventSource.CLOSED && !retryTimer) {
+        retry += 1;
+        retryTimer = setTimeout(() => { retryTimer = 0; pull(); connect(); }, Math.min(30000, 1000 * 2 ** Math.min(retry, 5)));
+      }
+    });
+  };
+  connect();
+  // Handy-Bildschirm war aus oder App im Hintergrund: sofort frischen Stand holen
+  // und nach laengerer Pause die Leitung neu aufbauen (sie kann still tot sein).
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { hiddenAt = Date.now(); return; }
+    pull();
+    if (es.readyState !== EventSource.OPEN || Date.now() - hiddenAt > 20000) connect();
+  });
+  window.addEventListener("online", () => { pull(); if (es.readyState !== EventSource.OPEN) connect(); });
+  // Zurueck-Taste aus dem Seitencache: der Stream wurde bei pagehide geschlossen.
+  window.addEventListener("pageshow", (ev) => { if (ev.persisted) { pull(); connect(); } });
+  window.addEventListener("pagehide", () => { clearTimeout(retryTimer); retryTimer = 0; if (es) es.close(); });
   // Nur noch Notnagel, falls der Stream still haengt.
   setInterval(() => { if (Date.now() - last > 45000) pull(); }, 10000);
 }

@@ -177,6 +177,60 @@ test("Webhook: Bearer und X-Webhook-Key, eigener Header-Name, Schlüssel bleibt 
   }
 });
 
+test("Legion: eingefügte Header-Zeilen und Bearer-Vorsatz werden aufgeräumt", async () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "ember-hook-"));
+  const hook = await mockWebhook();
+  try {
+    assert.deepEqual(up.cleanAuth("Authorization: Bearer abc", ""), { header: "Authorization", key: "abc" });
+    assert.deepEqual(up.cleanAuth("Authorization", "Bearer abc"), { header: "Authorization", key: "abc" });
+    assert.deepEqual(up.cleanAuth("Authorization", "Authorization: Bearer abc"), { header: "Authorization", key: "abc" });
+    assert.deepEqual(up.cleanAuth("Bearer abc", ""), { header: "Authorization", key: "abc" });
+    assert.deepEqual(up.cleanAuth("X-Legion-Key: abc", ""), { header: "X-Legion-Key", key: "abc" });
+    assert.deepEqual(up.cleanAuth("Authorization: Bearer alt", "neu"), { header: "Authorization", key: "neu" });
+    assert.deepEqual(up.cleanAuth("Authorization: Bearer", ""), { header: "Authorization", key: "" });
+    assert.deepEqual(up.cleanAuth("", ' "abc"\r\n'), { header: "Authorization", key: "abc" });
+
+    // Ganze Zeile ins Feld Header-Name, Schluesselfeld leer: wie am 10.10.
+    up.saveConfig(base, { url: hook.url, header: "Authorization: Bearer geheim-9", key: "" });
+    let cfg = up.readConfig(base, {});
+    assert.equal(cfg.header, "Authorization");
+    assert.equal(cfg.key, "geheim-9");
+    const payload = { repo: "DYE95/DYE.TV" };
+    assert.equal((await up.notify(cfg, payload)).ok, true);
+    assert.equal(hook.calls[0].headers.authorization, "Bearer geheim-9");
+
+    // "Bearer <key>" ins Schluesselfeld: kein doppeltes Bearer.
+    up.saveConfig(base, { header: "Authorization", key: "Bearer geheim-10" });
+    cfg = up.readConfig(base, {});
+    assert.equal(cfg.key, "geheim-10");
+    await up.notify(cfg, payload);
+    assert.equal(hook.calls[1].headers.authorization, "Bearer geheim-10");
+
+    // Von Hand verbogene Datei: kein Absturz, sondern Authorization.
+    fs.writeFileSync(path.join(base, "legion-webhook.json"), JSON.stringify({ url: hook.url, header: "Authorization: Bearer x y", key: "" }));
+    cfg = up.readConfig(base, {});
+    assert.equal(cfg.header, "Authorization");
+    assert.equal(cfg.key, "x y");
+    fs.writeFileSync(path.join(base, "legion-webhook.json"), JSON.stringify({ url: hook.url, header: "Bö se", key: "k" }));
+    assert.equal(up.readConfig(base, {}).header, "Authorization");
+
+    // Ungueltiger Header direkt an notify: Fehlermeldung statt Ausnahme.
+    const bad = await up.notify({ url: hook.url, key: "k", header: "Bö se" }, payload);
+    assert.equal(bad.ok, false);
+    assert.match(bad.error, /nicht gesendet/);
+
+    // 401 mit Hinweis
+    const strict = await mockWebhook(401);
+    const denied = await up.notify({ url: strict.url, key: "falsch", header: "Authorization" }, payload);
+    strict.server.close();
+    assert.equal(denied.status, 401);
+    assert.match(denied.error, /Bearer/);
+  } finally {
+    hook.server.close();
+    fs.rmSync(base, { recursive: true, force: true });
+  }
+});
+
 test("Server: /api/testlauf/hochladen schiebt und meldet, nur am SL-Rechner", async () => {
   const { base, origin, repo } = setup();
   const hook = await mockWebhook();
