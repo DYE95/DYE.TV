@@ -23,6 +23,12 @@ Leitstelle.register({
       [s.people.gm ? "ok" : "", "Am Tisch", `${s.people.players} Spieler${s.people.names.length ? ` (${s.people.names.join(", ")})` : ""} · ${s.people.gm ? "SL da" : "kein SL"}`],
       ["", "Daten", `${ctx.bytes(s.data.size)} · gespeichert ${ctx.clock(s.data.savedAt)} · Sicherung ${s.data.backupAt ? ctx.clock(s.data.backupAt) : "keine"}`],
       [recentCrash ? "bad" : "ok", "Absturz", crash ? `${ctx.clock(crash.at)} · ${crash.kind}${crash.message ? ` · ${crash.message}` : ""}` : "keiner"],
+      ["", "Testlauf", (() => {
+        const t = s.testlauf;
+        if (!t) return "noch keiner · Kachel Testlauf";
+        const when = t.at ? ctx.clock(t.at) : t.name;
+        return `${when} · ${t.done || 0}/${t.total || 0}${t.fehler ? ` · X ${t.fehler}` : ""}`;
+      })()],
       [s.lan.length ? "" : "warn", "LAN", s.lan.length ? s.lan.map((a) => a.address).join(", ") : "kein Netzwerk"],
       ["", "Node", `${s.server.node} · ${s.server.platform}`],
     ];
