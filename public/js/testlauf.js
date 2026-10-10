@@ -1,372 +1,557 @@
-// public/js/testlauf.js — Checkliste aus docs/TESTLAUF.md, Entwurf mit Bildern,
-// Autosave, Ablegen nach data/testlaeufe/<Datum-Uhrzeit>/.
-(() => {
+// public/js/testlauf.js — Testlauf am SL-Rechner: Checkliste abhaken (O/X/Eigen),
+// Bilder dazulegen, am Ende alles in data/testlaeufe/ ablegen und auf Wunsch
+// nach GitHub hochladen und Legion Bescheid geben.
+// Der Entwurf liegt doppelt: sofort in localStorage, kurz danach beim Server.
+(function () {
+  "use strict";
+  const LOCAL_KEY = "ember.testlauf.entwurf.v1";
   const $ = (id) => document.getElementById(id);
-  const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
-  const state = {
-    checklist: { title: "Testlauf", sections: [], notesTitle: "Notizen" },
-    draft: { tester: "", geraet: "", notizen: "", answers: {}, images: [] },
-    runs: [],
-    version: null,
-    maxImage: 50 * 1024 * 1024,
-    folder: "",
-    dirty: false,
-    saving: false,
-    timer: 0,
-  };
+  let checklist = { sections: [] };
+  let draft = { tester: "", geraet: "", notizen: "", answers: {}, images: [], updatedAt: "" };
+  let maxImage = 50 * 1024 * 1024;
+  let locked = false;
+  let lastRun = "";
+  let viewerRun = "";
+  let saveTimer = 0;
+  let saving = Promise.resolve();
+  const openNotes = new Set();
+  const itemIndex = new Map();
 
-  const saveEl = $("saveState");
-  const setSave = (t) => { saveEl.textContent = t; };
+  // ---------- Helfer ----------
+  const esc = (t) => String(t == null ? "" : t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  function inline(text) {
+    return esc(text)
+      .replace(/`([^`]+)`/g, "<code>$1</code>")
+      .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+      .replace(/_{4,}/g, '<span class="tl-blank" aria-label="Lücke"></span>');
+  }
+  const hasBlank = (text) => /_{4,}/.test(text);
+  const pad = (n) => String(n).padStart(2, "0");
+  function when(iso) {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "–";
+    return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  const clock = () => { const d = new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+  const mb = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
 
   async function api(path, opts = {}) {
-    const res = await fetch(path, opts);
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw Object.assign(new Error(data.error || res.statusText), { status: res.status });
-    return data;
+    const res = await fetch(path, { cache: "no-store", ...opts });
+    let body = null;
+    try { body = await res.json(); } catch {}
+    if (!res.ok) throw Object.assign(new Error((body && body.error) || `Fehler ${res.status}`), { body: body || {} });
+    return body;
   }
+  const postJson = (path, data) => api(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data || {}) });
 
-  function gatherAnswers() {
-    const answers = {};
-    document.querySelectorAll(".tl-item").forEach((row) => {
-      const id = row.dataset.id;
-      const mark = row.dataset.mark || "";
-      const note = (row.querySelector(".tl-note") || {}).value || "";
-      if (mark || note.trim()) answers[id] = { mark, note: note.trim() };
-    });
-    return answers;
-  }
-
+  // ---------- Entwurf speichern ----------
   function payload() {
     return {
-      tester: $("tester").value,
-      geraet: $("geraet").value,
-      notizen: $("notizen").value,
-      answers: gatherAnswers(),
-      images: state.draft.images.map((img) => ({
-        id: img.id,
-        caption: img.caption || "",
-        itemId: img.itemId || "",
-      })),
+      tester: draft.tester, geraet: draft.geraet, notizen: draft.notizen, answers: draft.answers,
+      images: draft.images.map((i) => ({ id: i.id, caption: i.caption || "", itemId: i.itemId || "" })),
     };
   }
-
-  async function flush() {
-    if (!state.dirty || state.saving) return;
-    state.saving = true;
-    setSave("Speichert …");
-    try {
-      state.draft = await api("/api/testlauf/entwurf", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload()),
-      });
-      state.dirty = false;
-      setSave("Gespeichert");
-      updateSummary();
-    } catch (err) {
-      setSave("Fehler: " + (err.message || "Speichern"));
-    } finally {
-      state.saving = false;
-      if (state.dirty) schedule();
-    }
+  function writeLocal() {
+    try { localStorage.setItem(LOCAL_KEY, JSON.stringify({ ...payload(), updatedAt: draft.updatedAt })); } catch {}
   }
-
-  function schedule() {
-    state.dirty = true;
-    setSave("Änderungen …");
-    clearTimeout(state.timer);
-    state.timer = setTimeout(flush, 600);
+  function changed() {
+    if (locked) return;
+    draft.updatedAt = new Date().toISOString();
+    writeLocal();
+    $("saveState").textContent = "Speichert …";
+    $("saveState").className = "tl-save";
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveNow, 700);
+    renderProgress();
   }
-
-  function markButtons(row, mark) {
-    row.dataset.mark = mark || "";
-    row.classList.toggle("is-o", mark === "o");
-    row.classList.toggle("is-x", mark === "x");
-    row.classList.toggle("is-eigen", mark === "eigen");
-    row.querySelectorAll("[data-mark]").forEach((btn) => {
-      const m = btn.dataset.mark;
-      btn.classList.toggle("on-o", m === "o" && mark === "o");
-      btn.classList.toggle("on-x", m === "x" && mark === "x");
-      btn.classList.toggle("on-eigen", m === "eigen" && mark === "eigen");
-      btn.setAttribute("aria-pressed", mark === m ? "true" : "false");
-    });
-  }
-
-  function itemOptionsHtml() {
-    const opts = ['<option value="">— Punkt —</option>'];
-    for (const sec of state.checklist.sections) {
-      for (const it of sec.items) {
-        opts.push(`<option value="${esc(it.id)}">${esc(sec.title)}: ${esc(it.text).slice(0, 80)}</option>`);
+  function saveNow() {
+    clearTimeout(saveTimer);
+    saveTimer = 0;
+    saving = saving.then(async () => {
+      try {
+        const res = await postJson("/api/testlauf/entwurf", payload());
+        draft.updatedAt = res.updatedAt;
+        writeLocal();
+        $("saveState").textContent = `Entwurf gesichert ${clock()}`;
+        $("saveState").className = "tl-save ok";
+      } catch {
+        $("saveState").textContent = "Nur im Browser gesichert";
+        $("saveState").className = "tl-save warn";
       }
-    }
-    return opts.join("");
+    });
+    return saving;
+  }
+  window.addEventListener("pagehide", () => {
+    if (!saveTimer || locked) return;
+    try {
+      fetch("/api/testlauf/entwurf", { method: "POST", keepalive: true, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload()) });
+    } catch {}
+  });
+
+  // ---------- Checkliste ----------
+  function itemRow(item) {
+    const row = document.createElement("div");
+    row.className = "tl-item";
+    row.dataset.id = item.id;
+    row.innerHTML = `
+      <div class="tl-text">${inline(item.text)}</div>
+      <div class="tl-marks" role="group" aria-label="Ergebnis">
+        <button type="button" class="tl-mark m-o" data-m="o" title="ja / ok">O</button>
+        <button type="button" class="tl-mark m-x" data-m="x" title="nein / Fehler">X</button>
+        <button type="button" class="tl-mark m-eigen" data-m="eigen" title="eigene Angabe">Eigen</button>
+        <button type="button" class="tl-mark m-note" data-note title="Notiz">✎</button>
+      </div>
+      <input class="tl-note" type="text" maxlength="500" placeholder="${hasBlank(item.text) ? "Wert eintragen …" : "Eigene Notiz …"}" />`;
+    return row;
   }
 
   function renderChecklist() {
     const root = $("checklist");
-    const sections = state.checklist.sections || [];
-    if (!sections.length) {
-      root.innerHTML = state.checklist.missing
-        ? "<p class='hint'>docs/TESTLAUF.md fehlt.</p>"
-        : "<p class='hint'>Keine Punkte in der Checkliste.</p>";
+    root.replaceChildren();
+    if (!checklist.sections.length) {
+      root.innerHTML = '<section class="tl-card"><p>docs/TESTLAUF.md fehlt oder hat keine Punkte.</p></section>';
       return;
     }
-    root.innerHTML = sections.map((sec) => {
-      const items = sec.items.map((it) => {
-        const a = (state.draft.answers || {})[it.id] || {};
-        return `<article class="tl-item" data-id="${esc(it.id)}" data-mark="${esc(a.mark || "")}">
-          <p class="tl-text">${esc(it.text)}</p>
-          <div class="tl-marks" role="group" aria-label="Ergebnis">
-            <button type="button" data-mark="o" title="Ok">O</button>
-            <button type="button" data-mark="x" title="Fehler">X</button>
-            <button type="button" data-mark="eigen" title="Eigene Antwort">Eigen</button>
-          </div>
-          <input class="tl-note" type="text" maxlength="500" placeholder="Notiz / Zeit / Messwert"
-            value="${esc(a.note || "")}" />
-        </article>`;
-      }).join("");
-      return `<section class="tl-sec"><h2>${esc(sec.title)}</h2>${items}</section>`;
-    }).join("");
+    for (const sec of checklist.sections) {
+      const card = document.createElement("section");
+      card.className = "tl-card tl-section";
+      card.dataset.section = sec.id;
+      card.innerHTML = `<h2>${esc(sec.title)} <span class="tl-count"></span></h2>`;
+      for (const item of sec.items) card.append(itemRow(item));
+      root.append(card);
+    }
+    if (checklist.notesTitle) $("notesTitle").textContent = checklist.notesTitle;
+    syncRows();
+  }
 
-    root.querySelectorAll(".tl-item").forEach((row) => {
-      markButtons(row, row.dataset.mark);
-      row.querySelectorAll("[data-mark]").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const next = row.dataset.mark === btn.dataset.mark ? "" : btn.dataset.mark;
-          markButtons(row, next);
-          schedule();
-        });
-      });
-      row.querySelector(".tl-note").addEventListener("input", schedule);
+  function syncRow(row) {
+    const id = row.dataset.id;
+    const a = draft.answers[id] || {};
+    const item = itemIndex.get(id);
+    row.dataset.mark = a.mark || "";
+    row.querySelectorAll("[data-m]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.m === a.mark)));
+    const input = row.querySelector(".tl-note");
+    if (document.activeElement !== input) input.value = a.note || "";
+    const show = a.mark === "x" || a.mark === "eigen" || Boolean(a.note) || openNotes.has(id) || Boolean(item && hasBlank(item.text));
+    input.hidden = !show;
+    row.querySelector("[data-note]").setAttribute("aria-pressed", String(show));
+  }
+  function syncRows() { document.querySelectorAll(".tl-item").forEach(syncRow); renderProgress(); }
+
+  function setAnswer(id, patch) {
+    const cur = { mark: "", note: "", ...(draft.answers[id] || {}), ...patch };
+    if (!cur.mark && !cur.note) delete draft.answers[id];
+    else draft.answers[id] = cur;
+  }
+
+  $("checklist").addEventListener("click", (ev) => {
+    const btn = ev.target.closest("button");
+    const row = ev.target.closest(".tl-item");
+    if (!btn || !row || locked) return;
+    const id = row.dataset.id;
+    if (btn.hasAttribute("data-note")) {
+      if (openNotes.has(id)) openNotes.delete(id); else openNotes.add(id);
+      syncRow(row);
+      if (openNotes.has(id)) row.querySelector(".tl-note").focus();
+      return;
+    }
+    const mark = btn.dataset.m;
+    const cur = (draft.answers[id] || {}).mark;
+    setAnswer(id, { mark: cur === mark ? "" : mark });
+    syncRow(row);
+    if (mark === "eigen" && cur !== mark) row.querySelector(".tl-note").focus();
+    changed();
+  });
+  $("checklist").addEventListener("input", (ev) => {
+    const input = ev.target.closest(".tl-note");
+    if (!input) return;
+    const row = input.closest(".tl-item");
+    setAnswer(row.dataset.id, { note: input.value });
+    openNotes.add(row.dataset.id);
+    changed();
+  });
+
+  function counts() {
+    const c = { total: 0, done: 0, fehler: 0 };
+    for (const sec of checklist.sections) for (const it of sec.items) {
+      c.total += 1;
+      const m = (draft.answers[it.id] || {}).mark;
+      if (m) c.done += 1;
+      if (m === "x") c.fehler += 1;
+    }
+    return c;
+  }
+  function renderProgress() {
+    const c = counts();
+    $("progressText").textContent = `${c.done} von ${c.total} erledigt`;
+    $("errorText").textContent = `${c.fehler} Fehler`;
+    $("errorText").classList.toggle("bad", c.fehler > 0);
+    $("bar").style.width = c.total ? `${(c.done / c.total) * 100}%` : "0";
+    document.querySelectorAll(".tl-section[data-section]").forEach((card) => {
+      const sec = checklist.sections.find((s) => s.id === card.dataset.section);
+      const done = sec.items.filter((it) => (draft.answers[it.id] || {}).mark).length;
+      const bad = sec.items.filter((it) => (draft.answers[it.id] || {}).mark === "x").length;
+      const el = card.querySelector(".tl-count");
+      el.textContent = `${done}/${sec.items.length}${bad ? ` · ${bad} X` : ""}`;
+      el.classList.toggle("full", done === sec.items.length);
     });
-    updateSummary();
+  }
+
+  // ---------- Felder ----------
+  for (const key of ["tester", "geraet", "notizen"]) {
+    $(key).addEventListener("input", () => { draft[key] = $(key).value; changed(); });
+  }
+  function renderFields() {
+    for (const key of ["tester", "geraet", "notizen"]) $(key).value = draft[key] || "";
+  }
+
+  // ---------- Bilder ----------
+  function itemOptions(selected) {
+    let html = '<option value="">– zu keinem Punkt –</option>';
+    for (const sec of checklist.sections) {
+      html += `<optgroup label="${esc(sec.title)}">`;
+      for (const it of sec.items) {
+        const text = it.text.replace(/`/g, "").replace(/_{4,}/g, "…");
+        html += `<option value="${esc(it.id)}"${it.id === selected ? " selected" : ""}>${esc(text.length > 70 ? `${text.slice(0, 68)}…` : text)}</option>`;
+      }
+      html += "</optgroup>";
+    }
+    return html;
   }
 
   function renderThumbs() {
-    const box = $("thumbs");
-    const images = state.draft.images || [];
-    if (!images.length) { box.innerHTML = ""; return; }
-    const opts = itemOptionsHtml();
-    box.innerHTML = images.map((img) => {
-      const src = `/api/testlauf/entwurf/bilder/${encodeURIComponent(img.file)}`;
-      const kb = Math.max(1, Math.round((img.size || 0) / 1024));
-      return `<figure class="tl-thumb" data-id="${esc(img.id)}">
-        <img src="${esc(src)}" alt="${esc(img.name || "Bild")}" loading="lazy" />
-        <input type="text" class="tl-cap" maxlength="300" placeholder="Bildunterschrift" value="${esc(img.caption || "")}" />
-        <select class="tl-link">${opts}</select>
-        <div class="tl-thumb-act">
-          <span class="meta">${esc(img.name || img.file)} · ${kb} KB</span>
-          <button class="btn tiny ghost tl-del" type="button">Löschen</button>
-        </div>
-      </figure>`;
-    }).join("");
-    box.querySelectorAll(".tl-thumb").forEach((fig) => {
-      const id = fig.dataset.id;
-      const img = state.draft.images.find((i) => i.id === id);
-      const link = fig.querySelector(".tl-link");
-      if (img && img.itemId) link.value = img.itemId;
-      fig.querySelector(".tl-cap").addEventListener("input", (e) => {
-        if (img) img.caption = e.target.value;
-        schedule();
-      });
-      link.addEventListener("change", () => {
-        if (img) img.itemId = link.value;
-        schedule();
-      });
-      fig.querySelector(".tl-del").addEventListener("click", async () => {
-        try {
-          await api(`/api/testlauf/bild/${encodeURIComponent(id)}`, { method: "DELETE" });
-          state.draft.images = state.draft.images.filter((i) => i.id !== id);
-          renderThumbs();
-          updateSummary();
-          setSave("Bild entfernt");
-        } catch (err) {
-          setSave("Fehler: " + err.message);
-        }
-      });
+    const root = $("thumbs");
+    root.replaceChildren();
+    draft.images.forEach((img, i) => {
+      const fig = document.createElement("figure");
+      fig.className = "tl-thumb";
+      fig.dataset.id = img.id;
+      fig.innerHTML = `
+        <div class="tl-pic"><img alt="" loading="lazy" decoding="async" src="/api/testlauf/entwurf/bilder/${encodeURIComponent(img.file)}" />
+          <span class="tl-picname">${esc(img.name)}</span>
+          <button type="button" class="tl-remove" title="Bild entfernen" aria-label="Bild entfernen">✕</button></div>
+        <figcaption>
+          <span class="tl-hint">${i + 1}. ${esc(img.name)} · ${mb(img.size)}</span>
+          <input class="tl-caption" type="text" maxlength="300" placeholder="Bildunterschrift" value="${esc(img.caption || "")}" />
+          <select class="tl-link" aria-label="Zu Punkt">${itemOptions(img.itemId)}</select>
+        </figcaption>`;
+      fig.querySelector("img").addEventListener("error", () => fig.classList.add("noimg"));
+      root.append(fig);
     });
   }
+  function thumbEdit(ev) {
+    const fig = ev.target.closest(".tl-thumb");
+    const img = fig && draft.images.find((i) => i.id === fig.dataset.id);
+    if (!img) return;
+    if (ev.target.classList.contains("tl-caption")) img.caption = ev.target.value;
+    if (ev.target.classList.contains("tl-link")) img.itemId = ev.target.value;
+    changed();
+  }
+  $("thumbs").addEventListener("input", thumbEdit);
+  $("thumbs").addEventListener("change", (ev) => { if (ev.target.classList.contains("tl-link")) thumbEdit(ev); });
+  $("thumbs").addEventListener("click", async (ev) => {
+    const btn = ev.target.closest(".tl-remove");
+    if (!btn || locked) return;
+    const fig = btn.closest(".tl-thumb");
+    btn.disabled = true;
+    try {
+      await api(`/api/testlauf/bild/${encodeURIComponent(fig.dataset.id)}`, { method: "DELETE" });
+      draft.images = draft.images.filter((i) => i.id !== fig.dataset.id);
+      renderThumbs();
+      writeLocal();
+    } catch (err) {
+      btn.disabled = false;
+      $("uploadState").textContent = `Entfernen ging nicht: ${err.message}`;
+    }
+  });
 
-  function renderRuns() {
-    const box = $("runs");
-    if (!state.runs.length) {
-      box.innerHTML = "<p class='hint'>Noch keine abgelegten Läufe.</p>";
+  const isImage = (f) => /^image\//.test(f.type) || /\.(jpe?g|png|gif|webp|avif|bmp|heic|heif)$/i.test(f.name);
+  let queue = Promise.resolve();
+  // Roh als application/octet-stream, wie der Mediathek-Upload: kein base64.
+  function uploadOne(file, index, total, batch) {
+    return new Promise((resolve) => {
+      const say = (t) => { $("uploadState").textContent = t; };
+      const fail = (t) => { batch.failed.push(t); say(t); resolve(); };
+      if (file.size > maxImage) return fail(`${file.name}: zu groß (höchstens ${Math.round(maxImage / 1048576)} MB)`);
+      const q = new URLSearchParams({ name: file.name || "foto.jpg", type: file.type || "" });
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", `/api/testlauf/bild?${q}`);
+      xhr.setRequestHeader("Content-Type", "application/octet-stream");
+      xhr.upload.addEventListener("progress", (e) => {
+        if (e.lengthComputable) say(`Bild ${index} von ${total}: ${Math.round((e.loaded / e.total) * 100)} % (${file.name})`);
+      });
+      xhr.addEventListener("load", () => {
+        let body = null;
+        try { body = JSON.parse(xhr.responseText); } catch {}
+        if (xhr.status >= 200 && xhr.status < 300 && body) {
+          draft.images.push(body);
+          renderThumbs();
+          writeLocal();
+          batch.ok += 1;
+          say(`Bild ${index} von ${total} fertig.`);
+          resolve();
+        } else fail(`${file.name}: ${(body && body.error) || `Fehler ${xhr.status}`}`);
+      });
+      xhr.addEventListener("error", () => fail(`${file.name}: keine Verbindung zum Server`));
+      say(`Bild ${index} von ${total}: lädt …`);
+      xhr.send(file);
+    });
+  }
+  function uploadFiles(list) {
+    if (locked) return;
+    const files = [...(list || [])].filter(isImage);
+    if (!files.length) { $("uploadState").textContent = "Keine Bilder dabei."; return; }
+    const batch = { ok: 0, failed: [] };
+    files.forEach((f, i) => { queue = queue.then(() => uploadOne(f, i + 1, files.length, batch)); });
+    queue = queue.then(() => {
+      const done = `${batch.ok} von ${files.length} ${files.length === 1 ? "Bild" : "Bildern"} hochgeladen.`;
+      $("uploadState").textContent = batch.failed.length ? `${done} Nicht dabei: ${batch.failed.join("; ")}.` : done;
+    });
+  }
+  for (const id of ["pick", "camera"]) {
+    $(id).addEventListener("change", (ev) => { uploadFiles(ev.target.files); ev.target.value = ""; });
+  }
+  const drop = $("drop");
+  ["dragenter", "dragover"].forEach((t) => drop.addEventListener(t, (ev) => { ev.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave", "drop"].forEach((t) => drop.addEventListener(t, () => drop.classList.remove("over")));
+  drop.addEventListener("drop", (ev) => { ev.preventDefault(); ev.stopPropagation(); uploadFiles(ev.dataTransfer && ev.dataTransfer.files); });
+  // Bild daneben fallen gelassen: nicht im Browser oeffnen, sonst ist die Seite weg.
+  window.addEventListener("dragover", (ev) => ev.preventDefault());
+  window.addEventListener("drop", (ev) => { ev.preventDefault(); uploadFiles(ev.dataTransfer && ev.dataTransfer.files); });
+
+  // ---------- Ablegen ----------
+  // Zwei Schritte statt confirm(): mit dem Wii-Zeiger sind Browser-Dialoge muehsam.
+  let armed = "";
+  let armTimer = 0;
+  const FINISH_LABEL = { btnFinish: "Alles ablegen", btnFinishUpload: "Hochladen & Legion Bescheid geben" };
+  function disarm() {
+    armed = "";
+    for (const [id, label] of Object.entries(FINISH_LABEL)) {
+      $(id).classList.remove("confirm");
+      $(id).disabled = false;
+      $(id).textContent = label;
+    }
+  }
+  async function finish(btnId) {
+    if (locked) return;
+    const btn = $(btnId);
+    const c = counts();
+    if (armed !== btnId && c.done < c.total) {
+      disarm();
+      armed = btnId;
+      btn.classList.add("confirm");
+      btn.textContent = `Wirklich? ${c.total - c.done} Punkte offen`;
+      clearTimeout(armTimer);
+      armTimer = setTimeout(disarm, 6000);
       return;
     }
-    box.innerHTML = state.runs.map((r) => {
-      const s = r.summary || {};
-      const when = r.createdAt ? new Date(r.createdAt).toLocaleString("de-DE") : r.name;
-      return `<button type="button" class="tl-run" data-name="${esc(r.name)}">
-        <div class="name">${esc(r.name)}</div>
-        <div class="meta">${esc(when)} · ${s.done || 0}/${s.total || 0} · X ${s.fehler || 0} · ${r.images || 0} Bilder</div>
-      </button>`;
-    }).join("");
-    box.querySelectorAll(".tl-run").forEach((btn) => {
-      btn.addEventListener("click", () => openRun(btn.dataset.name, btn));
-    });
-  }
-
-  async function openRun(name, btn) {
+    clearTimeout(armTimer);
+    $("btnFinish").disabled = true;
+    $("btnFinishUpload").disabled = true;
+    btn.textContent = "Lege ab …";
     try {
-      const data = await api(`/api/testlauf/lauf/${encodeURIComponent(name)}`);
-      $("runView").hidden = false;
-      $("runName").textContent = name;
-      $("runMd").textContent = data.md || "";
-      document.querySelectorAll(".tl-run").forEach((b) => b.classList.toggle("active", b === btn));
+      await saveNow();
+      await queue;
+      const res = await postJson("/api/testlauf/ablegen", {});
+      locked = true;
+      lastRun = res.name;
+      document.body.classList.add("tl-locked");
+      try { localStorage.removeItem(LOCAL_KEY); } catch {}
+      $("finishResult").hidden = false;
+      $("resultPath").textContent = res.folder;
+      $("finishHint").textContent = `${res.summary.done} von ${res.summary.total} erledigt · ${res.summary.fehler} Fehler · ${res.images} Bilder`;
+      document.querySelector(".tl-finish").hidden = true;
+      $("saveState").textContent = "Abgelegt";
+      $("saveState").className = "tl-save ok";
+      document.querySelectorAll(".tl-list input, .tl-list textarea, #imageCard input, #imageCard select, #tester, #geraet").forEach((el) => { el.disabled = true; });
+      loadRuns();
+      if (btnId === "btnFinishUpload") await uploadRun(res.name, $("uploadResult"), $("btnUploadResult"));
     } catch (err) {
-      setSave("Fehler: " + err.message);
+      $("finishHint").textContent = `Ablegen ging nicht: ${err.message}`;
+      disarm();
     }
   }
+  $("btnFinish").addEventListener("click", () => finish("btnFinish"));
+  $("btnFinishUpload").addEventListener("click", () => finish("btnFinishUpload"));
+  $("btnUploadResult").addEventListener("click", (ev) => uploadRun(lastRun, $("uploadResult"), ev.currentTarget));
+  $("btnNew").addEventListener("click", async () => {
+    try { await postJson("/api/testlauf/neu", {}); } catch {}
+    try { localStorage.removeItem(LOCAL_KEY); } catch {}
+    location.reload();
+  });
+  $("btnViewResult").addEventListener("click", () => openRun(lastRun));
 
-  function updateSummary() {
-    let total = 0, done = 0, ok = 0, fehler = 0, eigen = 0;
-    for (const sec of state.checklist.sections || []) {
-      for (const it of sec.items) {
-        total += 1;
-        const mark = (document.querySelector(`.tl-item[data-id="${CSS.escape(it.id)}"]`) || {}).dataset?.mark
-          || ((state.draft.answers || {})[it.id] || {}).mark || "";
-        if (mark === "o") { ok += 1; done += 1; }
-        else if (mark === "x") { fehler += 1; done += 1; }
-        else if (mark === "eigen") { eigen += 1; done += 1; }
-      }
-    }
-    $("summaryHint").textContent =
-      `${done} von ${total} erledigt · O ${ok} · X ${fehler} · Eigen ${eigen} · ${(state.draft.images || []).length} Bilder`;
-  }
-
-  async function uploadFiles(files) {
-    for (const file of files) {
-      if (!file.type.startsWith("image/") && !/\.(jpe?g|png|gif|webp|avif|bmp|heic|heif)$/i.test(file.name)) {
-        setSave("Übersprungen: " + file.name);
-        continue;
-      }
-      if (file.size > state.maxImage) {
-        setSave(`Zu groß: ${file.name}`);
-        continue;
-      }
-      setSave("Lädt " + file.name + " …");
-      const q = new URLSearchParams({ name: file.name, type: file.type || "" });
-      try {
-        const img = await api(`/api/testlauf/bild?${q}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/octet-stream", "X-File-Type": file.type || "" },
-          body: file,
-        });
-        state.draft.images.push(img);
-        renderThumbs();
-        updateSummary();
-        setSave("Bild gespeichert");
-      } catch (err) {
-        setSave("Fehler: " + err.message);
-      }
-    }
-  }
-
-  async function ablegen() {
-    await flush();
-    if (!confirm("Bericht jetzt nach data/testlaeufe ablegen? Der Entwurf wird geleert.")) return;
+  // ---------- Hochladen nach GitHub + Legion ----------
+  async function uploadRun(name, box, btn) {
+    if (!name) return;
+    box.hidden = false;
+    box.className = "tl-upload busy";
+    box.innerHTML = "<p>Lädt nach GitHub (Zweig testlaeufe) …</p>";
+    if (btn) btn.disabled = true;
     try {
-      setSave("Legt ab …");
-      const out = await api("/api/testlauf/ablegen", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
-      state.draft = { tester: "", geraet: "", notizen: "", answers: {}, images: [] };
-      $("tester").value = "";
-      $("geraet").value = "";
-      $("notizen").value = "";
-      renderChecklist();
-      renderThumbs();
-      const fresh = await api("/api/testlauf");
-      state.runs = fresh.runs || [];
-      renderRuns();
-      setSave(`Abgelegt: ${out.name}`);
-      alert(`Gespeichert als ${out.name}\nOrdner: data/testlaeufe/${out.name}`);
-    } catch (err) {
-      setSave("Fehler: " + err.message);
-    }
-  }
-
-  async function neu() {
-    if (!confirm("Entwurf verwerfen und neu starten? Nicht abgelegte Antworten und Bilder gehen verloren.")) return;
-    try {
-      state.draft = await api("/api/testlauf/neu", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
-      $("tester").value = state.draft.tester || "";
-      $("geraet").value = state.draft.geraet || "";
-      $("notizen").value = state.draft.notizen || "";
-      renderChecklist();
-      renderThumbs();
-      setSave("Neuer Entwurf");
-    } catch (err) {
-      setSave("Fehler: " + err.message);
-    }
-  }
-
-  function wire() {
-    ["tester", "geraet", "notizen"].forEach((id) => $(id).addEventListener("input", schedule));
-    $("btnAblegen").addEventListener("click", ablegen);
-    $("btnAblegenFoot").addEventListener("click", ablegen);
-    $("btnNeu").addEventListener("click", neu);
-    $("btnCloseRun").addEventListener("click", () => {
-      $("runView").hidden = true;
-      document.querySelectorAll(".tl-run").forEach((b) => b.classList.remove("active"));
-    });
-
-    const drop = $("drop");
-    const input = $("fileInput");
-    $("btnPick").addEventListener("click", (e) => { e.stopPropagation(); input.click(); });
-    drop.addEventListener("click", () => input.click());
-    drop.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); input.click(); }
-    });
-    input.addEventListener("change", () => {
-      uploadFiles([...input.files]);
-      input.value = "";
-    });
-    ["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, (e) => {
-      e.preventDefault(); drop.classList.add("drag");
-    }));
-    ["dragleave", "drop"].forEach((ev) => drop.addEventListener(ev, (e) => {
-      e.preventDefault(); drop.classList.remove("drag");
-    }));
-    drop.addEventListener("drop", (e) => uploadFiles([...e.dataTransfer.files]));
-
-    window.addEventListener("beforeunload", (e) => {
-      if (!state.dirty) return;
-      e.preventDefault();
-      e.returnValue = "";
-    });
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "hidden") flush();
-    });
-  }
-
-  async function boot() {
-    wire();
-    try {
-      const data = await api("/api/testlauf");
-      state.checklist = data.checklist || state.checklist;
-      state.draft = data.draft || state.draft;
-      state.runs = data.runs || [];
-      state.version = data.version;
-      state.maxImage = data.maxImage || state.maxImage;
-      state.folder = data.folder || "";
-      $("notesTitle").textContent = state.checklist.notesTitle || "Notizen";
-      $("tester").value = state.draft.tester || "";
-      $("geraet").value = state.draft.geraet || "";
-      $("notizen").value = state.draft.notizen || "";
-      if (state.version && state.version.version) {
-        $("versionChip").textContent = state.version.version;
+      const out = await postJson("/api/testlauf/hochladen", { name });
+      const link = out.payload && out.payload.url ? `<a href="${esc(out.payload.url)}" target="_blank" rel="noopener">${esc(out.folder)}</a>` : esc(out.folder);
+      let hook;
+      if (!out.webhook.configured) {
+        hook = '<p class="warn">Hochgeladen – Legion-Webhook nicht eingerichtet. Unten bei „Legion-Verbindung“ Adresse und Schlüssel eintragen (Anleitung: docs/TESTLAUF-UPLOAD.md).</p>';
+      } else if (out.webhook.ok) {
+        hook = "<p class=\"ok\">Legion hat Bescheid bekommen.</p>";
+      } else {
+        hook = `<p class="warn">Hochgeladen, aber Legion nicht erreicht: ${esc(out.webhook.error || "unbekannt")}</p>`;
       }
-      $("folderHint").textContent = "Berichte landen in data/testlaeufe/ (nur dieser Rechner).";
-      renderChecklist();
-      renderThumbs();
-      renderRuns();
-      setSave("Bereit");
+      box.className = `tl-upload ${out.webhook.ok ? "ok" : "warn"}`;
+      box.innerHTML = `<p class="ok">Hochgeladen: ${link} · Commit <code>${esc(String(out.commit).slice(0, 7))}</code></p>${hook}`;
+      loadRuns();
     } catch (err) {
-      $("checklist").innerHTML = `<p class="hint">Testlauf nicht erreichbar: ${esc(err.message)}. Nur am SL-Rechner, nicht über den Tunnel.</p>`;
-      setSave("Fehler");
+      const b = err.body || {};
+      box.className = "tl-upload bad";
+      box.innerHTML = `<p class="bad">Hochladen fehlgeschlagen${b.stage ? ` (Schritt ${esc(b.stage)})` : ""}: ${esc(err.message)}</p>`
+        + (b.hint ? `<p>${esc(b.hint)}</p>` : "")
+        + (b.detail ? `<details><summary>git-Ausgabe</summary><pre>${esc(b.detail)}</pre></details>` : "");
+    } finally {
+      if (btn) btn.disabled = false;
     }
   }
+  $("btnUploadViewer").addEventListener("click", (ev) => uploadRun(viewerRun, $("viewerUpload"), ev.currentTarget));
 
-  boot();
+  // ---------- Legion-Verbindung ----------
+  function showLegion(cfg) {
+    $("legionUrl").value = cfg.url || "";
+    $("legionHeader").value = cfg.header || "Authorization";
+    $("legionKey").value = "";
+    $("legionKey").placeholder = cfg.keySet ? "gesetzt – leer lassen zum Behalten" : "Schlüssel einfügen";
+    const src = cfg.source === "umgebung" ? " (aus Umgebungsvariablen)" : "";
+    $("legionState").textContent = cfg.url
+      ? `Eingerichtet${src}: Schlüssel ${cfg.keySet ? "gesetzt" : "fehlt"}, Header ${cfg.header}.`
+      : "Nicht eingerichtet. Hochladen geht trotzdem, nur ohne Nachricht an Legion.";
+  }
+  async function loadLegion() {
+    try { showLegion(await api("/api/testlauf/legion")); } catch (err) { $("legionState").textContent = err.message; }
+  }
+  async function saveLegion(extra) {
+    try {
+      const body = { url: $("legionUrl").value, header: $("legionHeader").value, ...extra };
+      if (!extra && $("legionKey").value.trim()) body.key = $("legionKey").value;
+      showLegion(await postJson("/api/testlauf/legion", body));
+      $("legionState").textContent += " Gespeichert.";
+    } catch (err) {
+      $("legionState").textContent = `Nicht gespeichert: ${err.message}`;
+    }
+  }
+  $("legionForm").addEventListener("submit", (ev) => { ev.preventDefault(); saveLegion(); });
+  $("btnLegionClearKey").addEventListener("click", () => saveLegion({ clearKey: true }));
+
+  // ---------- Fruehere Laeufe ----------
+  function renderRuns(runs) {
+    const root = $("runs");
+    root.replaceChildren();
+    if (!runs.length) { root.innerHTML = '<li class="tl-hint">Noch keiner abgelegt.</li>'; return; }
+    for (const run of runs.slice(0, 30)) {
+      const s = run.summary || {};
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <div><strong>${esc(when(run.createdAt))}</strong>${run.uploaded ? ' <span class="tl-up" title="auf GitHub">↑ GitHub</span>' : ""}
+        <span class="tl-hint">${esc([run.tester, run.geraet].filter(Boolean).join(" · ") || "ohne Angaben")}</span>
+        <span>${s.done || 0}/${s.total || 0} erledigt · <span class="${s.fehler ? "bad" : ""}">${s.fehler || 0} Fehler</span> · ${run.images} Bilder</span></div>
+        <button class="tl-btn" type="button">Ansehen</button>`;
+      li.querySelector("button").addEventListener("click", () => openRun(run.name));
+      root.append(li);
+    }
+  }
+  async function loadRuns() {
+    try { renderRuns(await api("/api/testlauf/laeufe")); } catch {}
+  }
+
+  // Kleiner Markdown-Leser fuer bericht.md: Ueberschriften, Listen, Bilder, Absaetze.
+  function renderMarkdown(md, base) {
+    const out = [];
+    let list = false;
+    let para = [];
+    const flushPara = () => { if (para.length) out.push(`<p>${para.map(inline).join("<br>")}</p>`); para = []; };
+    const closeList = () => { if (list) out.push("</ul>"); list = false; };
+    const badge = (html) => html.replace(/^\[(O|X|Eigen| )\]\s*/, (_, m) => `<span class="tl-badge b-${m === " " ? "offen" : m.toLowerCase()}">${m === " " ? "–" : m}</span> `);
+    for (const line of String(md).split(/\r?\n/)) {
+      const img = line.match(/^!\[([^\]]*)\]\(([^)\s]+)\)\s*$/);
+      const h = line.match(/^(#{1,3})\s+(.+)/);
+      const li = line.match(/^\s*-\s+(.+)/);
+      if (img) {
+        flushPara(); closeList();
+        const src = /^bilder\/[\w.-]+$/.test(img[2]) ? `${base}/${img[2]}` : "";
+        if (src) out.push(`<figure><a href="${esc(src)}" target="_blank" rel="noopener"><img src="${esc(src)}" alt="${esc(img[1])}" decoding="async" /></a></figure>`);
+      } else if (h) {
+        flushPara(); closeList();
+        out.push(`<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`);
+      } else if (li) {
+        flushPara();
+        if (!list) { out.push("<ul>"); list = true; }
+        out.push(`<li>${badge(inline(li[1]))}</li>`);
+      } else if (!line.trim()) {
+        flushPara(); closeList();
+      } else {
+        closeList();
+        para.push(line);
+      }
+    }
+    flushPara(); closeList();
+    return out.join("\n");
+  }
+  async function openRun(name) {
+    if (!name) return;
+    try {
+      const run = await api(`/api/testlauf/lauf/${encodeURIComponent(name)}`);
+      viewerRun = name;
+      $("viewerPath").textContent = `${run.folder}/bericht.md`;
+      $("viewerBody").innerHTML = renderMarkdown(run.md, `/api/testlauf/lauf/${encodeURIComponent(name)}`);
+      $("viewerUpload").hidden = true;
+      $("viewer").hidden = false;
+      $("btnCloseViewer").focus();
+    } catch (err) {
+      $("finishHint").textContent = `Bericht nicht lesbar: ${err.message}`;
+    }
+  }
+  $("btnCloseViewer").addEventListener("click", () => { $("viewer").hidden = true; });
+  $("viewer").addEventListener("click", (ev) => { if (ev.target === $("viewer")) $("viewer").hidden = true; });
+  document.addEventListener("keydown", (ev) => { if (ev.key === "Escape") $("viewer").hidden = true; });
+
+  // ---------- Start ----------
+  function readLocal() {
+    try { return JSON.parse(localStorage.getItem(LOCAL_KEY) || "null"); } catch { return null; }
+  }
+  async function start() {
+    let data;
+    try {
+      data = await api("/api/testlauf");
+    } catch (err) {
+      $("checklist").innerHTML = `<section class="tl-card"><p>Server nicht erreichbar: ${esc(err.message)}. Nur am SL-Rechner, nicht über den Tunnel.</p></section>`;
+      return;
+    }
+    checklist = data.checklist;
+    checklist.sections.forEach((s) => s.items.forEach((it) => itemIndex.set(it.id, it)));
+    draft = data.draft;
+    maxImage = data.maxImage || maxImage;
+    // Browser-Stand gewinnt, wenn er neuer ist (z. B. Server war kurz weg).
+    const local = readLocal();
+    let pushLocal = false;
+    if (local && local.updatedAt && (!draft.updatedAt || local.updatedAt > draft.updatedAt)) {
+      draft.tester = local.tester || "";
+      draft.geraet = local.geraet || "";
+      draft.notizen = local.notizen || "";
+      draft.answers = local.answers || {};
+      const meta = new Map((local.images || []).map((i) => [i.id, i]));
+      draft.images.forEach((img) => { const m = meta.get(img.id); if (m) { img.caption = m.caption; img.itemId = m.itemId; } });
+      draft.updatedAt = local.updatedAt;
+      pushLocal = true;
+    }
+    const v = data.version;
+    $("versionText").textContent = v && v.version ? `Ember ${v.version} (${v.source === "git" ? "git" : "CHANGELOG.md"}) · Ablage: ${data.folder}` : `Ablage: ${data.folder}`;
+    renderFields();
+    renderChecklist();
+    renderThumbs();
+    renderRuns(data.runs || []);
+    loadLegion();
+    $("saveState").textContent = pushLocal ? "Browser-Stand übernommen" : (Object.keys(draft.answers).length ? `Entwurf geladen ${clock()}` : "Neuer Testlauf");
+    if (pushLocal) saveNow();
+  }
+  start();
 })();

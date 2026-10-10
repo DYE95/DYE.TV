@@ -2,71 +2,112 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Ember · Testlauf</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Testlauf · DYE.TV</title>
   <link rel="icon" href="/img/ember-icon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="/css/ember.css?v=9" />
-  <link rel="stylesheet" href="/css/testlauf.css?v=1" />
+  <link rel="stylesheet" href="/css/testlauf.css?v=2" />
 </head>
 <body class="tl-body">
-  <div class="tl-app">
-    <header class="topbar tl-top">
-      <a class="btn tiny ghost" href="/">Home</a>
-      <div class="brand">Testlauf</div>
-      <span class="chip" id="versionChip"></span>
-      <span class="grow"></span>
-      <span class="chip" id="saveState" aria-live="polite">Bereit</span>
-      <button class="btn tiny ghost" id="btnNeu" type="button">Neuer Entwurf</button>
-      <button class="btn primary" id="btnAblegen" type="button">Bericht ablegen</button>
-    </header>
+  <header class="tl-top">
+    <a class="tl-btn tl-back" href="/">← Startseite</a>
+    <h1>Testlauf</h1>
+    <div class="tl-progress" aria-live="polite">
+      <div class="tl-bar"><span id="bar"></span></div>
+      <strong id="progressText">…</strong>
+      <span id="errorText" class="tl-errcount"></span>
+    </div>
+    <span id="saveState" class="tl-save">…</span>
+  </header>
 
-    <div class="tl-layout">
-      <main class="tl-main">
-        <section class="tl-meta card">
-          <label>Tester <input id="tester" type="text" autocomplete="name" maxlength="120" /></label>
-          <label>Gerät <input id="geraet" type="text" placeholder="TV, Handy, PC …" maxlength="120" /></label>
-          <p class="hint" id="folderHint"></p>
-        </section>
+  <main class="tl-main">
+    <section class="tl-col tl-list" aria-label="Checkliste">
+      <div id="checklist"></div>
+      <section class="tl-card tl-section">
+        <h2 id="notesTitle">Notizen</h2>
+        <textarea id="notizen" rows="5" placeholder="Was sonst auffiel: Seite, Ergebnis, Zeit, Bemerkung …"></textarea>
+      </section>
+    </section>
 
-        <section class="tl-list" id="checklist" aria-live="polite">
-          <p class="hint">Lädt Checkliste …</p>
-        </section>
+    <aside class="tl-col tl-side" aria-label="Bericht">
+      <section class="tl-card">
+        <h2>Wer testet womit</h2>
+        <label class="tl-field">Tester <input id="tester" placeholder="z. B. Dave" autocomplete="off" /></label>
+        <label class="tl-field">Gerät <input id="geraet" placeholder="z. B. TV über Hotspot" autocomplete="off" /></label>
+        <p class="tl-hint" id="versionText"></p>
+      </section>
 
-        <section class="tl-notes card">
-          <h2 id="notesTitle">Notizen</h2>
-          <textarea id="notizen" rows="5" maxlength="20000" placeholder="Freie Notizen zum Lauf."></textarea>
-        </section>
-
-        <section class="tl-images card">
-          <h2>Bilder</h2>
-          <p class="hint">Screenshots per Drag &amp; Drop oder Knopf. Bleiben im Entwurf, bis du ablegen tippst.</p>
-          <div class="tl-drop" id="drop" tabindex="0" role="button" aria-label="Bilder ablegen oder auswählen">
-            <span>Bilder hier ablegen</span>
-            <button class="btn" id="btnPick" type="button">Dateien wählen</button>
-            <input id="fileInput" type="file" accept="image/*" multiple hidden />
+      <section class="tl-card" id="imageCard">
+        <h2>Bilder</h2>
+        <div class="tl-drop" id="drop" tabindex="0">
+          <p>Bilder hierher ziehen</p>
+          <div class="tl-row">
+            <label class="tl-btn tl-primary">Bilder hochladen
+              <input id="pick" type="file" accept="image/*" multiple hidden />
+            </label>
+            <label class="tl-btn">Foto aufnehmen
+              <input id="camera" type="file" accept="image/*" capture="environment" hidden />
+            </label>
           </div>
-          <div class="tl-thumbs" id="thumbs"></div>
-        </section>
+          <p class="tl-hint" id="uploadState">Bis 50 MB pro Bild.</p>
+        </div>
+        <div class="tl-thumbs" id="thumbs"></div>
+      </section>
 
-        <footer class="tl-foot">
-          <button class="btn primary" id="btnAblegenFoot" type="button">Bericht ablegen</button>
-          <p class="hint" id="summaryHint"></p>
-        </footer>
-      </main>
-
-      <aside class="tl-side card" aria-label="Frühere Testläufe">
-        <h2>Frühere Läufe</h2>
-        <div id="runs"><p class="hint">Noch keine abgelegten Läufe.</p></div>
-        <article class="tl-runview" id="runView" hidden>
-          <div class="tl-runhead">
-            <strong id="runName"></strong>
-            <button class="btn tiny ghost" id="btnCloseRun" type="button">Schließen</button>
+      <section class="tl-card" id="finishCard">
+        <h2>Abschließen</h2>
+        <div class="tl-finish">
+          <button class="tl-btn tl-big tl-primary" id="btnFinish" type="button">Alles ablegen</button>
+          <button class="tl-btn tl-big" id="btnFinishUpload" type="button">Hochladen &amp; Legion Bescheid geben</button>
+        </div>
+        <div id="finishResult" class="tl-result" hidden>
+          <p>Abgelegt in</p>
+          <code id="resultPath"></code>
+          <div class="tl-row">
+            <button class="tl-btn tl-primary" id="btnUploadResult" type="button">Hochladen &amp; Legion Bescheid geben</button>
+            <button class="tl-btn" id="btnViewResult" type="button">Bericht ansehen</button>
+            <button class="tl-btn" id="btnNew" type="button">Neuer Testlauf</button>
           </div>
-          <pre id="runMd"></pre>
-        </article>
-      </aside>
+        </div>
+        <div id="uploadResult" class="tl-upload" hidden aria-live="polite"></div>
+        <p class="tl-hint" id="finishHint"></p>
+      </section>
+
+      <section class="tl-card">
+        <h2>Frühere Testläufe</h2>
+        <ol class="tl-runs" id="runs"></ol>
+      </section>
+
+      <section class="tl-card" id="legionCard">
+        <h2>Legion-Verbindung</h2>
+        <p class="tl-hint" id="legionState">…</p>
+        <form id="legionForm" autocomplete="off">
+        <label class="tl-field">Webhook-Adresse <input id="legionUrl" type="text" placeholder="https://…" autocomplete="off" /></label>
+        <label class="tl-field">Schlüssel <input id="legionKey" type="password" placeholder="Schlüssel einfügen" autocomplete="new-password" /></label>
+        <label class="tl-field">Header-Name <input id="legionHeader" type="text" placeholder="Authorization" autocomplete="off" /></label>
+        <div class="tl-row">
+          <button class="tl-btn tl-primary" id="btnLegionSave" type="submit">Speichern</button>
+          <button class="tl-btn" id="btnLegionClearKey" type="button">Schlüssel löschen</button>
+        </div>
+        </form>
+        <p class="tl-hint">Liegt in data/legion-webhook.json auf diesem Rechner. Der Schlüssel wird nie angezeigt. Anleitung: docs/TESTLAUF-UPLOAD.md</p>
+      </section>
+    </aside>
+  </main>
+
+  <div class="tl-viewer" id="viewer" hidden>
+    <div class="tl-viewer-box">
+      <div class="tl-viewer-head">
+        <code id="viewerPath"></code>
+        <div class="tl-row">
+          <button class="tl-btn tl-primary" id="btnUploadViewer" type="button">Hochladen &amp; Legion Bescheid geben</button>
+          <button class="tl-btn" id="btnCloseViewer" type="button">Schließen</button>
+        </div>
+      </div>
+      <div id="viewerUpload" class="tl-upload" hidden aria-live="polite"></div>
+      <article class="tl-report" id="viewerBody"></article>
     </div>
   </div>
-  <script src="/js/testlauf.js?v=1"></script>
+
+  <script src="/js/testlauf.js?v=2"></script>
 </body>
 </html>

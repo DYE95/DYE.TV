@@ -352,6 +352,8 @@ const testlaufCtx = {
   send, readJson, serveFile,
   isLocal: isLocalRequest,
   version: () => leitstelle.version(),
+  // Fuer Tests: anderes Repo als Ziel fuer den Upload (Standard: dieser Ordner).
+  repoRoot: process.env.EMBER_TESTLAUF_REPO || __dirname,
 };
 
 async function handleApi(req, res, url) {
