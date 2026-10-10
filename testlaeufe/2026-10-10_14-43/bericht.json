@@ -1,0 +1,503 @@
+{
+  "schema": 1,
+  "name": "2026-10-10_14-43",
+  "createdAt": "2026-10-10T12:43:22.717Z",
+  "startedAt": "2026-10-10T10:29:59.631Z",
+  "tester": "Dave",
+  "geraet": "Laptop",
+  "version": {
+    "version": "v0.4.0-9-g3cddbef",
+    "source": "git"
+  },
+  "summary": {
+    "total": 41,
+    "done": 41,
+    "ok": 15,
+    "fehler": 0,
+    "eigen": 26,
+    "offen": 0
+  },
+  "sections": [
+    {
+      "id": "vorbereitung",
+      "title": "Vorbereitung",
+      "items": [
+        {
+          "id": "vorbereitung-5ychsw",
+          "text": "`node -v` zeigt eine LTS-Version (20 oder neuer): ______",
+          "mark": "o",
+          "note": ""
+        },
+        {
+          "id": "vorbereitung-3cyaum",
+          "text": "`git pull` im Ember-Ordner, keine Fehlermeldung",
+          "mark": "o",
+          "note": ""
+        },
+        {
+          "id": "vorbereitung-1k23b0g",
+          "text": "Größe von `data\\ember.json` notiert: ______ KB",
+          "mark": "o",
+          "note": "1"
+        },
+        {
+          "id": "vorbereitung-142trmr",
+          "text": "Alte Ember-Tabs und -Fenster in allen Browsern geschlossen",
+          "mark": "eigen",
+          "note": "Hab hier für auch die Umgebungen mit Dokumentiert"
+        },
+        {
+          "id": "vorbereitung-10vl1vw",
+          "text": "Konsole: QuickEdit aus (Fenster → Eigenschaften) oder Start über `Ember.bat` (minimiert)",
+          "mark": "eigen",
+          "note": "Hab Github Desktop oder VSStudio oder Notepad++ was Edit in Allen Fenstern/Desktops. Ember.bat scheint obssolete."
+        },
+        {
+          "id": "vorbereitung-11mgnc",
+          "text": "Uhrzeit beim Start notiert: ______",
+          "mark": "eigen",
+          "note": "Hab um 13Uhr angefangen. (BEMESSE TROTZDEM TIMER PRO CHECKLISTEN PUNKT)"
+        }
+      ]
+    },
+    {
+      "id": "start",
+      "title": "Start",
+      "items": [
+        {
+          "id": "start-x7z9ns",
+          "text": "`start.bat`: Zeit bis `/ember` am PC lädt: ______ s",
+          "mark": "eigen",
+          "note": "3 - 5 sek im schnitt. bin 10 mal durch immer gleich"
+        },
+        {
+          "id": "start-bmzsmn",
+          "text": "Tunnel-Adresse erscheint in der Titelleiste nach ______ s (keine alte Adresse vom letzten Mal)",
+          "mark": "eigen",
+          "note": "nach dem zünden von Ember. Nie mehr  2-6sek. auch 10mal getestet"
+        },
+        {
+          "id": "start-1n47mxz",
+          "text": "`data\\tunnel.log`: keine Zeilen „Failed to dial a quic connection“, Protokoll http2",
+          "mark": "eigen",
+          "note": "nichts zu finden"
+        },
+        {
+          "id": "start-cmi8r6",
+          "text": "Erststart: `data\\sl.pin` enthält die eingegebene PIN (nicht „ECHO ist ausgeschaltet“)",
+          "mark": "eigen",
+          "note": "Leider steht dort genau das. Hab nen Bild hinterlegt"
+        }
+      ]
+    },
+    {
+      "id": "pc-seiten",
+      "title": "PC-Seiten",
+      "items": [
+        {
+          "id": "pc-seiten-1yv36ut",
+          "text": "`/` Startseite lädt, Kacheln klickbar",
+          "mark": "o",
+          "note": ""
+        },
+        {
+          "id": "pc-seiten-1yyxikx",
+          "text": "`/ember` Spielleitung lädt, Session starten geht",
+          "mark": "eigen",
+          "note": "BITTE IN DIE FOTO SERIE GUCKEN. ich weis nicht wieso ab dort nichts mehr funktioniert."
+        },
+        {
+          "id": "pc-seiten-thbuci",
+          "text": "`/token` Tokenatelier lädt",
+          "mark": "o",
+          "note": ""
+        },
+        {
+          "id": "pc-seiten-1hn3qtg",
+          "text": "`/pixelstube` zeichnen, PNG speichern, 5× schnell neu laden: kein Absturz",
+          "mark": "o",
+          "note": ""
+        },
+        {
+          "id": "pc-seiten-1mlfhr6",
+          "text": "Mediathek: Video abspielen, vor- und zurückspulen",
+          "mark": "o",
+          "note": ""
+        },
+        {
+          "id": "pc-seiten-ymyqce",
+          "text": "Mediathek: kleines Video (< 50 MB) hochladen, Prozentanzeige läuft",
+          "mark": "o",
+          "note": ""
+        },
+        {
+          "id": "pc-seiten-11jqey9",
+          "text": "Mediathek: großes Video (> 1 GB) am PC hochladen, danach abspielen und spulen",
+          "mark": "o",
+          "note": ""
+        },
+        {
+          "id": "pc-seiten-fkixgp",
+          "text": "`/heft` neue Notiz, löschen, „Rückgängig“; Editor füllt die ganze Höhe",
+          "mark": "o",
+          "note": ""
+        },
+        {
+          "id": "pc-seiten-qol48w",
+          "text": "`/solo` ohne Bogen: Hinweis „Noch kein Bogen“, Knöpfe aus",
+          "mark": "eigen",
+          "note": "ab Solo werkstatt dunktionieren buttons nicht."
+        },
+        {
+          "id": "pc-seiten-y4kwb8",
+          "text": "`/solo` mit Bogen: Solo öffnen, Bot setzen, Bot zieht, Meldungen oben sichtbar",
+          "mark": "eigen",
+          "note": "Ansich finde ich es cool aber komm an settings nicht ran"
+        },
+        {
+          "id": "pc-seiten-1hh2ics",
+          "text": "`/bibliothek` zeigt DH-SRD (öffnet als PDF) und die Karten",
+          "mark": "o",
+          "note": ""
+        },
+        {
+          "id": "pc-seiten-1hsk1c5",
+          "text": "`/karten` lädt",
+          "mark": "o",
+          "note": ""
+        },
+        {
+          "id": "pc-seiten-13huuvm",
+          "text": "Einstellungen (Startseite): Schrift/Kacheln ändern, bleibt nach Neuladen",
+          "mark": "o",
+          "note": ""
+        },
+        {
+          "id": "pc-seiten-1qhemyj",
+          "text": "Ereignis-Seiten: `/runner`, `/fallwerk`, `/pastellpfad`, `/scharfschuss`, `/puls` laden",
+          "mark": "eigen",
+          "note": "Wo finde ich die?"
+        }
+      ]
+    },
+    {
+      "id": "spieler-lokal-lan",
+      "title": "Spieler lokal (LAN)",
+      "items": [
+        {
+          "id": "spieler-lokal-lan-4qcqxi",
+          "text": "`http://<PC-IP>:3478/player` am Handy/TV: Ladezeit ______ s",
+          "mark": "eigen",
+          "note": "Hab in der Fotoserie drauf zu achten wann, was passieren sollte. Bitte nachsehen"
+        },
+        {
+          "id": "spieler-lokal-lan-i0a7iv",
+          "text": "Profil anlegen, mit PIN eintreten, Bogen wählen",
+          "mark": "eigen",
+          "note": "Hab in der Fotoserie drauf zu achten wann, was passieren sollte. Bitte nachsehen. Scheint eh obsolete zu sein... ich meine Als Admin gebe ich nicht mein gerät ab wo auch der server selbst läuft."
+        },
+        {
+          "id": "spieler-lokal-lan-1et92no",
+          "text": "Würfeln, SL sieht den Wurf im Log",
+          "mark": "o",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "spieler-von-aussen-handy-hotspot-ueber-tunnel",
+      "title": "Spieler von außen (Handy-Hotspot über Tunnel)",
+      "items": [
+        {
+          "id": "spieler-von-aussen-handy-hotspot-ueber-tunnel-abz11w",
+          "text": "Tunnel-Adresse `/player`: Ladezeit ______ s",
+          "mark": "eigen",
+          "note": "- NULL: nicht diesmal"
+        },
+        {
+          "id": "spieler-von-aussen-handy-hotspot-ueber-tunnel-utufct",
+          "text": "Profil + PIN eintreten",
+          "mark": "eigen",
+          "note": "- NULL: nicht diesmal"
+        },
+        {
+          "id": "spieler-von-aussen-handy-hotspot-ueber-tunnel-am34v5",
+          "text": "Würfeln, SL sieht den Wurf nach ______ s",
+          "mark": "eigen",
+          "note": "- NULL: nicht diesmal"
+        },
+        {
+          "id": "spieler-von-aussen-handy-hotspot-ueber-tunnel-1d981yr",
+          "text": "Sitz-Punkt beim SL wird grün/grau, wenn der Spieler kommt/geht",
+          "mark": "eigen",
+          "note": "- NULL: nicht diesmal"
+        }
+      ]
+    },
+    {
+      "id": "mehrere-gleichzeitig",
+      "title": "Mehrere gleichzeitig",
+      "items": [
+        {
+          "id": "mehrere-gleichzeitig-1kir6rb",
+          "text": "PC (`/ember`) + TV (`/player`) + Handy (`/player`) gleichzeitig offen",
+          "mark": "eigen",
+          "note": "- NULL: nicht diesmal"
+        },
+        {
+          "id": "mehrere-gleichzeitig-1rpyqtc",
+          "text": "Am PC 4+ Ember-Tabs offen: neue Seiten laden weiter, Würfe kommen an",
+          "mark": "eigen",
+          "note": "- NULL: nicht diesmal"
+        },
+        {
+          "id": "mehrere-gleichzeitig-15uqw57",
+          "text": "Ein Gerät lädt neu: die anderen laufen weiter",
+          "mark": "eigen",
+          "note": "- NULL: nicht diesmal"
+        }
+      ]
+    },
+    {
+      "id": "sicherheit-ueber-die-tunnel-adresse-nicht-am-pc",
+      "title": "Sicherheit (über die Tunnel-Adresse, nicht am PC)",
+      "items": [
+        {
+          "id": "sicherheit-ueber-die-tunnel-adresse-nicht-am-pc-1c7fmmy",
+          "text": "`<Tunnel>/api/sl-pin` → „Nur dieser Rechner.“ (keine PIN)",
+          "mark": "eigen",
+          "note": "- NULL: nicht diesmal"
+        },
+        {
+          "id": "sicherheit-ueber-die-tunnel-adresse-nicht-am-pc-szx50z",
+          "text": "`<Tunnel>/api/profiles` → „Nur dieser Rechner.“",
+          "mark": "eigen",
+          "note": "- NULL: nicht diesmal"
+        },
+        {
+          "id": "sicherheit-ueber-die-tunnel-adresse-nicht-am-pc-1872636",
+          "text": "Neustart / Update von außen → abgelehnt",
+          "mark": "eigen",
+          "note": "- NULL: nicht diesmal"
+        }
+      ]
+    },
+    {
+      "id": "stoerfaelle",
+      "title": "Störfälle",
+      "items": [
+        {
+          "id": "stoerfaelle-1rcofzw",
+          "text": "Seiten schnell hintereinander neu laden: Server läuft weiter",
+          "mark": "o",
+          "note": ""
+        },
+        {
+          "id": "stoerfaelle-2np0lu",
+          "text": "Tunnel-Fenster schließen: PC-Seiten laufen weiter, Spieler von außen sehen Fehler",
+          "mark": "eigen",
+          "note": "- NULL: nicht diesmal"
+        },
+        {
+          "id": "stoerfaelle-1x7t6yw",
+          "text": "Server neu starten (Knopf oder Strg+C und `start.bat`): Seiten verbinden sich wieder",
+          "mark": "eigen",
+          "note": "Würde gerne diesen bereicht abwarten. wegen wenn ich über einstellungen fetch gebe ich meine antwort"
+        },
+        {
+          "id": "stoerfaelle-1ig0etj",
+          "text": "`data\\crash.log` geprüft: leer / Einträge: ______",
+          "mark": "eigen",
+          "note": "- NULL: nicht diesmal"
+        }
+      ]
+    }
+  ],
+  "notizen": "",
+  "images": [
+    {
+      "file": "bilder/01_000-back-desktop-mein-anfang-der-dokumen.png",
+      "original": "000. BACK_DESKTOP - Mein Anfang der Dokumentation.png",
+      "caption": "",
+      "size": 31986,
+      "itemId": "",
+      "itemText": ""
+    },
+    {
+      "file": "bilder/02_001-back-desktop-explorer-windows-fetch.png",
+      "original": "001. BACK_DESKTOP - Explorer Windows - Fetch war erfolgreich.png",
+      "caption": "",
+      "size": 116559,
+      "itemId": "",
+      "itemText": ""
+    },
+    {
+      "file": "bilder/03_002-back-desktop-explorer-windows-termin.png",
+      "original": "002. BACK_DESKTOP - Explorer Windows & Terminal von (start.bat).png",
+      "caption": "",
+      "size": 97360,
+      "itemId": "",
+      "itemText": ""
+    },
+    {
+      "file": "bilder/04_003-front-desktop-neu-erstellt.png",
+      "original": "003. FRONT_DESKTOP - Neu erstellt.png",
+      "caption": "",
+      "size": 31940,
+      "itemId": "",
+      "itemText": ""
+    },
+    {
+      "file": "bilder/05_004-front-desktop-oeffne-browser-brave.png",
+      "original": "004. FRONT_DESKTOP - Öffne Browser Brave.png",
+      "caption": "",
+      "size": 2253148,
+      "itemId": "",
+      "itemText": ""
+    },
+    {
+      "file": "bilder/06_005-front-desktop-browser-brave-oeffne-u.png",
+      "original": "005. FRONT_DESKTOP - Browser Brave - Öffne URL; 127.0.0.1;3478.png",
+      "caption": "",
+      "size": 864832,
+      "itemId": "",
+      "itemText": ""
+    },
+    {
+      "file": "bilder/07_006-front-desktop-browser-brave-gehe-in.png",
+      "original": "006. FRONT_DESKTOP - Browser Brave - Gehe in Testlauf.png",
+      "caption": "",
+      "size": 413314,
+      "itemId": "",
+      "itemText": ""
+    },
+    {
+      "file": "bilder/08_007-front-desktop-browser-brave-oeffne-n.png",
+      "original": "007. FRONT_DESKTOP - Browser Brave - Öffne neuen Tab.png",
+      "caption": "",
+      "size": 1910542,
+      "itemId": "",
+      "itemText": ""
+    },
+    {
+      "file": "bilder/09_008-front-desktop-browser-brave-2tes-mal.png",
+      "original": "008 - FRONT_DESKTOP - Browser Brave - 2tes mal URL geöffnet.png",
+      "caption": "",
+      "size": 867073,
+      "itemId": "",
+      "itemText": ""
+    },
+    {
+      "file": "bilder/10_009-front-desktop-browser-brave-testlauf.png",
+      "original": "009 - FRONT_DESKTOP - Browser Brave - Testlauf; Vorbereitung 1 - Beweis.png",
+      "caption": "",
+      "size": 868958,
+      "itemId": "",
+      "itemText": ""
+    },
+    {
+      "file": "bilder/11_010-back-end-explorer-windows-terminal-d.png",
+      "original": "010. BACK_END - Explorer Windows Terminal DYE.TV Shell - Vorbereitung 2 - Beweis.png",
+      "caption": "",
+      "size": 151201,
+      "itemId": "",
+      "itemText": ""
+    },
+    {
+      "file": "bilder/12_011-back-desktop-explorer-windows-vorber.png",
+      "original": "011. BACK_DESKTOP - Explorer Windows - Vorbereitung 3 - Beweis.png",
+      "caption": "",
+      "size": 97812,
+      "itemId": "",
+      "itemText": ""
+    },
+    {
+      "file": "bilder/13_012-front-desktop-browser-brave-vorberei.png",
+      "original": "012. FRONT_DESKTOP - Browser Brave - Vorbereitung 3&4 - Beweis.png",
+      "caption": "",
+      "size": 448814,
+      "itemId": "",
+      "itemText": ""
+    },
+    {
+      "file": "bilder/14_013-back-desktop-notepad-start-3-beweis.png",
+      "original": "013. BACK_DESKTOP - Notepad++ - Start 3 - Beweis.png",
+      "caption": "",
+      "size": 227832,
+      "itemId": "",
+      "itemText": ""
+    },
+    {
+      "file": "bilder/15_014-back-end-notepad-start-4-beweis.png",
+      "original": "014. BACK_END - Notepad++ - Start 4 - Beweis.png",
+      "caption": "",
+      "size": 125091,
+      "itemId": "",
+      "itemText": ""
+    },
+    {
+      "file": "bilder/16_015-front-desktop-brave-browser-bin-auf.png",
+      "original": "015. FRONT_DESKTOP - Brave Browser - Bin auf Ember drauf.png",
+      "caption": "",
+      "size": 1420336,
+      "itemId": "",
+      "itemText": ""
+    },
+    {
+      "file": "bilder/17_016-front-desktop-brave-browser-klick-au.png",
+      "original": "016. FRONT_DESKTOP - Brave Browser - Klick auf die glut entzünden.png",
+      "caption": "",
+      "size": 475824,
+      "itemId": "",
+      "itemText": ""
+    },
+    {
+      "file": "bilder/18_017-player-desktop-neu-erstellt.png",
+      "original": "017. PLAYER_DESKTOP - Neu erstellt.png",
+      "caption": "",
+      "size": 31948,
+      "itemId": "",
+      "itemText": ""
+    },
+    {
+      "file": "bilder/19_018-player-desktop-browser-brave-selbes.png",
+      "original": "018. PLAYER_DESKTOP - Browser Brave - Selbes spielchen browser öffnen.png",
+      "caption": "",
+      "size": 3343129,
+      "itemId": "",
+      "itemText": ""
+    },
+    {
+      "file": "bilder/20_019-player-desktop-browser-brave-hab-die.png",
+      "original": "019. PLAYER_DESKTOP - Browser Brave - hab die die player URL.png",
+      "caption": "",
+      "size": 53111,
+      "itemId": "",
+      "itemText": ""
+    },
+    {
+      "file": "bilder/21_020-front-desktop-brave-browser-testlauf.png",
+      "original": "020. FRONT_DESKTOP - Brave Browser - Testlauf lief erstaunlich rund und bröchte erstmal keine verbesserung.png",
+      "caption": "",
+      "size": 513828,
+      "itemId": "",
+      "itemText": ""
+    },
+    {
+      "file": "bilder/22_021-front-desktop-brave-browser-konnte-v.png",
+      "original": "021. FRONT_DESKTOP - Brave Browser - konnte von Ember per klick hier hin.png",
+      "caption": "",
+      "size": 200194,
+      "itemId": "",
+      "itemText": ""
+    },
+    {
+      "file": "bilder/23_022-front-desktop-brave-browser-solo-lau.png",
+      "original": "022. FRONT_DESKTOP - Brave Browser - Solo laüft aber keiner greift zurück an.png",
+      "caption": "",
+      "size": 326363,
+      "itemId": "",
+      "itemText": ""
+    }
+  ]
+}
