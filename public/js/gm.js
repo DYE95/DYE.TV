@@ -723,12 +723,18 @@ $("#photoInput")?.addEventListener("change", async (ev) => {
 });
 $("#rollCharacter")?.addEventListener("change", fillExperiences);
 
-const gmSeat = localStorage.getItem("ember.gmKey") || ("gm_" + Math.random().toString(16).slice(2));
-localStorage.setItem("ember.gmKey", gmSeat);
+// Alte start.bat-Staende schrieben "ECHO ist ausgeschaltet" in sl.pin; so ein
+// Rest im Browser ist kein Schluessel.
+if (/^ECHO\s/i.test(localStorage.getItem("ember.gmKey") || "")) localStorage.removeItem("ember.gmKey");
+if (!localStorage.getItem("ember.gmKey")) localStorage.setItem("ember.gmKey", "gm_" + Math.random().toString(16).slice(2));
+// Sitz bleibt fest, der Schluessel wird jedes Mal frisch gelesen: /api/sl-pin
+// kann ihn nach dem Laden noch auf die PIN aus data/sl.pin setzen.
+const gmSeat = localStorage.getItem("ember.gmKey");
 setInterval(() => {
+  const key = localStorage.getItem("ember.gmKey") || gmSeat;
   fetch("/api/presence", {
     method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ key: gmSeat, role: "gm", name: "SL", gmKey: gmSeat, status: activeSession()?.narrating ? "narrating" : "online" }),
+    body: JSON.stringify({ key: gmSeat, role: "gm", name: "SL", gmKey: key, status: activeSession()?.narrating ? "narrating" : "online" }),
   }).catch(() => {});
 }, 4000);
 
