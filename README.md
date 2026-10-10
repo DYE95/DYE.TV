@@ -39,7 +39,7 @@ Die Adressen stehen im Fenster und in der Titelleiste. Cloudflare-Pings gehen na
 
 | Pfad          | Zweck                                                            |
 | ------------- | ---------------------------------------------------------------- |
-| `/`            | Startseite am SL-Rechner: Kacheln, Einstellungen, Status (Tunnel/LAN → `/player`) |
+| `/`            | Startseite am SL-Rechner: Kacheln und Leitstelle (Status, Spieler-QR, Adressen, Patchnotes). Die Kachel „Einstellungen“ schaltet die rechte Spalte um |
 | `/ember`       | SL-Tisch: Session, Action Rolls, Events, Karte, Initiative      |
 | `/player`      | Spieler-Ansicht: Namen antippen, Bogen, Würfe, Spotlight        |
 | `/player?as=ID&tab=1` | Derselbe Bogen in einem eigenen Tab, ohne die anderen Tabs zu übernehmen |
@@ -60,6 +60,15 @@ Die Spieler-URLs zeigt der Server beim Start an (z. B. `http://192.168.0.151:347
 Am SL-Rechner öffnet **Tab** neben einem Bogen `/player?as=<id>&tab=1`. Der Sitz liegt dann nur in diesem Tab (`sessionStorage`), nicht im gemeinsamen `localStorage`. Ein normales `/player` merkt sich den Bogen weiter fürs Handy.
 Spieler verbinden sich über das WLAN — der SL-Rechner muss Port 3478 in der
 Windows-Firewall erlauben (beim ersten Start bestätigen).
+
+## Leitstelle
+
+Die rechte Spalte der Startseite zeigt Serverlaufzeit, Version, Tunnel, wer am
+Tisch ist, Datenstand, den letzten Absturz, einen QR-Code für `/player` und die
+Adressen mit Knopf zum Kopieren. Die Daten kommen von `/api/leitstelle`. Diese
+Schnittstelle antwortet nur am SL-Rechner selbst, nie über den Tunnel. Die
+Patchnotes stammen aus git oder, ohne git, aus `CHANGELOG.md`. Wie man ein
+eigenes Modul ergänzt, steht in [`docs/MODULE.md`](docs/MODULE.md).
 
 ## Solo-Spiel (`/solo`)
 
