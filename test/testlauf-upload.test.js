@@ -134,6 +134,8 @@ test("git-Fehler kommen mit Stufe und Hinweis zurück", async () => {
     await assert.rejects(up.publishRun(dataDir, run.name, { repoRoot: repo }), { stage: "remote" });
     await assert.rejects(up.publishRun(dataDir, "../boese", { repoRoot: repo }), { stage: "lauf" });
     assert.match(up.hintFor("fatal: could not read Username for 'https://github.com': terminal prompts disabled"), /Zugangsdaten/);
+    assert.match(up.hintFor("fatal: '/x.git' does not appear to be a git repository"), /origin nicht gefunden/);
+    assert.match(up.hintFor("error: No such remote 'origin'"), /Kein Remote/);
     assert.equal(up.repoSlug("https://github.com/DYE95/DYE.TV"), "DYE95/DYE.TV");
     assert.equal(up.repoSlug("git@github.com:DYE95/DYE.TV.git"), "DYE95/DYE.TV");
   } finally {
