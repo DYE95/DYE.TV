@@ -72,14 +72,22 @@ lib/
   solo.js            Bots, Dungeon, Subklassen, Level-Ups
   compendium.js      SRD-Suche (compendium-data.json)
   catalog.js         Sablewood-Quickstart (vorgefertigte Bögen, Startkarte)
+  auth.js            Lokal-/Tunnel-Pruefung, SL-Schluessel
+  guard.js           Sperre gegen fremde Webseiten (CSRF)
+  range.js           Range-Header fuer Video-Streaming
+  spur.js            Punkte der Minispiele
   spark.js, lan.js, ids.js   Terminal-Deko, LAN-Adressen, IDs/PINs
 public/              Statisches Frontend (Vanilla JS, kein Build-Schritt)
   index.html         SL-Tisch (gm.js, map.js, …)
   player.html        Spieler-Ansicht (player.js)
   js/, css/, maps/, icons/, data/
-test/                node:test-Suiten (dice, initiative, solo, store)
-data/                Laufzeitdaten (gitignored): ember.json + uploads/
+tools/tunnel.js      Cloudflare-Tunnel fuer Spieler von zu Hause
+test/                node:test-Suiten (Logik + Server-Tests ueber HTTP)
+data/                Laufzeitdaten (gitignored): ember.json, ember.json.bak, uploads/
+                     anderer Ordner per Umgebungsvariable EMBER_DATA
 docs/bibliothek/     PDFs für die Bibliotheksseite (index.json, maps/, errata.json)
+docs/regeln/         Regel-PDFs (z. B. DH-SRD.pdf), ebenfalls in der Bibliothek
+docs/ERSTSTART.md, docs/TESTLAUF.md   Ersteinrichtung, Checkliste Testlauf
 .github/workflows/   CI: Syntax-Check + Tests bei push/PR
 ```
 
@@ -89,7 +97,7 @@ docs/bibliothek/     PDFs für die Bibliotheksseite (index.json, maps/, errata.j
 npm test          # oder: test.bat
 ```
 
-Abgedeckt sind die Kernlogik ohne laufenden Server:
+Abgedeckt sind die Kernlogik und ein echter Server-Start:
 
 - `test/dice.test.js` — Duality-Ergebnisse, Critical, Advantage/Disadvantage, Experience-Kosten
 - `test/initiative.test.js` — Seed, Runden, Gegenseite, Spotlight-Vorrücken, auto=aus
@@ -97,6 +105,10 @@ Abgedeckt sind die Kernlogik ohne laufenden Server:
 - `test/store.test.js` — Fog-of-War-Standards, `patchById`, Encounter-/Bogen-Erzeugung
 - `test/auth.test.js` — GM-Key-Logik (`isGm`, `recordGmKey`), Tunnel gilt nicht als lokal
 - `test/range.test.js` — Range-Header für Video-Streaming (Suffix, 416 bei Unsinn)
+- `test/guard.test.js` — Sperre gegen fremde Webseiten, Tunnel-Spieler bleiben erlaubt
+- `test/lan.test.js` — beste LAN-Adresse zuerst, ohne WSL/Link-Local
+- `test/data.test.js` — `EMBER_DATA`, Sicherung `ember.json.bak`
+- `test/server.test.js` — startet `server.js` in einem Temp-Ordner und prüft die API über HTTP
 
 Für Testläufe von Hand: [docs/TESTLAUF.md](docs/TESTLAUF.md) — Checkliste zum Ausdrucken.
 

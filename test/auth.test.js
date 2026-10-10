@@ -76,3 +76,10 @@ test("recordGmKey nimmt keinen Schluessel ueber den Tunnel an", () => {
   assert.equal(recordGmKey(state, { role: "gm", gmKey: "gm_x" }, remote), false);
   assert.equal(state.settings.gmKey, undefined);
 });
+
+test("ganz 127.0.0.0/8 zählt als lokal", () => {
+  assert.equal(isLocalAddress("127.0.1.1"), true);
+  assert.equal(isLocalAddress("::ffff:127.0.0.2"), true);
+  assert.equal(isLocalAddress("127.evil.example"), false);
+  assert.equal(isLocalAddress("10.127.0.1"), false);
+});

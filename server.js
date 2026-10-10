@@ -7,7 +7,8 @@ const { URL } = require("url");
 const { pipeline } = require("stream");
 const { pipeline: pipelineAsync } = require("stream/promises");
 const store = require("./lib/store");
-const { resolveActionRoll, applyPools } = require("./lib/dice");
+const { crossSiteBlocked } = require("./lib/guard");
+const { resolveActionRoll, applyPools, canPayExperiences } = require("./lib/dice");
 const { addresses } = require("./lib/lan");
 const { id } = require("./lib/ids");
 const catalog = require("./lib/catalog");
@@ -24,13 +25,14 @@ const HOST = process.env.EMBER_HOST || "0.0.0.0";
 const PUBLIC = path.join(__dirname, "public");
 const LIBRARY = path.join(__dirname, "docs", "bibliothek");
 const RULES = path.join(__dirname, "docs", "regeln");
-const UPLOADS = path.join(__dirname, "data", "uploads");
+const DATA = store.ROOT;
+const UPLOADS = path.join(DATA, "uploads");
 const VIDEO_EXT = ["mp4", "m4v", "webm", "mkv", "mov", "ogv"];
 const clients = new Set();
 const presence = new Map();
 let presenceSent = "";
 
-const CRASH_LOG = path.join(__dirname, "data", "crash.log");
+const CRASH_LOG = path.join(DATA, "crash.log");
 
 // Absturz festhalten. Laeuft der Server schon eine Weile, Exit 42: start.bat
 // startet dann neu. Stirbt er gleich beim Start, Exit 1, sonst dreht die Schleife durch.
@@ -78,7 +80,7 @@ function presenceList() {
 
 function remoteUrl() {
   try {
-    return fs.readFileSync(path.join(__dirname, "data", "public-url.txt"), "utf8").trim();
+    return fs.readFileSync(path.join(DATA, "public-url.txt"), "utf8").trim();
   } catch {
     return process.env.DYE_PUBLIC_URL || "";
   }
@@ -167,11 +169,36 @@ function send(res, status, body) {
   res.end(JSON.stringify(body));
 }
 
-function readBody(req) {
+// JSON-Koerper landen komplett im Speicher. Alte Base64-Uploads (Karten,
+// Bilder) brauchen etwas Platz, Videos gehen ueber den Roh-Upload.
+const MAX_JSON_BODY = 64 * 1024 * 1024;
+
+function readBody(req, limit = MAX_JSON_BODY) {
   return new Promise((resolve, reject) => {
+    const declared = Number(req.headers["content-length"] || 0);
+    const tooLarge = () => {
+      const err = new Error("Zu gross. Videos bitte ueber die Mediathek hochladen.");
+      err.tooLarge = true;
+      return err;
+    };
+    if (declared > limit) {
+      req.resume();
+      return reject(tooLarge());
+    }
     const chunks = [];
-    req.on("data", (c) => chunks.push(c));
-    req.on("end", () => resolve(Buffer.concat(chunks)));
+    let size = 0;
+    let failed = false;
+    req.on("data", (c) => {
+      if (failed) return;
+      size += c.length;
+      if (size > limit) {
+        failed = true;
+        chunks.length = 0;
+        return reject(tooLarge());
+      }
+      chunks.push(c);
+    });
+    req.on("end", () => { if (!failed) resolve(Buffer.concat(chunks)); });
     req.on("error", reject);
   });
 }
@@ -205,8 +232,13 @@ function serveFile(res, filePath, req) {
     const type = MIME[ext] || "application/octet-stream";
     const range = parseRange(req && req.headers.range, st.size);
     if (range && range.invalid) {
-      res.writeHead(416, { "Content-Type": "text/plain; charset=utf-8", "Content-Range": `bytes */${st.size}` });
-      return res.end("Bereich ungueltig.");
+      const msg = "Bereich ungueltig.";
+      res.writeHead(416, {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Content-Range": `bytes */${st.size}`,
+        "Content-Length": Buffer.byteLength(msg),
+      });
+      return res.end(msg);
     }
     if (range) {
       res.writeHead(206, {
@@ -310,7 +342,7 @@ async function handleApi(req, res, url) {
 
   if (method === "GET" && p === "/api/sl-pin") {
     if (!isLocalRequest(req)) return send(res, 403, { error: "Nur dieser Rechner." });
-    const pinPath = path.join(__dirname, "data", "sl.pin");
+    const pinPath = path.join(DATA, "sl.pin");
     const pin = fs.existsSync(pinPath) ? fs.readFileSync(pinPath, "utf8").trim() : "";
     return send(res, 200, { pin });
   }
@@ -693,6 +725,9 @@ async function handleApi(req, res, url) {
     const state = store.read();
     const session = state.sessions.find((s) => s.id === state.active.sessionId);
     const character = state.characters.find((c) => c.id === body.characterId);
+    if (character && !canPayExperiences(character.hope, body.experiences)) {
+      return send(res, 400, { error: "Zu wenig Hope für die Experience." });
+    }
     const picked = body.tokenId ? (session?.map?.tokens || []).find((t) => t.id === body.tokenId && t.kind === "foe") : null;
     const foe = picked || nearestFoe(session, character);
     const typed = body.difficulty != null && body.difficulty !== "" ? Number(body.difficulty) : 0;
@@ -1554,7 +1589,15 @@ async function handleApi(req, res, url) {
 const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
-    if (url.pathname.startsWith("/api/")) return await handleApi(req, res, url);
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    res.setHeader("Referrer-Policy", "same-origin");
+    if (url.pathname.startsWith("/api/")) {
+      if (crossSiteBlocked(req.method, req.headers, [remoteUrl()])) {
+        return send(res, 403, { error: "Fremde Seite. Bitte Ember direkt öffnen." });
+      }
+      return await handleApi(req, res, url);
+    }
     if (url.pathname === "/player" || url.pathname === "/player/") {
       return serveFile(res, path.join(PUBLIC, "player.html"), req);
     }
@@ -1621,6 +1664,10 @@ if (url.pathname.startsWith("/docs/bibliothek/")) {
     return serveFile(res, file, req);
   } catch (err) {
     if (err && err.badJson) return send(res, 400, { error: err.message });
+    if (err && err.tooLarge) {
+      res.setHeader("Connection", "close");
+      return send(res, 413, { error: err.message });
+    }
     send(res, 500, { error: err.message || "Serverfehler" });
   }
 });
@@ -1633,10 +1680,12 @@ server.on("error", (err) => {
   logCrash("server", err);
 });
 
+store.backup();
+
 server.listen(PORT, HOST, async () => {
   await spark.ignite({ label: "Ember zündet" });
   try {
-    const pinPath = path.join(__dirname, "data", "sl.pin");
+    const pinPath = path.join(DATA, "sl.pin");
     if (fs.existsSync(pinPath)) {
       const pin = fs.readFileSync(pinPath, "utf8").trim();
       const state = store.read();

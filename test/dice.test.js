@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { resolveActionRoll, applyPools } = require("../lib/dice");
+const { resolveActionRoll, applyPools, canPayExperiences, experienceCost } = require("../lib/dice");
 
 test("Duality mit Hope über Fear", () => {
   const roll = resolveActionRoll({ hopeDie: 8, fearDie: 3, traitMod: 1, difficulty: 12 });
@@ -124,4 +124,31 @@ test("Deckel: Hope läuft nicht in Fear, Fear-Überlauf tickt die Uhr, Fehlbetra
   assert.equal(short.unpaid, 2);
   assert.equal(short.fear, 5);
   assert.equal(short.clockTick, 0);
+});
+
+test("Experience muss vor dem Wurf bezahlt sein", () => {
+  assert.equal(experienceCost([{ bonus: 2 }, { bonus: 1 }]), 2);
+  assert.equal(experienceCost(undefined), 0);
+  assert.equal(canPayExperiences(0, [{ bonus: 2 }]), false);
+  assert.equal(canPayExperiences(1, [{ bonus: 2 }]), true);
+  assert.equal(canPayExperiences(1, [{ bonus: 2 }, { bonus: 1 }]), false);
+  assert.equal(canPayExperiences(0, []), true);
+});
+
+test("rollDie bleibt im Bereich", () => {
+  const { rollDie } = require("../lib/dice");
+  const seen = new Set();
+  for (let i = 0; i < 2000; i += 1) {
+    const n = rollDie(12);
+    assert.ok(n >= 1 && n <= 12, String(n));
+    seen.add(n);
+  }
+  assert.equal(seen.size, 12);
+});
+
+test("IDs und PINs haben das erwartete Format", () => {
+  const { id, pin } = require("../lib/ids");
+  assert.match(id("pc"), /^pc_[0-9a-f]{18}$/);
+  assert.notEqual(id("x"), id("x"));
+  for (let i = 0; i < 200; i += 1) assert.match(pin(), /^[1-9]\d{3}$/);
 });
