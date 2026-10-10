@@ -1,0 +1,410 @@
+{
+  "schema": 1,
+  "name": "2026-10-10_17-10",
+  "createdAt": "2026-10-10T15:10:10.660Z",
+  "startedAt": "2026-10-10T15:10:10.655Z",
+  "tester": "",
+  "geraet": "",
+  "version": {
+    "version": "v0.4.0-10-g5498d77",
+    "source": "git"
+  },
+  "summary": {
+    "total": 41,
+    "done": 0,
+    "ok": 0,
+    "fehler": 0,
+    "eigen": 0,
+    "offen": 41,
+    "ms": 0,
+    "timed": 0
+  },
+  "sections": [
+    {
+      "id": "vorbereitung",
+      "title": "Vorbereitung",
+      "items": [
+        {
+          "id": "vorbereitung-5ychsw",
+          "text": "`node -v` zeigt eine LTS-Version (20 oder neuer): ______",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "vorbereitung-3cyaum",
+          "text": "`git pull` im Ember-Ordner, keine Fehlermeldung",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "vorbereitung-1k23b0g",
+          "text": "Größe von `data\\ember.json` notiert: ______ KB",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "vorbereitung-142trmr",
+          "text": "Alte Ember-Tabs und -Fenster in allen Browsern geschlossen",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "vorbereitung-dji21q",
+          "text": "Konsole: QuickEdit aus (Fenster → Eigenschaften)",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "vorbereitung-11mgnc",
+          "text": "Uhrzeit beim Start notiert: ______",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        }
+      ],
+      "ms": 0
+    },
+    {
+      "id": "start",
+      "title": "Start",
+      "items": [
+        {
+          "id": "start-x7z9ns",
+          "text": "`start.bat`: Zeit bis `/ember` am PC lädt: ______ s",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "start-bmzsmn",
+          "text": "Tunnel-Adresse erscheint in der Titelleiste nach ______ s (keine alte Adresse vom letzten Mal)",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "start-1n47mxz",
+          "text": "`data\\tunnel.log`: keine Zeilen „Failed to dial a quic connection“, Protokoll http2",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "start-jv94a5",
+          "text": "Erststart: `start.bat` fragt die PIN, `data\\sl.pin` enthält sie (ein alter Rest „ECHO ist ausgeschaltet“ wird erkannt und neu abgefragt)",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        }
+      ],
+      "ms": 0
+    },
+    {
+      "id": "pc-seiten",
+      "title": "PC-Seiten",
+      "items": [
+        {
+          "id": "pc-seiten-1yv36ut",
+          "text": "`/` Startseite lädt, Kacheln klickbar",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "pc-seiten-1yyxikx",
+          "text": "`/ember` Spielleitung lädt, Session starten geht",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "pc-seiten-thbuci",
+          "text": "`/token` Tokenatelier lädt",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "pc-seiten-1hn3qtg",
+          "text": "`/pixelstube` zeichnen, PNG speichern, 5× schnell neu laden: kein Absturz",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "pc-seiten-1mlfhr6",
+          "text": "Mediathek: Video abspielen, vor- und zurückspulen",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "pc-seiten-ymyqce",
+          "text": "Mediathek: kleines Video (< 50 MB) hochladen, Prozentanzeige läuft",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "pc-seiten-11jqey9",
+          "text": "Mediathek: großes Video (> 1 GB) am PC hochladen, danach abspielen und spulen",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "pc-seiten-fkixgp",
+          "text": "`/heft` neue Notiz, löschen, „Rückgängig“; Editor füllt die ganze Höhe",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "pc-seiten-qol48w",
+          "text": "`/solo` ohne Bogen: Hinweis „Noch kein Bogen“, Knöpfe aus",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "pc-seiten-y4kwb8",
+          "text": "`/solo` mit Bogen: Solo öffnen, Bot setzen, Bot zieht, Meldungen oben sichtbar",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "pc-seiten-1hh2ics",
+          "text": "`/bibliothek` zeigt DH-SRD (öffnet als PDF) und die Karten",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "pc-seiten-1hsk1c5",
+          "text": "`/karten` lädt",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "pc-seiten-13huuvm",
+          "text": "Einstellungen (Startseite): Schrift/Kacheln ändern, bleibt nach Neuladen",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "pc-seiten-g2yssc",
+          "text": "Ereignis-Seiten über die Kachel „Ereignisse“ (oder `/ember` → Ereignisse): Leitungsparcours, Fallwerk, Pastellpfad, Scharfschuss, Puls laden",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        }
+      ],
+      "ms": 0
+    },
+    {
+      "id": "spieler-lokal-lan",
+      "title": "Spieler lokal (LAN)",
+      "items": [
+        {
+          "id": "spieler-lokal-lan-4qcqxi",
+          "text": "`http://<PC-IP>:3478/player` am Handy/TV: Ladezeit ______ s",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "spieler-lokal-lan-i0a7iv",
+          "text": "Profil anlegen, mit PIN eintreten, Bogen wählen",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "spieler-lokal-lan-1et92no",
+          "text": "Würfeln, SL sieht den Wurf im Log",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        }
+      ],
+      "ms": 0
+    },
+    {
+      "id": "spieler-von-aussen-handy-hotspot-ueber-tunnel",
+      "title": "Spieler von außen (Handy-Hotspot über Tunnel)",
+      "items": [
+        {
+          "id": "spieler-von-aussen-handy-hotspot-ueber-tunnel-abz11w",
+          "text": "Tunnel-Adresse `/player`: Ladezeit ______ s",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "spieler-von-aussen-handy-hotspot-ueber-tunnel-utufct",
+          "text": "Profil + PIN eintreten",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "spieler-von-aussen-handy-hotspot-ueber-tunnel-am34v5",
+          "text": "Würfeln, SL sieht den Wurf nach ______ s",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "spieler-von-aussen-handy-hotspot-ueber-tunnel-1d981yr",
+          "text": "Sitz-Punkt beim SL wird grün/grau, wenn der Spieler kommt/geht",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        }
+      ],
+      "ms": 0
+    },
+    {
+      "id": "mehrere-gleichzeitig",
+      "title": "Mehrere gleichzeitig",
+      "items": [
+        {
+          "id": "mehrere-gleichzeitig-1kir6rb",
+          "text": "PC (`/ember`) + TV (`/player`) + Handy (`/player`) gleichzeitig offen",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "mehrere-gleichzeitig-1rpyqtc",
+          "text": "Am PC 4+ Ember-Tabs offen: neue Seiten laden weiter, Würfe kommen an",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "mehrere-gleichzeitig-15uqw57",
+          "text": "Ein Gerät lädt neu: die anderen laufen weiter",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        }
+      ],
+      "ms": 0
+    },
+    {
+      "id": "sicherheit-ueber-die-tunnel-adresse-nicht-am-pc",
+      "title": "Sicherheit (über die Tunnel-Adresse, nicht am PC)",
+      "items": [
+        {
+          "id": "sicherheit-ueber-die-tunnel-adresse-nicht-am-pc-1c7fmmy",
+          "text": "`<Tunnel>/api/sl-pin` → „Nur dieser Rechner.“ (keine PIN)",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "sicherheit-ueber-die-tunnel-adresse-nicht-am-pc-szx50z",
+          "text": "`<Tunnel>/api/profiles` → „Nur dieser Rechner.“",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "sicherheit-ueber-die-tunnel-adresse-nicht-am-pc-1872636",
+          "text": "Neustart / Update von außen → abgelehnt",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        }
+      ],
+      "ms": 0
+    },
+    {
+      "id": "stoerfaelle",
+      "title": "Störfälle",
+      "items": [
+        {
+          "id": "stoerfaelle-1rcofzw",
+          "text": "Seiten schnell hintereinander neu laden: Server läuft weiter",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "stoerfaelle-2np0lu",
+          "text": "Tunnel-Fenster schließen: PC-Seiten laufen weiter, Spieler von außen sehen Fehler",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "stoerfaelle-1x7t6yw",
+          "text": "Server neu starten (Knopf oder Strg+C und `start.bat`): Seiten verbinden sich wieder",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        },
+        {
+          "id": "stoerfaelle-1ig0etj",
+          "text": "`data\\crash.log` geprüft: leer / Einträge: ______",
+          "mark": "",
+          "note": "",
+          "ms": 0,
+          "zeit": ""
+        }
+      ],
+      "ms": 0
+    }
+  ],
+  "notizen": "",
+  "images": []
+}
