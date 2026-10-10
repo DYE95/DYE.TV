@@ -130,3 +130,17 @@ test("Solo-Spiel: neuer Lauf, Aktion, Stand bleibt in solo.json", async () => {
   const early = await postJson("/api/solo/game/run", {});
   assert.equal(early.status, 409);
 });
+
+test("Leitstelle nur am SL-Rechner", async () => {
+  const local = await request("GET", "/api/leitstelle");
+  assert.equal(local.status, 200);
+  assert.ok(local.json.server.uptimeSec >= 0);
+  assert.ok(local.json.urls.gm.endsWith("/ember"));
+  const tunnel = await request("GET", "/api/leitstelle", { headers: { "cf-connecting-ip": "203.0.113.9" } });
+  assert.equal(tunnel.status, 403);
+  const version = await request("GET", "/api/leitstelle/version");
+  assert.equal(version.status, 200);
+  assert.ok(Array.isArray(version.json.notes));
+  const remoteVersion = await request("GET", "/api/leitstelle/version", { headers: { "x-forwarded-for": "203.0.113.9" } });
+  assert.equal(remoteVersion.status, 403);
+});

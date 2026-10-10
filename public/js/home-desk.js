@@ -11,7 +11,7 @@ const BUILTIN = [
   { id: "karten", title: "Karten", sub: "Print and Play", href: "/karten" },
   { id: "solo", title: "Solo", sub: "Dungeon-Lauf allein", href: "/solo" },
   { id: "heft", title: "Heft", sub: "Notizen · Markdown", href: "/heft" },
-  { id: "settings", title: "Einstellungen", sub: "Seitenleiste ein/aus", toggle: true },
+  { id: "settings", title: "Einstellungen", sub: "Leitstelle ⇄ Einstellungen", toggle: true },
 ];
 
 // Masse in "Basis-Pixeln" (16 = 1rem). Die Seite rechnet sie in rem um,
@@ -24,7 +24,7 @@ function defaults() {
     tileH: 120,
     grid: 24,
     locked: false,
-    panelOpen: true,
+    panelMode: "leitstelle",
     tiles: {
       ember: { x: 24, y: 24 },
       player: { x: 320, y: 24 },
@@ -101,8 +101,8 @@ function applyChrome() {
   document.body.style.setProperty("--fs", String(state.fontSize));
   desk.style.setProperty("--grid", U(state.grid));
   document.body.classList.toggle("locked", Boolean(state.locked));
-  document.body.classList.toggle("panel-off", state.panelOpen === false);
-  if (nodes.settings) nodes.settings.classList.toggle("on", state.panelOpen !== false);
+  document.body.classList.toggle("mode-settings", state.panelMode === "settings");
+  if (nodes.settings) nodes.settings.classList.toggle("on", state.panelMode === "settings");
   const font = document.getElementById("fontSize");
   const tileW = document.getElementById("tileW");
   const tileH = document.getElementById("tileH");
@@ -139,11 +139,15 @@ function activate(item) {
     if (/^https?:/i.test(item.href)) window.open(item.href, "_blank", "noopener");
     else location.href = item.href;
   } else if (item.panel) openPanel(item.panel);
-  else if (item.toggle) {
-    state.panelOpen = state.panelOpen === false;
-    applyChrome();
-    save();
-  }
+  else if (item.toggle) setPanelMode(state.panelMode === "settings" ? "leitstelle" : "settings");
+}
+
+// Rechte Spalte: Leitstelle (Standard) oder Einstellungen. Die Wahl bleibt gespeichert.
+function setPanelMode(mode) {
+  state.panelMode = mode === "settings" ? "settings" : "leitstelle";
+  applyChrome();
+  save();
+  if (state.panelMode === "leitstelle" && window.Leitstelle) window.Leitstelle.refresh();
 }
 
 function bindDrag(el, item) {
@@ -198,7 +202,7 @@ function buildTiles() {
     bindDrag(el, item);
     place(item.id);
   });
-  if (nodes.settings) nodes.settings.classList.toggle("on", state.panelOpen !== false);
+  if (nodes.settings) nodes.settings.classList.toggle("on", state.panelMode === "settings");
 }
 
 function renderProfiles() {
@@ -558,3 +562,6 @@ document.getElementById("btnFullscreen").addEventListener("click", () => {
 });
 document.getElementById("btnReload").addEventListener("click", () => location.reload());
 document.getElementById("btnServer").addEventListener("click", () => openPanel("panelEmber"));
+
+window.addEventListener("ember:panel-mode", (ev) => setPanelMode(ev.detail));
+document.getElementById("btnToLeitstelle").addEventListener("click", () => setPanelMode("leitstelle"));

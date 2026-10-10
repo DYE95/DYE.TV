@@ -17,6 +17,8 @@ html, body { height: 100%; }
   overflow: hidden;
   font: calc(var(--fs) / 16 * 1rem) / 1.4 Georgia, serif;
   place-items: stretch;
+  /* Daves Baum im Regen. Eigene Datei gleichen Namens ersetzt ihn. */
+  background: #10151c url("/icons/startseite-baum.jpg") center / cover no-repeat;
 }
 .hidden { display: none !important; }
 .sr-only {
