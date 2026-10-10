@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Ember · Testlauf</title>
+  <link rel="icon" href="/img/ember-icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/css/ember.css?v=9" />
+  <link rel="stylesheet" href="/css/testlauf.css?v=1" />
+</head>
+<body class="tl-body">
+  <div class="tl-app">
+    <header class="topbar tl-top">
+      <a class="btn tiny ghost" href="/">Home</a>
+      <div class="brand">Testlauf</div>
+      <span class="chip" id="versionChip"></span>
+      <span class="grow"></span>
+      <span class="chip" id="saveState" aria-live="polite">Bereit</span>
+      <button class="btn tiny ghost" id="btnNeu" type="button">Neuer Entwurf</button>
+      <button class="btn primary" id="btnAblegen" type="button">Bericht ablegen</button>
+    </header>
+
+    <div class="tl-layout">
+      <main class="tl-main">
+        <section class="tl-meta card">
+          <label>Tester <input id="tester" type="text" autocomplete="name" maxlength="120" /></label>
+          <label>Gerät <input id="geraet" type="text" placeholder="TV, Handy, PC …" maxlength="120" /></label>
+          <p class="hint" id="folderHint"></p>
+        </section>
+
+        <section class="tl-list" id="checklist" aria-live="polite">
+          <p class="hint">Lädt Checkliste …</p>
+        </section>
+
+        <section class="tl-notes card">
+          <h2 id="notesTitle">Notizen</h2>
+          <textarea id="notizen" rows="5" maxlength="20000" placeholder="Freie Notizen zum Lauf."></textarea>
+        </section>
+
+        <section class="tl-images card">
+          <h2>Bilder</h2>
+          <p class="hint">Screenshots per Drag &amp; Drop oder Knopf. Bleiben im Entwurf, bis du ablegen tippst.</p>
+          <div class="tl-drop" id="drop" tabindex="0" role="button" aria-label="Bilder ablegen oder auswählen">
+            <span>Bilder hier ablegen</span>
+            <button class="btn" id="btnPick" type="button">Dateien wählen</button>
+            <input id="fileInput" type="file" accept="image/*" multiple hidden />
+          </div>
+          <div class="tl-thumbs" id="thumbs"></div>
+        </section>
+
+        <footer class="tl-foot">
+          <button class="btn primary" id="btnAblegenFoot" type="button">Bericht ablegen</button>
+          <p class="hint" id="summaryHint"></p>
+        </footer>
+      </main>
+
+      <aside class="tl-side card" aria-label="Frühere Testläufe">
+        <h2>Frühere Läufe</h2>
+        <div id="runs"><p class="hint">Noch keine abgelegten Läufe.</p></div>
+        <article class="tl-runview" id="runView" hidden>
+          <div class="tl-runhead">
+            <strong id="runName"></strong>
+            <button class="btn tiny ghost" id="btnCloseRun" type="button">Schließen</button>
+          </div>
+          <pre id="runMd"></pre>
+        </article>
+      </aside>
+    </div>
+  </div>
+  <script src="/js/testlauf.js?v=1"></script>
+</body>
+</html>

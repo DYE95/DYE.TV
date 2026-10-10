@@ -18,6 +18,7 @@ const compendium = require("./lib/compendium");
 const solo = require("./lib/solo");
 const soloGame = require("./lib/solo-game");
 const leitstelle = require("./lib/leitstelle");
+const testlauf = require("./lib/testlauf");
 const spur = require("./lib/spur");
 const { isGm, recordGmKey, isLocalRequest, requestAddress } = require("./lib/auth");
 const { parseRange } = require("./lib/range");
@@ -65,6 +66,11 @@ const MIME = {
   ".jpeg": "image/jpeg",
   ".webp": "image/webp",
   ".gif": "image/gif",
+  ".avif": "image/avif",
+  ".bmp": "image/bmp",
+  ".heic": "image/heic",
+  ".heif": "image/heif",
+  ".md": "text/markdown; charset=utf-8",
   ".svg": "image/svg+xml",
   ".mp4": "video/mp4",
   ".webm": "video/webm",
@@ -339,9 +345,20 @@ function denyUnlessGm(res, state, body) {
 
 const PLAYER_FIELDS = ["hope", "stressMarked", "hpMarked", "armorMarked", "notes"];
 
+// Testlauf-Seite: Checkliste, Bilder, Bericht. Alles nur am SL-Rechner.
+const testlaufCtx = {
+  dataDir: DATA,
+  docFile: path.join(__dirname, "docs", "TESTLAUF.md"),
+  send, readJson, serveFile,
+  isLocal: isLocalRequest,
+  version: () => leitstelle.version(),
+};
+
 async function handleApi(req, res, url) {
   const method = req.method;
   const p = url.pathname;
+
+  if (await testlauf.handleApi(req, res, url, testlaufCtx)) return;
 
   // Leitstelle der Startseite: nur dieser Rechner, nie ueber den Tunnel.
   if (method === "GET" && (p === "/api/leitstelle" || p === "/api/leitstelle/version")) {
@@ -1631,6 +1648,13 @@ const server = http.createServer(async (req, res) => {
         return res.end();
       }
       return serveFile(res, path.join(PUBLIC, "home.html"), req);
+    }
+    if (["/testlauf", "/testlauf/", "/testlauf.html"].includes(url.pathname)) {
+      if (!isLocalRequest(req)) {
+        res.writeHead(302, { Location: "/player", "Cache-Control": "no-store" });
+        return res.end();
+      }
+      return serveFile(res, path.join(PUBLIC, "testlauf.html"), req);
     }
     if (url.pathname === "/ember" || url.pathname === "/ember/") {
       return serveFile(res, path.join(PUBLIC, "index.html"), req);
