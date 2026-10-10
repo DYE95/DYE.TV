@@ -191,3 +191,72 @@ test("ein ganzer Lauf mit einfacher Strategie endet immer", () => {
     assert.ok(["won", "lost"].includes(run.status));
   }
 });
+
+// Testlauf 2026-10-10: „Solo läuft, aber keiner greift zurück an.“
+test("Gegenzug bei Fehlschlag: Logzeile, foeTurn für die Animation, auch wenn Armor alles fängt", () => {
+  const run = freshRun();
+  inFight(run);
+  // Hope 2, Fear 5 → Fehlschlag; W20 15 +1 trifft; Schaden W6 1 +2 = 3 → 1 Stufe → Armor fängt sie, 0 HP
+  const res = d.act(run, { id: "attack" }, script(2, 5, 15, 1));
+  assert.equal(res.roll.enemy.length, 1);
+  const row = res.roll.enemy[0];
+  assert.deepEqual([row.hit, row.damage, row.marks, row.armor], [true, 3, 0, true]);
+  assert.equal(run.hero.hp, 0, "kein Herz weg …");
+  assert.equal(run.hero.armor, 1, "… aber ein Armor-Slot");
+  assert.equal(run.foeTurn.foe, "Testgegner");
+  assert.equal(run.foeTurn.rows.length, 1);
+  const texts = run.log.slice(0, 4).map((l) => l.text);
+  assert.ok(texts.some((t) => /Testgegner greift an: W20 15\+1 = 16 .* Treffer/.test(t)), texts.join(" | "));
+  const dmgLine = run.log.find((l) => /Testgegner: 3 Schaden/.test(l.text));
+  assert.equal(dmgLine.kind, "bad", "abgefangener Treffer ist trotzdem rot");
+  assert.ok(run.log.some((l) => /Gegenzug!/.test(l.text) && l.kind === "bad"));
+});
+
+test("Gegenzug bei Erfolg mit Fear, nicht bei Erfolg mit Hope", () => {
+  const run = freshRun();
+  const room = inFight(run);
+  room.enemy.hpMax = 9;
+  // Hope 6, Fear 9 +1 = 16 gegen 12 → Erfolg mit Fear; Schaden 1+3; Gegner W20 2 → daneben
+  const res = d.act(run, { id: "attack" }, script(6, 9, 1, 2));
+  assert.equal(res.roll.outcome.success, true);
+  assert.equal(res.roll.outcome.withHope, false);
+  assert.equal(res.roll.enemy.length, 1);
+  assert.equal(res.roll.enemy[0].hit, false);
+  const seq = run.foeTurn.seq;
+  const calm = d.act(run, { id: "attack" }, script(10, 3, 1));
+  assert.equal(calm.roll.enemy, undefined);
+  assert.equal(run.foeTurn.seq, seq, "kein neuer Gegenzug");
+});
+
+test("Verteidigen und misslungenes Schleichen lösen einen Gegenzug aus", () => {
+  const run = freshRun();
+  inFight(run);
+  const def = d.act(run, { id: "defend" }, script(19, 4));
+  assert.equal(def.enemy.length, 1);
+  assert.ok(run.foeTurn);
+  const run2 = freshRun();
+  inFight(run2);
+  run2.status = "explore";
+  run2.combat = null;
+  const sn = d.act(run2, { id: "sneak" }, script(1, 2, 18, 3));
+  assert.equal(run2.status === "combat" || run2.status === "dying", true);
+  assert.equal(sn.roll.enemy.length, 1);
+  assert.ok(run2.log.some((l) => /entdeckt dich/.test(l.text)));
+});
+
+test("über viele Läufe greifen Gegner wirklich an (echte Würfel)", () => {
+  let counters = 0;
+  let attacks = 0;
+  for (let n = 0; n < 40; n += 1) {
+    const run = freshRun();
+    for (let guard = 0; guard < 120 && !["won", "lost"].includes(run.status); guard += 1) {
+      const acts = d.actions(run);
+      const a = acts.find((x) => x.id === "attack") || acts.find((x) => x.id === "fight") || acts.find((x) => x.id === "risk") || acts.find((x) => x.id === "go");
+      if (!a) break;
+      const res = d.act(run, a);
+      if (a.id === "attack") { attacks += 1; if (res.roll && res.roll.enemy) counters += 1; }
+    }
+  }
+  assert.ok(attacks > 50);
+  assert.ok(counters / attacks > 0.3, `${counters} Gegenzüge bei ${attacks} Angriffen`);
+});
