@@ -53,6 +53,9 @@ Ohne Datei gelten die Umgebungsvariablen `LEGION_WEBHOOK_URL`,
   `Authorization: Bearer <Schlüssel>`, bei jedem anderen Namen roh,
   z. B. `X-Legion-Key: <Schlüssel>`.
 - Der Browser bekommt den Schlüssel nie zurück, nur „gesetzt“.
+- Eingefügtes wird aufgeräumt: steht im Feld Header-Name eine ganze Zeile
+  wie `Authorization: Bearer abc`, nimmt Ember `Authorization` als Namen und
+  `abc` als Schlüssel. Ein `Bearer ` vor dem Schlüssel fällt weg.
 
 Ohne Webhook wird trotzdem hochgeladen. Die Seite meldet dann
 „Hochgeladen – Legion-Webhook nicht eingerichtet“.

@@ -4,6 +4,7 @@ Neueste oben. Die Leitstelle auf der Startseite liest diese Datei, wenn
 kein git da ist (z. B. bei einem ZIP-Download).
 
 ## Unveröffentlicht
+- Feinschliff: Legion-Verbindung nimmt eingefügte Zeilen wie „Authorization: Bearer …“ an; Spieler am Handy: Live-Verbindung kommt nach Bildschirmsperre und Tunnel-Aussetzern selbst zurück, Karte verdeckt hochkant keine Knöpfe mehr, kein Doppelwurf bei langsamem Netz
 - „Neustart nötig – neuer Code geladen“: Leitstelle und Fußzeile merken git pull bei laufendem Server, Neustart mit einem Klick
 - Testlauf hochladen: Knopf „Hochladen & Legion Bescheid geben“ schiebt den Lauf auf den Zweig testlaeufe und meldet ihn per Webhook
 - Testlauf-Kachel: Checkliste aus docs/TESTLAUF.md mit O/X/Eigen, Bildern und Bericht unter data/testlaeufe/

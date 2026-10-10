@@ -564,8 +564,10 @@
     try {
       const body = { url: $("legionUrl").value, header: $("legionHeader").value, ...extra };
       if (!extra && $("legionKey").value.trim()) body.key = $("legionKey").value;
+      // Eingefuegte Zeilen wie "Authorization: Bearer …" teilt der Server auf.
+      const pasted = /:|^\s*bearer\s/i.test(body.header || "") || /^\s*(authorization\s*:|bearer\s)/i.test(body.key || "");
       showLegion(await postJson("/api/testlauf/legion", body));
-      $("legionState").textContent += " Gespeichert.";
+      $("legionState").textContent += pasted ? " Gespeichert (Header-Zeile erkannt: Name und Schlüssel getrennt)." : " Gespeichert.";
     } catch (err) {
       $("legionState").textContent = `Nicht gespeichert: ${err.message}`;
     }

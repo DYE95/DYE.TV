@@ -116,12 +116,25 @@ function profileChars() {
   const mine = new Set(profile.characterIds || []);
   return chars.filter((c) => mine.has(c.id));
 }
+let profileBusy = false;
 async function saveProfile(path) {
+  if (profileBusy) return;
   const name = $("#profileName")?.value.trim();
   const pin = $("#profilePin")?.value.trim();
   const note = $("#profileNote");
-  const res = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, pin }) });
-  const data = await res.json();
+  profileBusy = true;
+  if (note) note.textContent = "Einen Moment …";
+  let res = null;
+  let data = {};
+  try {
+    res = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, pin }) });
+    data = await res.json().catch(() => ({}));
+  } catch (err) {
+    if (note) note.textContent = "Keine Verbindung. Netz prüfen und noch einmal tippen.";
+    return;
+  } finally {
+    profileBusy = false;
+  }
   if (!res.ok) { if (note) note.textContent = data.error || "Profil abgelehnt."; return; }
   profile = data;
   sessionStorage.setItem("ember.profile", JSON.stringify({ id: data.id, name: data.name, pin, characterIds: data.characterIds || [] }));
@@ -365,12 +378,29 @@ async function playerRoll(table) {
     payload.hopeDie = Number($("#hopeDie").value);
     payload.fearDie = Number($("#fearDie").value);
   }
-  const res = await fetch("/api/roll", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-  const data = await res.json();
-  if ($("#rollOut")) $("#rollOut").textContent = data.roll?.spoken || data.error || "";
+  const out = $("#rollOut");
+  try {
+    const res = await fetch("/api/roll", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    const data = await res.json().catch(() => ({}));
+    if (out) out.textContent = data.roll?.spoken || data.error || (res.ok ? "" : "Wurf nicht angekommen.");
+  } catch (err) {
+    if (out) out.textContent = "Keine Verbindung. Wurf nicht angekommen, bitte noch einmal.";
+  }
 }
-$("#btnRoll")?.addEventListener("click", () => playerRoll(false));
-$("#btnTableRoll")?.addEventListener("click", () => playerRoll(true));
+// Langsames Handynetz: Doppeltipp nicht als zweiten Wurf zaehlen.
+let rolling = false;
+async function rollOnce(table) {
+  if (rolling) return;
+  rolling = true;
+  const btns = [$("#btnRoll"), $("#btnTableRoll")].filter(Boolean);
+  btns.forEach((b) => { b.disabled = true; });
+  try { await playerRoll(table); } finally {
+    rolling = false;
+    btns.forEach((b) => { b.disabled = false; });
+  }
+}
+$("#btnRoll")?.addEventListener("click", () => rollOnce(false));
+$("#btnTableRoll")?.addEventListener("click", () => rollOnce(true));
 $("#btnHarm")?.addEventListener("click", () => {
   if (!meId) return;
   fetch("/api/session/harm", {
